@@ -42,3 +42,4 @@ dist/
 *.tsbuildinfo
 next-env.d.ts.next/
 node_modules/
+next-env.d.ts
