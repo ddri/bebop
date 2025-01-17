@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
-import { Plus, Trash2, Download, Eye } from 'lucide-react';
+import { Plus, Trash2, Download, Eye, FileText } from 'lucide-react';
 
 interface Document {
   id: number;
@@ -45,7 +45,10 @@ export default function MarkdownCMS() {
     }
   }, [documents, mounted]);
 
-  // Convert Markdown to HTML (basic implementation)
+  // Calculate word count
+  const getWordCount = (text: string): number => {
+    return text.trim().split(/\s+/).filter(word => word.length > 0).length;
+  };
   const markdownToHtml = (markdown: string): string => {
     return markdown
       .replace(/^# (.*$)/gm, '<h1 class="text-3xl font-bold mt-4 mb-2">$1</h1>')
@@ -164,6 +167,10 @@ export default function MarkdownCMS() {
                   <h3 className="text-lg font-medium mb-2">{doc.name}</h3>
                   <div className="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-2">
                     <span>Edited {new Date(doc.id).toLocaleString()}</span>
+                    <span className="flex items-center gap-1">
+                      <FileText className="h-3 w-3" />
+                      {getWordCount(doc.content)} words
+                    </span>
                   </div>
                   <div className="mt-4 text-sm text-slate-600 dark:text-slate-300 line-clamp-2">
                     {doc.content.substring(0, 150)}...
