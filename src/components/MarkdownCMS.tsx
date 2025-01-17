@@ -138,27 +138,36 @@ export default function MarkdownCMS() {
             <CardTitle>Documents</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {documents.map(doc => (
                 <div 
                   key={doc.id} 
-                  className="flex items-center p-3 border rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors dark:border-slate-700"
+                  className="p-4 border rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors dark:border-slate-700 relative group"
                 >
-                  <input
-                    type="checkbox"
-                    checked={selectedDocs.includes(doc.id)}
-                    onChange={() => toggleSelection(doc.id)}
-                    className="mr-3 h-4 w-4 rounded border-gray-300"
-                  />
-                  <span className="flex-grow font-medium">{doc.name}</span>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => deleteDocument(doc.id)}
-                    className="ml-2 text-red-500 hover:text-red-700 hover:bg-red-50"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                    <input
+                      type="checkbox"
+                      checked={selectedDocs.includes(doc.id)}
+                      onChange={() => toggleSelection(doc.id)}
+                      className="h-4 w-4 rounded border-gray-300"
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => deleteDocument(doc.id)}
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50 h-4 w-4 p-0"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  
+                  <h3 className="text-lg font-medium mb-2">{doc.name}</h3>
+                  <div className="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                    <span>Edited {new Date(doc.id).toLocaleString()}</span>
+                  </div>
+                  <div className="mt-4 text-sm text-slate-600 dark:text-slate-300 line-clamp-2">
+                    {doc.content.substring(0, 150)}...
+                  </div>
                 </div>
               ))}
               {documents.length === 0 && (
