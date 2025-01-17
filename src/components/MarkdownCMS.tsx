@@ -6,6 +6,9 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
+import CodeMirror from '@uiw/react-codemirror';
+import { markdown } from '@codemirror/lang-markdown';
+import { oneDark } from '@codemirror/theme-one-dark';
 import { 
   Plus, 
   Trash2, 
@@ -246,14 +249,18 @@ export default function MarkdownCMS() {
                     className="mb-2"
                   />
                 </div>
-                <div>
-                  <Textarea
-                    placeholder="Content (Markdown supported)"
-                    value={editingDoc.content}
-                    onChange={(e) => setEditingDoc({...editingDoc, content: e.target.value})}
-                    className="min-h-[200px] mb-2"
+
+                <div className="border rounded-md">
+                  <CodeMirror
+                    value={newDocContent} // or editingDoc.content for edit form
+                    height="400px"
+                    extensions={[markdown()]}
+                    theme={theme === 'dark' ? oneDark : undefined}
+                    onChange={(value) => setNewDocContent(value)} // or (value) => setEditingDoc({...editingDoc, content: value})
+                    className="border rounded-md"
                   />
                 </div>
+
                 <div className="flex gap-2">
                   <Button 
                     onClick={saveEditedDocument}
@@ -290,14 +297,18 @@ export default function MarkdownCMS() {
                     className="mb-2"
                   />
                 </div>
-                <div>
-                  <Textarea
-                    placeholder="Content (Markdown supported)"
-                    value={newDocContent}
-                    onChange={(e) => setNewDocContent(e.target.value)}
-                    className="min-h-[200px] mb-2"
+
+                <div className="border rounded-md">
+                  <CodeMirror
+                    value={newDocContent} // or editingDoc.content for edit form
+                    height="400px"
+                    extensions={[markdown()]}
+                    theme={theme === 'dark' ? oneDark : undefined}
+                    onChange={(value) => setNewDocContent(value)} // or (value) => setEditingDoc({...editingDoc, content: value})
+                    className="border rounded-md"
                   />
                 </div>
+
                 <div className="flex gap-2">
                   <Button 
                     onClick={saveDocument}
