@@ -1,18 +1,32 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useTheme } from "next-themes";
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
-import { Plus, Trash2, Download, Eye, FileText, Clock, MoreHorizontal } from 'lucide-react';
+import { 
+  Plus, 
+  Trash2, 
+  Download, 
+  Eye, 
+  FileText, 
+  Clock, 
+  MoreHorizontal,
+  ArrowDownAZ,
+  ArrowUpAZ,
+  CalendarDays,
+  TextQuote
+} from 'lucide-react';
 
 interface Document {
   id: number;
   name: string;
   content: string;
 }
+
+type SortOption = 'newest' | 'oldest' | 'az' | 'za' | 'longest' | 'shortest';
 
 export default function MarkdownCMS() {
   const [mounted, setMounted] = useState(false);
@@ -23,6 +37,7 @@ export default function MarkdownCMS() {
   const [newDocName, setNewDocName] = useState('');
   const [newDocContent, setNewDocContent] = useState('');
   const [showNewDocForm, setShowNewDocForm] = useState(false);
+  const [sortBy, setSortBy] = useState<SortOption>('newest');
 
   // Handle mounting state
   useEffect(() => {
@@ -33,8 +48,12 @@ export default function MarkdownCMS() {
   useEffect(() => {
     if (mounted) {
       const savedDocs = localStorage.getItem('markdown-docs');
+      const savedSort = localStorage.getItem('sort-preference');
       if (savedDocs) {
         setDocuments(JSON.parse(savedDocs));
+      }
+      if (savedSort) {
+        setSortBy(savedSort as SortOption);
       }
     }
   }, [mounted]);
@@ -45,6 +64,23 @@ export default function MarkdownCMS() {
       localStorage.setItem('markdown-docs', JSON.stringify(documents));
     }
   }, [documents, mounted]);
+
+  // Save sort preference when it changes
+  useEffect(() => {
+    if (mounted) {
+      localStorage.setItem('sort-preference', sortBy);
+    }
+  }, [sortBy, mounted]);
+
+  // Sort options configuration
+  const sortOptions = [
+    { value: 'newest', label: 'Newest First', icon: CalendarDays },
+    { value: 'oldest', label: 'Oldest First', icon: CalendarDays },
+    { value: 'az', label: 'A-Z', icon: ArrowDownAZ },
+    { value: 'za', label: 'Z-A', icon: ArrowUpAZ },
+    { value: 'longest', label: 'Longest First', icon: TextQuote },
+    { value: 'shortest', label: 'Shortest First', icon: TextQuote },
+  ];
 
   // Calculate word count
   const getWordCount = (text: string): number => {
@@ -103,6 +139,27 @@ export default function MarkdownCMS() {
     setCombinedPreview(markdownToHtml(selectedContent));
   }, [selectedDocs, documents]);
 
+  // Memoized sorted documents
+  const sortedDocuments = useMemo(() => {
+    const sorted = [...documents];
+    switch (sortBy) {
+      case 'newest':
+        return sorted.sort((a, b) => b.id - a.id);
+      case 'oldest':
+        return sorted.sort((a, b) => a.id - b.id);
+      case 'az':
+        return sorted.sort((a, b) => a.name.localeCompare(b.name));
+      case 'za':
+        return sorted.sort((a, b) => b.name.localeCompare(a.name));
+      case 'longest':
+        return sorted.sort((a, b) => getWordCount(b.content) - getWordCount(a.content));
+      case 'shortest':
+        return sorted.sort((a, b) => getWordCount(a.content) - getWordCount(b.content));
+      default:
+        return sorted;
+    }
+  }, [documents, sortBy]);
+
   if (!mounted) return null;
 
   return (
@@ -124,9 +181,34 @@ export default function MarkdownCMS() {
 
       {/* Main Content */}
       <div className="container mx-auto p-8 max-w-7xl">
-        {/* Header with New Topic Button */}
+        {/* Header with Sort and New Topic Button */}
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-semibold dark:text-white">Topics</h1>
+          <div className="flex items-center gap-4">
+            <h1 className="text-2xl font-semibold dark:text-white">Topics</h1>
+            <div className="relative">
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as SortOption)}
+                className="appearance-none bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md pl-9 pr-8 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
+              >
+                {sortOptions.map(option => {
+                  const Icon = option.icon;
+                  return (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  );
+                })}
+              </select>
+              {/* Show the current sort option's icon */}
+              {React.createElement(
+                sortOptions.find(opt => opt.value === sortBy)?.icon || CalendarDays,
+                {
+                  className: "h-4 w-4 absolute left-2 top-1/2 transform -translate-y-1/2 text-slate-500",
+                }
+              )}
+            </div>
+          </div>
           <Button 
             onClick={() => setShowNewDocForm(!showNewDocForm)}
             className="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold"
@@ -185,7 +267,7 @@ export default function MarkdownCMS() {
           {/* Documents List */}
           <div>
             <div className="space-y-4">
-              {documents.map(doc => (
+              {sortedDocuments.map(doc => (
                 <div 
                   key={doc.id} 
                   className="bg-white dark:bg-slate-800 p-6 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-yellow-400 dark:hover:border-yellow-400 transition-colors relative group shadow-sm"
@@ -239,116 +321,114 @@ export default function MarkdownCMS() {
           </div>
 
           {/* Preview Card */}
-          <div>
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex justify-between items-center">
-                  Combined Preview
-                  {selectedDocs.length > 0 && (
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          const htmlContent = `
-                            <!DOCTYPE html>
-                            <html lang="en">
-                            <head>
-                                <meta charset="UTF-8">
-                                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                                <title>Preview Combined Content</title>
-                                <style>
-                                  body { 
-                                    font-family: system-ui, -apple-system, sans-serif;
-                                    line-height: 1.5;
-                                    max-width: 800px;
-                                    margin: 0 auto;
-                                    padding: 2rem;
-                                    background-color: ${theme === 'dark' ? '#0f172a' : '#ffffff'};
-                                    color: ${theme === 'dark' ? '#e2e8f0' : '#0f172a'};
-                                  }
-                                  h1, h2, h3 { margin-top: 2rem; }
-                                  p { margin: 1rem 0; }
-                                </style>
-                            </head>
-                            <body>
-                                ${combinedPreview}
-                            </body>
-                            </html>
-                          `.trim();
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex justify-between items-center">
+                Combined Preview
+                {selectedDocs.length > 0 && (
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const htmlContent = `
+                          <!DOCTYPE html>
+                          <html lang="en">
+                          <head>
+                              <meta charset="UTF-8">
+                              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                              <title>Preview Combined Content</title>
+                              <style>
+                                body { 
+                                  font-family: system-ui, -apple-system, sans-serif;
+                                  line-height: 1.5;
+                                  max-width: 800px;
+                                  margin: 0 auto;
+                                  padding: 2rem;
+                                  background-color: ${theme === 'dark' ? '#0f172a' : '#ffffff'};
+                                  color: ${theme === 'dark' ? '#e2e8f0' : '#0f172a'};
+                                }
+                                h1, h2, h3 { margin-top: 2rem; }
+                                p { margin: 1rem 0; }
+                              </style>
+                          </head>
+                          <body>
+                              ${combinedPreview}
+                          </body>
+                          </html>
+                        `.trim();
 
-                          const newTab = window.open();
-                          if (newTab) {
-                            newTab.document.write(htmlContent);
-                            newTab.document.close();
-                          }
-                        }}
-                      >
-                        <Eye className="h-4 w-4 mr-2" />
-                        Preview
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          const htmlContent = `
-                            <!DOCTYPE html>
-                            <html lang="en">
-                            <head>
-                                <meta charset="UTF-8">
-                                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                                <title>Combined Markdown Content</title>
-                                <style>
-                                  body { 
-                                    font-family: system-ui, -apple-system, sans-serif;
-                                    line-height: 1.5;
-                                    max-width: 800px;
-                                    margin: 0 auto;
-                                    padding: 2rem;
-                                    background-color: ${theme === 'dark' ? '#0f172a' : '#ffffff'};
-                                    color: ${theme === 'dark' ? '#e2e8f0' : '#0f172a'};
-                                  }
-                                  h1, h2, h3 { margin-top: 2rem; }
-                                  p { margin: 1rem 0; }
-                                </style>
-                            </head>
-                            <body>
-                                ${combinedPreview}
-                            </body>
-                            </html>
-                          `.trim();
+                        const newTab = window.open();
+                        if (newTab) {
+                          newTab.document.write(htmlContent);
+                          newTab.document.close();
+                        }
+                      }}
+                    >
+                      <Eye className="h-4 w-4 mr-2" />
+                      Preview
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const htmlContent = `
+                          <!DOCTYPE html>
+                          <html lang="en">
+                          <head>
+                              <meta charset="UTF-8">
+                              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                              <title>Combined Markdown Content</title>
+                              <style>
+                                body { 
+                                  font-family: system-ui, -apple-system, sans-serif;
+                                  line-height: 1.5;
+                                  max-width: 800px;
+                                  margin: 0 auto;
+                                  padding: 2rem;
+                                  background-color: ${theme === 'dark' ? '#0f172a' : '#ffffff'};
+                                  color: ${theme === 'dark' ? '#e2e8f0' : '#0f172a'};
+                                }
+                                h1, h2, h3 { margin-top: 2rem; }
+                                p { margin: 1rem 0; }
+                              </style>
+                          </head>
+                          <body>
+                              ${combinedPreview}
+                          </body>
+                          </html>
+                        `.trim();
 
-                          const blob = new Blob([htmlContent], { type: 'text/html' });
-                          const url = URL.createObjectURL(blob);
-                          const a = document.createElement('a');
-                          a.href = url;
-                          a.download = 'combined-content.html';
-                          document.body.appendChild(a);
-                          a.click();
-                          document.body.removeChild(a);
-                          URL.revokeObjectURL(url);
-                        }}
-                      >
-                        <Download className="h-4 w-4 mr-2" />
-                        Export HTML
-                      </Button>
-                    </div>
-                  )}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div 
-                  className="prose max-w-none dark:prose-invert"
-                  dangerouslySetInnerHTML={{ __html: combinedPreview }}
-                />
-                {selectedDocs.length === 0 && (
-                  <div className="text-center text-slate-500 dark:text-slate-400 py-8">
-                    Select documents to see the combined preview
+                        const blob = new Blob([htmlContent], { type: 'text/html' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'combined-content.html';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                      }}
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Export HTML
+                    </Button>
                   </div>
                 )}
-              </CardContent>
-            </Card>
-          </div>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div 
+                className="prose max-w-none dark:prose-invert"
+                dangerouslySetInnerHTML={{ __html: combinedPreview }}
+              />
+              {selectedDocs.length === 0 && (
+                <div className="text-center text-slate-500 dark:text-slate-400 py-8">
+                  Select documents to see the combined preview
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
