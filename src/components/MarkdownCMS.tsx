@@ -234,7 +234,7 @@ export default function MarkdownCMS() {
         </div>
 
         {/* Edit Document Form */}
-        {editingDoc && (
+          {editingDoc && (
           <Card className="mb-8 border-2 border-blue-400">
             <CardHeader>
               <CardTitle>Edit Topic</CardTitle>
@@ -249,18 +249,17 @@ export default function MarkdownCMS() {
                     className="mb-2"
                   />
                 </div>
-
                 <div className="border rounded-md">
                   <CodeMirror
-                    value={newDocContent} // or editingDoc.content for edit form
+                    value={editingDoc.content}
                     height="400px"
                     extensions={[markdown()]}
                     theme={theme === 'dark' ? oneDark : undefined}
-                    onChange={(value) => setNewDocContent(value)} // or (value) => setEditingDoc({...editingDoc, content: value})
-                    className="border rounded-md"
+                    onChange={(value) => setEditingDoc({...editingDoc, content: value})}
+                    className="text-sm"
+                    key={editingDoc.id} // Add this key to force re-render when switching documents
                   />
                 </div>
-
                 <div className="flex gap-2">
                   <Button 
                     onClick={saveEditedDocument}
