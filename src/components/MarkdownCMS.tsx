@@ -4,8 +4,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useTheme } from "next-themes";
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
 import CodeMirror from '@uiw/react-codemirror';
 import { markdown } from '@codemirror/lang-markdown';
 import { oneDark } from '@codemirror/theme-one-dark';
@@ -21,7 +21,13 @@ import {
   ArrowUpAZ,
   CalendarDays,
   TextQuote,
-  Pencil
+  Pencil,
+  Bold,
+  Italic,
+  Heading,
+  List,
+  Link,
+  Code
 } from 'lucide-react';
 
 interface Document {
@@ -31,6 +37,94 @@ interface Document {
 }
 
 type SortOption = 'newest' | 'oldest' | 'az' | 'za' | 'longest' | 'shortest';
+
+const MarkdownToolbar = ({ onAction }: { onAction: (action: string) => void }) => {
+  const tools = [
+    { icon: Bold, action: '**Bold**', label: 'Bold' },
+    { icon: Italic, action: '*Italic*', label: 'Italic' },
+    { icon: Heading, action: '# Heading', label: 'Heading' },
+    { icon: List, action: '- List item', label: 'List' },
+    { icon: Link, action: '[Link](url)', label: 'Link' },
+    { icon: Code, action: '`Code`', label: 'Code' },
+  ];
+
+  return (
+    <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-t-md border-b dark:border-slate-700">
+      {tools.map((tool) => (
+        <Button
+          key={tool.label}
+          variant="ghost"
+          size="sm"
+          onClick={() => onAction(tool.action)}
+          className="h-8 w-8 p-0"
+          title={tool.label}
+        >
+          <tool.icon className="h-4 w-4" />
+        </Button>
+      ))}
+    </div>
+  );
+};
+
+interface EditorWithPreviewProps {
+  content: string;
+  onChange: (value: string) => void;
+  theme?: string;
+  editorKey?: string | number;
+}
+
+const EditorWithPreview = ({ content, onChange, theme, editorKey }: EditorWithPreviewProps) => {
+  const [showPreview, setShowPreview] = useState(false);
+
+  const handleToolbarAction = (action: string) => {
+    onChange(content + '\n' + action);
+  };
+
+  const markdownToHtml = (markdown: string): string => {
+    return markdown
+      .replace(/^# (.*$)/gm, '<h1 class="text-3xl font-bold mt-4 mb-2">$1</h1>')
+      .replace(/^## (.*$)/gm, '<h2 class="text-2xl font-bold mt-4 mb-2">$1</h2>')
+      .replace(/^### (.*$)/gm, '<h3 class="text-xl font-bold mt-3 mb-2">$1</h3>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/\n\n/g, '</p><p class="my-2">')
+      .replace(/\n/g, '<br>')
+      .replace(/^(.+)$/gm, '<p class="my-2">$1</p>');
+  };
+
+  return (
+    <div className="border rounded-md">
+      <div className="flex items-center justify-between bg-slate-100 dark:bg-slate-800 px-2">
+        <MarkdownToolbar onAction={handleToolbarAction} />
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setShowPreview(!showPreview)}
+          className="ml-2"
+        >
+          <Eye className="h-4 w-4 mr-2" />
+          {showPreview ? 'Hide Preview' : 'Show Preview'}
+        </Button>
+      </div>
+      <div className={`grid ${showPreview ? 'grid-cols-2' : 'grid-cols-1'} divide-x dark:divide-slate-700`}>
+        <CodeMirror
+          value={content}
+          height="400px"
+          extensions={[markdown()]}
+          theme={theme === 'dark' ? oneDark : undefined}
+          onChange={onChange}
+          className="text-sm"
+          key={editorKey}
+        />
+        {showPreview && (
+          <div className="p-4 prose dark:prose-invert max-w-none prose-sm">
+            <div dangerouslySetInnerHTML={{ __html: markdownToHtml(content) }} />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 export default function MarkdownCMS() {
   const [mounted, setMounted] = useState(false);
@@ -234,7 +328,7 @@ export default function MarkdownCMS() {
         </div>
 
         {/* Edit Document Form */}
-          {editingDoc && (
+        {editingDoc && (
           <Card className="mb-8 border-2 border-blue-400">
             <CardHeader>
               <CardTitle>Edit Topic</CardTitle>
@@ -249,17 +343,12 @@ export default function MarkdownCMS() {
                     className="mb-2"
                   />
                 </div>
-                <div className="border rounded-md">
-                  <CodeMirror
-                    value={editingDoc.content}
-                    height="400px"
-                    extensions={[markdown()]}
-                    theme={theme === 'dark' ? oneDark : undefined}
-                    onChange={(value) => setEditingDoc({...editingDoc, content: value})}
-                    className="text-sm"
-                    key={editingDoc.id} // Add this key to force re-render when switching documents
-                  />
-                </div>
+                <EditorWithPreview
+                  content={editingDoc.content}
+                  onChange={(value) => setEditingDoc({...editingDoc, content: value})}
+                  theme={theme}
+                  editorKey={editingDoc.id}
+                />
                 <div className="flex gap-2">
                   <Button 
                     onClick={saveEditedDocument}
@@ -296,18 +385,11 @@ export default function MarkdownCMS() {
                     className="mb-2"
                   />
                 </div>
-
-                <div className="border rounded-md">
-                  <CodeMirror
-                    value={newDocContent} // or editingDoc.content for edit form
-                    height="400px"
-                    extensions={[markdown()]}
-                    theme={theme === 'dark' ? oneDark : undefined}
-                    onChange={(value) => setNewDocContent(value)} // or (value) => setEditingDoc({...editingDoc, content: value})
-                    className="border rounded-md"
-                  />
-                </div>
-
+                <EditorWithPreview
+                  content={newDocContent}
+                  onChange={setNewDocContent}
+                  theme={theme}
+                />
                 <div className="flex gap-2">
                   <Button 
                     onClick={saveDocument}
