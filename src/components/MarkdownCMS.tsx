@@ -17,7 +17,8 @@ import {
   ArrowDownAZ,
   ArrowUpAZ,
   CalendarDays,
-  TextQuote
+  TextQuote,
+  Pencil
 } from 'lucide-react';
 
 interface Document {
@@ -38,6 +39,7 @@ export default function MarkdownCMS() {
   const [newDocContent, setNewDocContent] = useState('');
   const [showNewDocForm, setShowNewDocForm] = useState(false);
   const [sortBy, setSortBy] = useState<SortOption>('newest');
+  const [editingDoc, setEditingDoc] = useState<Document | null>(null);
 
   // Handle mounting state
   useEffect(() => {
@@ -81,6 +83,16 @@ export default function MarkdownCMS() {
     { value: 'longest', label: 'Longest First', icon: TextQuote },
     { value: 'shortest', label: 'Shortest First', icon: TextQuote },
   ];
+
+  // Save edited document
+  const saveEditedDocument = () => {
+    if (editingDoc && editingDoc.name && editingDoc.content) {
+      setDocuments(documents.map(doc => 
+        doc.id === editingDoc.id ? editingDoc : doc
+      ));
+      setEditingDoc(null);
+    }
+  };
 
   // Calculate word count
   const getWordCount = (text: string): number => {
@@ -218,6 +230,50 @@ export default function MarkdownCMS() {
           </Button>
         </div>
 
+        {/* Edit Document Form */}
+        {editingDoc && (
+          <Card className="mb-8 border-2 border-blue-400">
+            <CardHeader>
+              <CardTitle>Edit Topic</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <Input
+                    placeholder="Topic Name"
+                    value={editingDoc.name}
+                    onChange={(e) => setEditingDoc({...editingDoc, name: e.target.value})}
+                    className="mb-2"
+                  />
+                </div>
+                <div>
+                  <Textarea
+                    placeholder="Content (Markdown supported)"
+                    value={editingDoc.content}
+                    onChange={(e) => setEditingDoc({...editingDoc, content: e.target.value})}
+                    className="min-h-[200px] mb-2"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={saveEditedDocument}
+                    disabled={!editingDoc.name || !editingDoc.content}
+                    className="bg-blue-500 hover:bg-blue-600 text-white"
+                  >
+                    Save Changes
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={() => setEditingDoc(null)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* New Document Form */}
         {showNewDocForm && (
           <Card className="mb-8 border-2 border-yellow-400">
@@ -279,6 +335,14 @@ export default function MarkdownCMS() {
                       onChange={() => toggleSelection(doc.id)}
                       className="h-4 w-4 rounded border-gray-300"
                     />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setEditingDoc(doc)}
+                      className="text-slate-400 hover:text-blue-500 h-6 w-6 p-0"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
                     <Button
                       variant="ghost"
                       size="icon"
