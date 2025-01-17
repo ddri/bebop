@@ -1,7 +1,8 @@
-    # dependencies
+# dependencies
 /node_modules
 /.pnp
 .pnp.js
+node_modules/
 
 # testing
 /coverage
@@ -28,6 +29,15 @@ yarn-error.log*
 # vercel
 .vercel
 
-# typescript
+# Next.js
+.next/
+out/
+build/
+dist/
+
+# Local env files
+.env*.local
+
+# TypeScript
 *.tsbuildinfo
 next-env.d.ts

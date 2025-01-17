@@ -277,12 +277,12 @@ export default function MarkdownCMS() {
       <nav className="bg-slate-800 text-white p-4">
         <div className="container mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-8">
-            <span className="text-xl font-bold">Markdown CMS</span>
+            <span className="text-xl font-bold">Bebop CMS</span>
             <div className="flex space-x-6">
               <a href="#" className="hover:text-yellow-300">Collections</a>
               <a href="#" className="text-yellow-300">Topics</a>
               <a href="#" className="hover:text-yellow-300">Media</a>
-              <a href="#" className="hover:text-yellow-300">Team</a>
+              <a href="#" className="hover:text-yellow-300">Settings</a>
             </div>
           </div>
         </div>
