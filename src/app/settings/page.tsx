@@ -5,6 +5,8 @@ import { useTheme } from "next-themes";
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Upload } from 'lucide-react';
 
 export default function Settings() {
   const pathname = usePathname();
@@ -59,6 +61,72 @@ export default function Settings() {
         <h1 className="text-2xl font-semibold dark:text-white mb-8">Settings</h1>
         
         <div className="grid gap-6">
+          {/* Import Section */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Import Content</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Import Markdown Files
+                  </label>
+                  <input
+                    type="file"
+                    accept=".md"
+                    multiple
+                    className="hidden"
+                    id="markdown-import"
+                    onChange={async (e) => {
+                      if (!e.target.files?.length) return;
+
+                      // Get existing topics from localStorage
+                      const existingTopics = JSON.parse(localStorage.getItem('markdown-docs') || '[]');
+                      const newTopics = [];
+
+                      // Process each file
+                      for (const file of Array.from(e.target.files)) {
+                        const content = await file.text();
+                        const name = file.name.replace('.md', '');
+                        
+                        newTopics.push({
+                          id: Date.now() + Math.random(), // Ensure unique ID
+                          name: name,
+                          content: content
+                        });
+                      }
+
+                      // Combine existing and new topics
+                      const updatedTopics = [...existingTopics, ...newTopics];
+                      localStorage.setItem('markdown-docs', JSON.stringify(updatedTopics));
+
+                      // Reset input
+                      e.target.value = '';
+
+                      // Show success message
+                      alert(`Successfully imported ${newTopics.length} files`);
+                    }}
+                  />
+                  <Button
+                    onClick={() => document.getElementById('markdown-import')?.click()}
+                    className="w-full border-2 border-dashed p-8 hover:border-yellow-400 transition-colors"
+                  >
+                    <Upload className="h-6 w-6 mr-2" />
+                    Click to select Markdown files
+                  </Button>
+                </div>
+
+                <div className="text-sm text-slate-500">
+                  Supported file type: .md (Markdown)
+                  <br />
+                  Imported files will appear in your Topics list
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* General Settings Card */}
           <Card>
             <CardHeader>
               <CardTitle>General Settings</CardTitle>
