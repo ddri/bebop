@@ -390,7 +390,7 @@ export default function Collections() {
         )}
 
         {/* Collections Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {collections.map(collection => (
             <Card 
               key={collection.id}
@@ -413,21 +413,8 @@ export default function Collections() {
                     {collection.topicIds.length} Topics
                   </div>
                 </div>
-
                 {/* Action buttons at bottom */}
-                <div className="flex gap-2 pt-2 mt-4 border-t dark:border-slate-700">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      previewCollection(collection);
-                    }}
-                    className="text-slate-400 hover:text-blue-500"
-                  >
-                    <Eye className="h-4 w-4 mr-2" />
-                    Preview
-                  </Button>
+                <div className="flex gap-3 pt-2 mt-4 border-t dark:border-slate-700">
                   <Button
                     variant="ghost"
                     size="sm"
@@ -439,6 +426,18 @@ export default function Collections() {
                   >
                     <Pencil className="h-4 w-4 mr-2" />
                     Edit
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      previewCollection(collection);
+                    }}
+                    className="text-slate-400 hover:text-blue-500"
+                  >
+                    <Eye className="h-4 w-4 mr-2" />
+                    Preview
                   </Button>
                   {'publishedUrl' in collection && collection.publishedUrl ? (
                     <Button
