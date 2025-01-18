@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useTheme } from "next-themes";
+import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,7 +28,7 @@ import {
   Italic,
   Heading,
   List,
-  Link,
+  Link as LinkIcon,
   Code
 } from 'lucide-react';
 
@@ -38,42 +40,17 @@ interface Document {
 
 type SortOption = 'newest' | 'oldest' | 'az' | 'za' | 'longest' | 'shortest';
 
-const MarkdownToolbar = ({ onAction }: { onAction: (action: string) => void }) => {
-  const tools = [
-    { icon: Bold, action: '**Bold**', label: 'Bold' },
-    { icon: Italic, action: '*Italic*', label: 'Italic' },
-    { icon: Heading, action: '# Heading', label: 'Heading' },
-    { icon: List, action: '- List item', label: 'List' },
-    { icon: Link, action: '[Link](url)', label: 'Link' },
-    { icon: Code, action: '`Code`', label: 'Code' },
-  ];
-
-  return (
-    <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-t-md border-b dark:border-slate-700">
-      {tools.map((tool) => (
-        <Button
-          key={tool.label}
-          variant="ghost"
-          size="sm"
-          onClick={() => onAction(tool.action)}
-          className="h-8 w-8 p-0"
-          title={tool.label}
-        >
-          <tool.icon className="h-4 w-4" />
-        </Button>
-      ))}
-    </div>
-  );
-};
-
-interface EditorWithPreviewProps {
+const EditorWithPreview = ({
+  content,
+  onChange,
+  theme,
+  editorKey,
+}: {
   content: string;
   onChange: (value: string) => void;
   theme?: string;
   editorKey?: string | number;
-}
-
-const EditorWithPreview = ({ content, onChange, theme, editorKey }: EditorWithPreviewProps) => {
+}) => {
   const [showPreview, setShowPreview] = useState(false);
 
   const handleToolbarAction = (action: string) => {
@@ -95,7 +72,62 @@ const EditorWithPreview = ({ content, onChange, theme, editorKey }: EditorWithPr
   return (
     <div className="border rounded-md">
       <div className="flex items-center justify-between bg-slate-100 dark:bg-slate-800 px-2">
-        <MarkdownToolbar onAction={handleToolbarAction} />
+        <div className="flex gap-1 p-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleToolbarAction('**Bold**')}
+            className="h-8 w-8 p-0"
+            title="Bold"
+          >
+            <Bold className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleToolbarAction('*Italic*')}
+            className="h-8 w-8 p-0"
+            title="Italic"
+          >
+            <Italic className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleToolbarAction('# Heading')}
+            className="h-8 w-8 p-0"
+            title="Heading"
+          >
+            <Heading className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleToolbarAction('- List item')}
+            className="h-8 w-8 p-0"
+            title="List"
+          >
+            <List className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleToolbarAction('[Link](url)')}
+            className="h-8 w-8 p-0"
+            title="Link"
+          >
+            <LinkIcon className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleToolbarAction('`Code`')}
+            className="h-8 w-8 p-0"
+            title="Code"
+          >
+            <Code className="h-4 w-4" />
+          </Button>
+        </div>
         <Button
           variant="ghost"
           size="sm"
@@ -125,8 +157,8 @@ const EditorWithPreview = ({ content, onChange, theme, editorKey }: EditorWithPr
     </div>
   );
 };
-
 export default function MarkdownCMS() {
+  const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
   const { theme } = useTheme();
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -268,24 +300,43 @@ export default function MarkdownCMS() {
         return sorted;
     }
   }, [documents, sortBy]);
-
   if (!mounted) return null;
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       {/* Navigation Bar */}
       <nav className="bg-slate-800 text-white p-4">
-        <div className="container mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-8">
-            <span className="text-xl font-bold">Bebop CMS</span>
-            <div className="flex space-x-6">
-              <a href="#" className="hover:text-yellow-300">Collections</a>
-              <a href="#" className="text-yellow-300">Topics</a>
-              <a href="#" className="hover:text-yellow-300">Media</a>
-              <a href="#" className="hover:text-yellow-300">Settings</a>
-            </div>
+      <div className="container mx-auto flex items-center justify-between">
+        <div className="flex items-center space-x-8">
+          <span className="text-xl font-bold">Markdown CMS</span>
+          <div className="flex space-x-6">
+            <Link 
+              href="/collections" 
+              className={`${pathname === '/collections' ? 'text-yellow-300' : 'hover:text-yellow-300'}`}
+            >
+              Collections
+            </Link>
+            <Link 
+              href="/" 
+              className={`${pathname === '/' ? 'text-yellow-300' : 'hover:text-yellow-300'}`}
+            >
+              Topics
+            </Link>
+            <Link 
+              href="#" 
+              className="hover:text-yellow-300"
+            >
+              Media
+            </Link>
+            <Link 
+              href="#" 
+              className="hover:text-yellow-300"
+            >
+              Team
+            </Link>
           </div>
         </div>
+      </div>
       </nav>
 
       {/* Main Content */}
