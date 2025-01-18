@@ -344,62 +344,67 @@ const renderCollection = (collection: Collection) => {
 
         {/* Collections Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {collections.map(collection => (
-            <Card 
-              key={collection.id}
-              className="hover:border-yellow-400 transition-colors relative group"
-            >
-              <CardContent className="pt-6">
-                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      renderCollection(collection);
-                    }}
-                    className="text-slate-400 hover:text-blue-500"
-                  >
-                    <Eye className="h-4 w-4 mr-2" />
-                    View
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      startEditing(collection);
-                    }}
-                    className="text-slate-400 hover:text-yellow-500"
-                  >
-                    <Pencil className="h-4 w-4 mr-2" />
-                    Edit
-                  </Button>
-                </div>
-                
-                <h3 className="text-lg font-medium mb-2">{collection.name}</h3>
-                {collection.description && (
-                  <p className="text-sm text-slate-600 dark:text-slate-300 mb-4">
-                    {collection.description}
-                  </p>
-                )}
-                <div className="space-y-3 text-sm text-slate-500 dark:text-slate-400">
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-3 w-3" />
-                    Edited {new Date(collection.lastEdited).toLocaleString()}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <FileText className="h-3 w-3" />
-                    {collection.topicIds.length} Topics
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <User className="h-3 w-3" />
-                    <span>Contributors (In Development)</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+
+{collections.map(collection => (
+  <Card 
+    key={collection.id}
+    className="hover:border-yellow-400 transition-colors relative group"
+  >
+    <CardContent className="pt-6">
+      {/* Title and description */}
+      <div className="mb-4">
+        <h3 className="text-lg font-medium mb-2">{collection.name}</h3>
+        {collection.description && (
+          <p className="text-sm text-slate-600 dark:text-slate-300">
+            {collection.description}
+          </p>
+        )}
+      </div>
+
+      {/* Meta information and buttons */}
+      <div className="space-y-3">
+        <div className="text-sm text-slate-500 dark:text-slate-400 space-y-2">
+          <div className="flex items-center gap-2">
+            <Clock className="h-3 w-3" />
+            Edited {new Date(collection.lastEdited).toLocaleString()}
+          </div>
+          <div className="flex items-center gap-2">
+            <FileText className="h-3 w-3" />
+            {collection.topicIds.length} Topics
+          </div>
+        </div>
+        
+        {/* Action buttons at bottom */}
+        <div className="flex gap-2 pt-2 border-t dark:border-slate-700">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              renderCollection(collection);
+            }}
+            className="text-slate-400 hover:text-blue-500"
+          >
+            <Eye className="h-4 w-4 mr-2" />
+            View
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              startEditing(collection);
+            }}
+            className="text-slate-400 hover:text-yellow-500"
+          >
+            <Pencil className="h-4 w-4 mr-2" />
+            Edit
+          </Button>
+        </div>
+      </div>
+    </CardContent>
+  </Card>
+))}
           
           {collections.length === 0 && (
             <div className="col-span-full text-center text-slate-500 dark:text-slate-400 py-12 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
