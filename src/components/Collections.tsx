@@ -16,15 +16,19 @@ import {
   Pencil,
   Trash2,
   Eye,
-  Download
+  Globe
 } from 'lucide-react';
 
 interface Collection {
   id: number;
   name: string;
   description?: string;
-  topicIds: number[];  // References to the Topics included in this collection
+  topicIds: number[];
   lastEdited: number;
+}
+
+interface PublishedCollection extends Collection {
+  publishedUrl?: string;
 }
 
 interface Topic {
@@ -33,86 +37,17 @@ interface Topic {
   content: string;
 }
 
-
-// Adding the markdown converter for collections
-const markdownToHtml = (markdown: string): string => {
-  return markdown
-    .replace(/^# (.*$)/gm, '<h1 class="text-3xl font-bold mt-4 mb-2">$1</h1>')
-    .replace(/^## (.*$)/gm, '<h2 class="text-2xl font-bold mt-4 mb-2">$1</h2>')
-    .replace(/^### (.*$)/gm, '<h3 class="text-xl font-bold mt-3 mb-2">$1</h3>')
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-    .replace(/\n\n/g, '</p><p class="my-2">')
-    .replace(/\n/g, '<br>')
-    .replace(/^(.+)$/gm, '<p class="my-2">$1</p>');
-};
-
 export default function Collections() {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
   const { theme } = useTheme();
-  const [collections, setCollections] = useState<Collection[]>([]);
+  const [collections, setCollections] = useState<PublishedCollection[]>([]);
   const [availableTopics, setAvailableTopics] = useState<Topic[]>([]);
   const [showNewCollectionForm, setShowNewCollectionForm] = useState(false);
-  const [editingCollection, setEditingCollection] = useState<Collection | null>(null);
+  const [editingCollection, setEditingCollection] = useState<PublishedCollection | null>(null);
   const [newCollectionName, setNewCollectionName] = useState('');
   const [newCollectionDesc, setNewCollectionDesc] = useState('');
   const [selectedTopicIds, setSelectedTopicIds] = useState<number[]>([]);
-
-{/* Add this function in Collections component */}
-const renderCollection = (collection: Collection) => {
-  // Find all topics that are part of this collection
-  const collectionTopics = availableTopics.filter(topic => 
-    collection.topicIds.includes(topic.id)
-  );
-  
-  // Combine their content
-  const combinedContent = collectionTopics
-    .map(topic => topic.content)
-    .join('\n\n---\n\n');
-
-  // Convert to HTML
-  const htmlContent = markdownToHtml(combinedContent);
-
-  // Create full HTML document with styling
-  const fullHtml = `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>${collection.name}</title>
-        <style>
-          body { 
-            font-family: system-ui, -apple-system, sans-serif;
-            line-height: 1.5;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 2rem;
-            background-color: ${theme === 'dark' ? '#0f172a' : '#ffffff'};
-            color: ${theme === 'dark' ? '#e2e8f0' : '#0f172a'};
-          }
-          h1, h2, h3 { margin-top: 2rem; }
-          p { margin: 1rem 0; }
-        </style>
-    </head>
-    <body>
-        <h1>${collection.name}</h1>
-        ${collection.description ? `<p>${collection.description}</p>` : ''}
-        <hr>
-        ${htmlContent}
-    </body>
-    </html>
-  `.trim();
-
-  // Open in new tab
-  const newTab = window.open();
-  if (newTab) {
-    newTab.document.write(fullHtml);
-    newTab.document.close();
-  }
-};
-
 
   // Handle mounting state
   useEffect(() => {
@@ -140,10 +75,122 @@ const renderCollection = (collection: Collection) => {
     }
   }, [collections, mounted]);
 
+  const markdownToHtml = (markdown: string): string => {
+    return markdown
+      .replace(/^# (.*$)/gm, '<h1 class="text-3xl font-bold mt-4 mb-2">$1</h1>')
+      .replace(/^## (.*$)/gm, '<h2 class="text-2xl font-bold mt-4 mb-2">$1</h2>')
+      .replace(/^### (.*$)/gm, '<h3 class="text-xl font-bold mt-3 mb-2">$1</h3>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/\n\n/g, '</p><p class="my-2">')
+      .replace(/\n/g, '<br>')
+      .replace(/^(.+)$/gm, '<p class="my-2">$1</p>');
+  };
+
+  const generateCollectionHTML = (collection: Collection) => {
+    // Find all topics in this collection
+    const collectionTopics = availableTopics.filter(topic => 
+      collection.topicIds.includes(topic.id)
+    );
+    
+    // Combine their content
+    const combinedContent = collectionTopics
+      .map(topic => topic.content)
+      .join('\n\n---\n\n');
+
+    // Convert to HTML
+    const htmlContent = markdownToHtml(combinedContent);
+
+    return `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>${collection.name}</title>
+          <style>
+            body { 
+              font-family: system-ui, -apple-system, sans-serif;
+              line-height: 1.5;
+              max-width: 800px;
+              margin: 0 auto;
+              padding: 2rem;
+            }
+            h1, h2, h3 { margin-top: 2rem; }
+            p { margin: 1rem 0; }
+            hr { margin: 2rem 0; }
+          </style>
+      </head>
+      <body>
+          <header>
+            <h1>${collection.name}</h1>
+            ${collection.description ? `<p>${collection.description}</p>` : ''}
+            <hr>
+          </header>
+          <main>
+            ${htmlContent}
+          </main>
+          <footer>
+            <hr>
+            <p>Published at ${new Date().toLocaleString()}</p>
+          </footer>
+      </body>
+      </html>
+    `.trim();
+  };
+
+  // Preview collection
+  const previewCollection = (collection: Collection) => {
+    const htmlContent = generateCollectionHTML(collection);
+    const newTab = window.open();
+    if (newTab) {
+      newTab.document.write(htmlContent);
+      newTab.document.close();
+    }
+  };
+
+  // Publish collection
+  const publishCollection = async (collection: Collection) => {
+    try {
+      const content = generateCollectionHTML(collection);
+      const fileName = `${collection.id}-${collection.name.toLowerCase().replace(/\s+/g, '-')}.html`;
+      
+      const response = await fetch('/api/publish', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fileName,
+          content
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to publish');
+
+      const { url } = await response.json();
+      
+      // Update collection with published URL
+      const updatedCollection = {
+        ...collection,
+        publishedUrl: url,
+      };
+
+      setCollections(collections.map(c => 
+        c.id === collection.id ? updatedCollection : c
+      ));
+
+      return url;
+    } catch (error) {
+      console.error('Error publishing:', error);
+      alert('Failed to publish collection');
+    }
+  };
+
   // Save new collection
   const saveNewCollection = () => {
     if (newCollectionName && selectedTopicIds.length > 0) {
-      const newCollection: Collection = {
+      const newCollection: PublishedCollection = {
         id: Date.now(),
         name: newCollectionName,
         description: newCollectionDesc,
@@ -161,7 +208,7 @@ const renderCollection = (collection: Collection) => {
   // Save edited collection
   const saveEditedCollection = () => {
     if (editingCollection && newCollectionName && selectedTopicIds.length > 0) {
-      const updatedCollection: Collection = {
+      const updatedCollection: PublishedCollection = {
         ...editingCollection,
         name: newCollectionName,
         description: newCollectionDesc,
@@ -179,7 +226,7 @@ const renderCollection = (collection: Collection) => {
   };
 
   // Start editing a collection
-  const startEditing = (collection: Collection) => {
+  const startEditing = (collection: PublishedCollection) => {
     setEditingCollection(collection);
     setNewCollectionName(collection.name);
     setNewCollectionDesc(collection.description || '');
@@ -204,40 +251,40 @@ const renderCollection = (collection: Collection) => {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
-{/* Navigation Bar */}
-<nav className="bg-slate-800 text-white p-4">
-  <div className="container mx-auto flex items-center justify-between">
-    <div className="flex items-center space-x-8">
-      <span className="text-xl font-bold">Bebop</span>
-      <div className="flex space-x-6">
-        <Link 
-          href="/collections" 
-          className={`${pathname === '/collections' ? 'text-yellow-300' : 'hover:text-yellow-300'}`}
-        >
-          Collections
-        </Link>
-        <Link 
-          href="/" 
-          className={`${pathname === '/' ? 'text-yellow-300' : 'hover:text-yellow-300'}`}
-        >
-          Topics
-        </Link>
-        <Link 
-          href="#" 
-          className="hover:text-yellow-300"
-        >
-          Media
-        </Link>
-        <Link 
-          href="/settings" 
-          className={`${pathname === '/settings' ? 'text-yellow-300' : 'hover:text-yellow-300'}`}
-        >
-          Settings
-        </Link>
-      </div>
-    </div>
-  </div>
-</nav>
+      {/* Navigation Bar */}
+      <nav className="bg-slate-800 text-white p-4">
+        <div className="container mx-auto flex items-center justify-between">
+          <div className="flex items-center space-x-8">
+            <span className="text-xl font-bold">Bebop</span>
+            <div className="flex space-x-6">
+              <Link 
+                href="/collections" 
+                className={`${pathname === '/collections' ? 'text-yellow-300' : 'hover:text-yellow-300'}`}
+              >
+                Collections
+              </Link>
+              <Link 
+                href="/" 
+                className={`${pathname === '/' ? 'text-yellow-300' : 'hover:text-yellow-300'}`}
+              >
+                Topics
+              </Link>
+              <Link 
+                href="#" 
+                className="hover:text-yellow-300"
+              >
+                Media
+              </Link>
+              <Link 
+                href="/settings" 
+                className={`${pathname === '/settings' ? 'text-yellow-300' : 'hover:text-yellow-300'}`}
+              >
+                Settings
+              </Link>
+            </div>
+          </div>
+        </div>
+      </nav>
 
       {/* Main Content */}
       <div className="container mx-auto p-8 max-w-7xl">
@@ -344,67 +391,89 @@ const renderCollection = (collection: Collection) => {
 
         {/* Collections Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {collections.map(collection => (
+            <Card 
+              key={collection.id}
+              className="hover:border-yellow-400 transition-colors relative group"
+            >
+              <CardContent className="pt-6">
+                <h3 className="text-lg font-medium mb-2">{collection.name}</h3>
+                {collection.description && (
+                  <p className="text-sm text-slate-600 dark:text-slate-300 mb-4">
+                    {collection.description}
+                  </p>
+                )}
+                <div className="space-y-3 text-sm text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-3 w-3" />
+                    Edited {new Date(collection.lastEdited).toLocaleString()}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-3 w-3" />
+                    {collection.topicIds.length} Topics
+                  </div>
+                </div>
 
-{collections.map(collection => (
-  <Card 
-    key={collection.id}
-    className="hover:border-yellow-400 transition-colors relative group"
-  >
-    <CardContent className="pt-6">
-      {/* Title and description */}
-      <div className="mb-4">
-        <h3 className="text-lg font-medium mb-2">{collection.name}</h3>
-        {collection.description && (
-          <p className="text-sm text-slate-600 dark:text-slate-300">
-            {collection.description}
-          </p>
-        )}
-      </div>
-
-      {/* Meta information and buttons */}
-      <div className="space-y-3">
-        <div className="text-sm text-slate-500 dark:text-slate-400 space-y-2">
-          <div className="flex items-center gap-2">
-            <Clock className="h-3 w-3" />
-            Edited {new Date(collection.lastEdited).toLocaleString()}
-          </div>
-          <div className="flex items-center gap-2">
-            <FileText className="h-3 w-3" />
-            {collection.topicIds.length} Topics
-          </div>
-        </div>
-        
-        {/* Action buttons at bottom */}
-        <div className="flex gap-2 pt-2 border-t dark:border-slate-700">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              renderCollection(collection);
-            }}
-            className="text-slate-400 hover:text-blue-500"
-          >
-            <Eye className="h-4 w-4 mr-2" />
-            View
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              startEditing(collection);
-            }}
-            className="text-slate-400 hover:text-yellow-500"
-          >
-            <Pencil className="h-4 w-4 mr-2" />
-            Edit
-          </Button>
-        </div>
-      </div>
-    </CardContent>
-  </Card>
-))}
+                {/* Action buttons at bottom */}
+                <div className="flex gap-2 pt-2 mt-4 border-t dark:border-slate-700">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      previewCollection(collection);
+                    }}
+                    className="text-slate-400 hover:text-blue-500"
+                  >
+                    <Eye className="h-4 w-4 mr-2" />
+                    Preview
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      startEditing(collection);
+                    }}
+                    className="text-slate-400 hover:text-yellow-500"
+                  >
+                    <Pencil className="h-4 w-4 mr-2" />
+                    Edit
+                  </Button>
+                  {'publishedUrl' in collection && collection.publishedUrl ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.open(collection.publishedUrl, '_blank');
+                      }}
+                      className="text-slate-400 hover:text-green-500"
+                    >
+                      <Globe className="h-4 w-4 mr-2" />
+                      View Published
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        const url = await publishCollection(collection);
+                        if (url) {
+                          window.open(url, '_blank');
+                        }
+                      }}
+                      className="text-slate-400 hover:text-green-500"
+                    >
+                      <Globe className="h-4 w-4 mr-2" />
+                      Publish
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
           
           {collections.length === 0 && (
             <div className="col-span-full text-center text-slate-500 dark:text-slate-400 py-12 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
