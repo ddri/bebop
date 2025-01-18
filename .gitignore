@@ -31,3 +31,7 @@ yarn-error.log*
 
 # vercel
 .vercel
+
+# Ignore published files
+public/published/*
+!public/published/.gitkeep
