@@ -33,6 +33,20 @@ interface Topic {
   content: string;
 }
 
+
+// Adding the markdown converter for collections
+const markdownToHtml = (markdown: string): string => {
+  return markdown
+    .replace(/^# (.*$)/gm, '<h1 class="text-3xl font-bold mt-4 mb-2">$1</h1>')
+    .replace(/^## (.*$)/gm, '<h2 class="text-2xl font-bold mt-4 mb-2">$1</h2>')
+    .replace(/^### (.*$)/gm, '<h3 class="text-xl font-bold mt-3 mb-2">$1</h3>')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/\n\n/g, '</p><p class="my-2">')
+    .replace(/\n/g, '<br>')
+    .replace(/^(.+)$/gm, '<p class="my-2">$1</p>');
+};
+
 export default function Collections() {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
@@ -44,6 +58,61 @@ export default function Collections() {
   const [newCollectionName, setNewCollectionName] = useState('');
   const [newCollectionDesc, setNewCollectionDesc] = useState('');
   const [selectedTopicIds, setSelectedTopicIds] = useState<number[]>([]);
+
+{/* Add this function in Collections component */}
+const renderCollection = (collection: Collection) => {
+  // Find all topics that are part of this collection
+  const collectionTopics = availableTopics.filter(topic => 
+    collection.topicIds.includes(topic.id)
+  );
+  
+  // Combine their content
+  const combinedContent = collectionTopics
+    .map(topic => topic.content)
+    .join('\n\n---\n\n');
+
+  // Convert to HTML
+  const htmlContent = markdownToHtml(combinedContent);
+
+  // Create full HTML document with styling
+  const fullHtml = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${collection.name}</title>
+        <style>
+          body { 
+            font-family: system-ui, -apple-system, sans-serif;
+            line-height: 1.5;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            background-color: ${theme === 'dark' ? '#0f172a' : '#ffffff'};
+            color: ${theme === 'dark' ? '#e2e8f0' : '#0f172a'};
+          }
+          h1, h2, h3 { margin-top: 2rem; }
+          p { margin: 1rem 0; }
+        </style>
+    </head>
+    <body>
+        <h1>${collection.name}</h1>
+        ${collection.description ? `<p>${collection.description}</p>` : ''}
+        <hr>
+        ${htmlContent}
+    </body>
+    </html>
+  `.trim();
+
+  // Open in new tab
+  const newTab = window.open();
+  if (newTab) {
+    newTab.document.write(fullHtml);
+    newTab.document.close();
+  }
+};
+
 
   // Handle mounting state
   useEffect(() => {
@@ -278,10 +347,36 @@ export default function Collections() {
           {collections.map(collection => (
             <Card 
               key={collection.id}
-              className="hover:border-yellow-400 transition-colors cursor-pointer"
-              onClick={() => startEditing(collection)}
+              className="hover:border-yellow-400 transition-colors relative group"
             >
               <CardContent className="pt-6">
+                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      renderCollection(collection);
+                    }}
+                    className="text-slate-400 hover:text-blue-500"
+                  >
+                    <Eye className="h-4 w-4 mr-2" />
+                    View
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      startEditing(collection);
+                    }}
+                    className="text-slate-400 hover:text-yellow-500"
+                  >
+                    <Pencil className="h-4 w-4 mr-2" />
+                    Edit
+                  </Button>
+                </div>
+                
                 <h3 className="text-lg font-medium mb-2">{collection.name}</h3>
                 {collection.description && (
                   <p className="text-sm text-slate-600 dark:text-slate-300 mb-4">
