@@ -204,40 +204,40 @@ const renderCollection = (collection: Collection) => {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
-      {/* Navigation Bar */}
-      <nav className="bg-slate-800 text-white p-4">
-        <div className="container mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-8">
-            <span className="text-xl font-bold">Markdown CMS</span>
-            <div className="flex space-x-6">
-              <Link 
-                href="/collections" 
-                className={`${pathname === '/collections' ? 'text-yellow-300' : 'hover:text-yellow-300'}`}
-              >
-                Collections
-              </Link>
-              <Link 
-                href="/" 
-                className={`${pathname === '/' ? 'text-yellow-300' : 'hover:text-yellow-300'}`}
-              >
-                Topics
-              </Link>
-              <Link 
-                href="#" 
-                className="hover:text-yellow-300"
-              >
-                Media
-              </Link>
-              <Link 
-                href="#" 
-                className="hover:text-yellow-300"
-              >
-                Team
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
+{/* Navigation Bar */}
+<nav className="bg-slate-800 text-white p-4">
+  <div className="container mx-auto flex items-center justify-between">
+    <div className="flex items-center space-x-8">
+      <span className="text-xl font-bold">Bebop</span>
+      <div className="flex space-x-6">
+        <Link 
+          href="/collections" 
+          className={`${pathname === '/collections' ? 'text-yellow-300' : 'hover:text-yellow-300'}`}
+        >
+          Collections
+        </Link>
+        <Link 
+          href="/" 
+          className={`${pathname === '/' ? 'text-yellow-300' : 'hover:text-yellow-300'}`}
+        >
+          Topics
+        </Link>
+        <Link 
+          href="#" 
+          className="hover:text-yellow-300"
+        >
+          Media
+        </Link>
+        <Link 
+          href="/settings" 
+          className={`${pathname === '/settings' ? 'text-yellow-300' : 'hover:text-yellow-300'}`}
+        >
+          Settings
+        </Link>
+      </div>
+    </div>
+  </div>
+</nav>
 
       {/* Main Content */}
       <div className="container mx-auto p-8 max-w-7xl">
