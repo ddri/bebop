@@ -6,16 +6,69 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Upload } from 'lucide-react';
+import { Upload, Eye, Globe, ExternalLink } from 'lucide-react';
+
+// Reuse types from Collections component
+interface Collection {
+  id: number;
+  name: string;
+  description?: string;
+  topicIds: number[];
+  lastEdited: number;
+  publishedUrl?: string;
+}
 
 export default function Settings() {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
   const { theme } = useTheme();
+  const [collections, setCollections] = useState<Collection[]>([]);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Load collections on mount
+  useEffect(() => {
+    if (mounted && typeof window !== 'undefined') {
+      const savedCollections = localStorage.getItem('collections');
+      if (savedCollections) {
+        setCollections(JSON.parse(savedCollections));
+      }
+    }
+  }, [mounted]);
+
+  // Function to unpublish a collection
+  const unpublishCollection = async (collection: Collection) => {
+    try {
+      const response = await fetch('/api/unpublish', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fileName: collection.publishedUrl?.split('/').pop()
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to unpublish');
+
+      // Update collection to remove publishedUrl
+      const updatedCollections = collections.map(c => 
+        c.id === collection.id 
+          ? { ...c, publishedUrl: undefined } 
+          : c
+      );
+      setCollections(updatedCollections);
+      localStorage.setItem('collections', JSON.stringify(updatedCollections));
+
+      return true;
+    } catch (error) {
+      console.error('Error unpublishing:', error);
+      alert('Failed to unpublish collection');
+      return false;
+    }
+  };
 
   if (!mounted) return null;
 
@@ -61,8 +114,73 @@ export default function Settings() {
         <h1 className="text-2xl font-semibold dark:text-white mb-8">Settings</h1>
         
         <div className="grid gap-6">
+          {/* Published Collections Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Published Collections</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {collections.filter(c => c.publishedUrl).map(collection => (
+                  <div 
+                    key={collection.id}
+                    className="flex items-center justify-between p-4 border rounded-lg dark:border-slate-700 bg-white dark:bg-slate-800"
+                  >
+                    <div>
+                      <h3 className="font-medium">{collection.name}</h3>
+                      <div className="text-sm space-y-1">
+                        <p className="text-slate-500">
+                          Published URL: <a 
+                            href={collection.publishedUrl} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-blue-500 hover:text-blue-600 inline-flex items-center gap-1"
+                          >
+                            View <ExternalLink className="h-3 w-3" />
+                          </a>
+                        </p>
+                        <p className="text-slate-500">
+                          Last updated: {new Date(collection.lastEdited).toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => window.open(collection.publishedUrl, '_blank')}
+                        className="text-slate-600 hover:text-blue-600"
+                      >
+                        <Eye className="h-4 w-4 mr-2" />
+                        View
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={async () => {
+                          if (await unpublishCollection(collection)) {
+                            alert('Collection unpublished successfully');
+                          }
+                        }}
+                        className="text-slate-600 hover:text-red-600"
+                      >
+                        <Globe className="h-4 w-4 mr-2" />
+                        Unpublish
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+                {!collections.some(c => c.publishedUrl) && (
+                  <div className="text-center text-slate-500 py-8">
+                    No published collections yet
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Import Section */}
-          <Card className="mb-6">
+          <Card>
             <CardHeader>
               <CardTitle>Import Content</CardTitle>
             </CardHeader>
@@ -81,30 +199,24 @@ export default function Settings() {
                     onChange={async (e) => {
                       if (!e.target.files?.length) return;
 
-                      // Get existing topics from localStorage
                       const existingTopics = JSON.parse(localStorage.getItem('markdown-docs') || '[]');
                       const newTopics = [];
 
-                      // Process each file
                       for (const file of Array.from(e.target.files)) {
                         const content = await file.text();
                         const name = file.name.replace('.md', '');
                         
                         newTopics.push({
-                          id: Date.now() + Math.random(), // Ensure unique ID
+                          id: Date.now() + Math.random(),
                           name: name,
                           content: content
                         });
                       }
 
-                      // Combine existing and new topics
                       const updatedTopics = [...existingTopics, ...newTopics];
                       localStorage.setItem('markdown-docs', JSON.stringify(updatedTopics));
 
-                      // Reset input
                       e.target.value = '';
-
-                      // Show success message
                       alert(`Successfully imported ${newTopics.length} files`);
                     }}
                   />
@@ -126,14 +238,14 @@ export default function Settings() {
             </CardContent>
           </Card>
 
-          {/* General Settings Card */}
+          {/* General Settings */}
           <Card>
             <CardHeader>
               <CardTitle>General Settings</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-slate-500 dark:text-slate-400">
-                Settings functionality coming soon...
+                Additional settings coming soon...
               </p>
             </CardContent>
           </Card>

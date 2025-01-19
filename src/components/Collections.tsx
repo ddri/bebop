@@ -11,12 +11,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { 
   Plus, 
   Clock, 
-  User,
   FileText,
   Pencil,
-  Trash2,
   Eye,
-  Globe
+  Globe,
+  Trash2
 } from 'lucide-react';
 
 interface Collection {
@@ -187,6 +186,40 @@ export default function Collections() {
     }
   };
 
+  // Unpublish collection
+  const unpublishCollection = async (collection: PublishedCollection) => {
+    try {
+      // Remove the published file
+      const response = await fetch('/api/unpublish', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fileName: collection.publishedUrl?.split('/').pop()
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to unpublish');
+
+      // Update collection to remove publishedUrl
+      const updatedCollection = {
+        ...collection,
+        publishedUrl: undefined
+      };
+
+      setCollections(collections.map(c => 
+        c.id === collection.id ? updatedCollection : c
+      ));
+
+      return true;
+    } catch (error) {
+      console.error('Error unpublishing:', error);
+      alert('Failed to unpublish collection');
+      return false;
+    }
+  };
+
   // Save new collection
   const saveNewCollection = () => {
     if (newCollectionName && selectedTopicIds.length > 0) {
@@ -231,11 +264,6 @@ export default function Collections() {
     setNewCollectionName(collection.name);
     setNewCollectionDesc(collection.description || '');
     setSelectedTopicIds(collection.topicIds);
-  };
-
-  // Delete collection
-  const deleteCollection = (id: number) => {
-    setCollections(collections.filter(c => c.id !== id));
   };
 
   // Toggle topic selection
@@ -412,7 +440,21 @@ export default function Collections() {
                     <FileText className="h-3 w-3" />
                     {collection.topicIds.length} Topics
                   </div>
+                  <div className="flex items-center gap-2">
+                    {collection.publishedUrl ? (
+                      <span className="inline-flex items-center gap-1 text-green-500">
+                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                        Published
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-slate-400">
+                        <div className="w-2 h-2 rounded-full bg-slate-400"></div>
+                        Draft
+                      </span>
+                    )}
+                  </div>
                 </div>
+
                 {/* Action buttons at bottom */}
                 <div className="flex gap-3 pt-2 mt-4 border-t dark:border-slate-700">
                   <Button
@@ -439,19 +481,35 @@ export default function Collections() {
                     <Eye className="h-4 w-4 mr-2" />
                     Preview
                   </Button>
-                  {'publishedUrl' in collection && collection.publishedUrl ? (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        window.open(collection.publishedUrl, '_blank');
-                      }}
-                      className="text-slate-400 hover:text-green-500"
-                    >
-                      <Globe className="h-4 w-4 mr-2" />
-                      View Published
-                    </Button>
+                  {collection.publishedUrl ? (
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.open(collection.publishedUrl, '_blank');
+                        }}
+                        className="text-slate-400 hover:text-green-500"
+                      >
+                        <Globe className="h-4 w-4 mr-2" />
+                        View
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          if (await unpublishCollection(collection)) {
+                            alert('Collection unpublished successfully');
+                          }
+                        }}
+                        className="text-slate-400 hover:text-red-500"
+                      >
+                        <Globe className="h-4 w-4 mr-2" />
+                        Unpublish
+                      </Button>
+                    </div>
                   ) : (
                     <Button
                       variant="ghost"
