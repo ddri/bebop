@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useTheme } from "next-themes";
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
@@ -8,6 +8,22 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { 
   Plus, 
   Clock, 
@@ -15,7 +31,7 @@ import {
   Pencil,
   Eye,
   Globe,
-  Trash2
+  GripVertical
 } from 'lucide-react';
 
 interface Collection {
@@ -36,6 +52,73 @@ interface Topic {
   content: string;
 }
 
+interface SortableTopicItemProps {
+  id: number;
+  topic: Topic;
+  isSelected: boolean;
+  onToggle: (id: number) => void;
+}
+
+const SortableTopicItem = ({ id, topic, isSelected, onToggle }: SortableTopicItemProps) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <div 
+      ref={setNodeRef}
+      style={style}
+      className="flex items-center p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-md bg-white dark:bg-slate-900"
+    >
+      <button 
+        className="touch-none flex items-center justify-center p-1 mx-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" 
+        {...attributes} 
+        {...listeners}
+      >
+        <GripVertical className="h-4 w-4" />
+      </button>
+      <div className="flex-grow min-w-0">
+        <div className="font-medium truncate">{topic.name}</div>
+        <div className="text-sm text-slate-500 dark:text-slate-400 truncate">
+          {topic.content.substring(0, 100)}...
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const TopicSelector = ({ topic, isSelected, onToggle }: { 
+  topic: Topic; 
+  isSelected: boolean; 
+  onToggle: (id: number) => void; 
+}) => {
+  return (
+    <div className="flex items-center p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-md">
+      <input
+        type="checkbox"
+        checked={isSelected}
+        onChange={() => onToggle(topic.id)}
+        className="mr-3 h-4 w-4 rounded border-gray-300"
+      />
+      <div>
+        <div className="font-medium">{topic.name}</div>
+        <div className="text-sm text-slate-500 dark:text-slate-400">
+          {topic.content.substring(0, 100)}...
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function Collections() {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
@@ -47,6 +130,13 @@ export default function Collections() {
   const [newCollectionName, setNewCollectionName] = useState('');
   const [newCollectionDesc, setNewCollectionDesc] = useState('');
   const [selectedTopicIds, setSelectedTopicIds] = useState<number[]>([]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   // Handle mounting state
   useEffect(() => {
@@ -87,17 +177,15 @@ export default function Collections() {
   };
 
   const generateCollectionHTML = (collection: Collection) => {
-    // Find all topics in this collection
-    const collectionTopics = availableTopics.filter(topic => 
-      collection.topicIds.includes(topic.id)
-    );
+    // Use the ordered topicIds to maintain the user's preferred order
+    const collectionTopics = collection.topicIds
+      .map(id => availableTopics.find(topic => topic.id === id))
+      .filter((topic): topic is Topic => topic !== undefined);
     
-    // Combine their content
     const combinedContent = collectionTopics
       .map(topic => topic.content)
       .join('\n\n---\n\n');
 
-    // Convert to HTML
     const htmlContent = markdownToHtml(combinedContent);
 
     return `
@@ -114,6 +202,8 @@ export default function Collections() {
               max-width: 800px;
               margin: 0 auto;
               padding: 2rem;
+              background-color: ${theme === 'dark' ? '#0f172a' : '#ffffff'};
+              color: ${theme === 'dark' ? '#e2e8f0' : '#0f172a'};
             }
             h1, h2, h3 { margin-top: 2rem; }
             p { margin: 1rem 0; }
@@ -146,6 +236,28 @@ export default function Collections() {
       newTab.document.write(htmlContent);
       newTab.document.close();
     }
+  };
+
+  // Handle drag end for topic reordering
+  const handleDragEnd = (event: any) => {
+    const { active, over } = event;
+
+    if (active.id !== over?.id) {
+      setSelectedTopicIds((items) => {
+        const oldIndex = items.indexOf(active.id);
+        const newIndex = items.indexOf(over.id);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  };
+
+  // Toggle topic selection
+  const toggleTopic = (topicId: number) => {
+    setSelectedTopicIds(prev => 
+      prev.includes(topicId)
+        ? prev.filter(id => id !== topicId)
+        : [...prev, topicId]
+    );
   };
 
   // Publish collection
@@ -189,7 +301,6 @@ export default function Collections() {
   // Unpublish collection
   const unpublishCollection = async (collection: PublishedCollection) => {
     try {
-      // Remove the published file
       const response = await fetch('/api/unpublish', {
         method: 'POST',
         headers: {
@@ -227,7 +338,7 @@ export default function Collections() {
         id: Date.now(),
         name: newCollectionName,
         description: newCollectionDesc,
-        topicIds: selectedTopicIds,
+        topicIds: [...selectedTopicIds],
         lastEdited: Date.now(),
       };
       setCollections([...collections, newCollection]);
@@ -245,7 +356,7 @@ export default function Collections() {
         ...editingCollection,
         name: newCollectionName,
         description: newCollectionDesc,
-        topicIds: selectedTopicIds,
+        topicIds: [...selectedTopicIds],
         lastEdited: Date.now(),
       };
       setCollections(collections.map(c => 
@@ -263,23 +374,13 @@ export default function Collections() {
     setEditingCollection(collection);
     setNewCollectionName(collection.name);
     setNewCollectionDesc(collection.description || '');
-    setSelectedTopicIds(collection.topicIds);
-  };
-
-  // Toggle topic selection
-  const toggleTopic = (topicId: number) => {
-    setSelectedTopicIds(prev => 
-      prev.includes(topicId)
-        ? prev.filter(id => id !== topicId)
-        : [...prev, topicId]
-    );
+    setSelectedTopicIds([...collection.topicIds]);
   };
 
   if (!mounted) return null;
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
-      {/* Navigation Bar */}
       <nav className="bg-slate-800 text-white p-4">
         <div className="container mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-8">
@@ -314,9 +415,7 @@ export default function Collections() {
         </div>
       </nav>
 
-      {/* Main Content */}
       <div className="container mx-auto p-8 max-w-7xl">
-        {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-semibold dark:text-white">Collections</h1>
           <Button 
@@ -334,88 +433,111 @@ export default function Collections() {
           </Button>
         </div>
 
-        {/* Collection Form */}
         {(showNewCollectionForm || editingCollection) && (
-          <Card className={`mb-8 border-2 ${editingCollection ? 'border-blue-400' : 'border-yellow-400'}`}>
-            <CardHeader>
-              <CardTitle>{editingCollection ? 'Edit Collection' : 'Create New Collection'}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <Input
-                    placeholder="Collection Name"
-                    value={newCollectionName}
-                    onChange={(e) => setNewCollectionName(e.target.value)}
-                    className="mb-2"
-                  />
-                </div>
-                <div>
-                  <Textarea
-                    placeholder="Collection Description"
-                    value={newCollectionDesc}
-                    onChange={(e) => setNewCollectionDesc(e.target.value)}
-                    className="mb-2"
-                  />
-                </div>
-                <div className="border rounded-md p-4">
-                  <h3 className="text-sm font-medium mb-3">Select Topics to Include</h3>
+
+
+        <Card className={`mb-8 border-2 ${editingCollection ? 'border-blue-400' : 'border-yellow-400'}`}>
+          <CardHeader>
+            <CardTitle>{editingCollection ? 'Edit Collection' : 'Create New Collection'}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <Input
+                  placeholder="Collection Name"
+                  value={newCollectionName}
+                  onChange={(e) => setNewCollectionName(e.target.value)}
+                  className="mb-2"
+                />
+              </div>
+              <div>
+                <Textarea
+                  placeholder="Collection Description"
+                  value={newCollectionDesc}
+                  onChange={(e) => setNewCollectionDesc(e.target.value)}
+                  className="mb-2"
+                />
+              </div>
+
+              <div className="border rounded-md p-4">
+                {/* Topic Selection */}
+                <div className="mb-6">
+                  <h3 className="text-sm font-medium mb-3">Select Topics</h3>
                   <div className="space-y-2">
                     {availableTopics.map(topic => (
-                      <div 
+                      <TopicSelector
                         key={topic.id}
-                        className="flex items-center p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-md"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selectedTopicIds.includes(topic.id)}
-                          onChange={() => toggleTopic(topic.id)}
-                          className="mr-3 h-4 w-4 rounded border-gray-300"
-                        />
-                        <div>
-                          <div className="font-medium">{topic.name}</div>
-                          <div className="text-sm text-slate-500 dark:text-slate-400">
-                            {topic.content.substring(0, 100)}...
-                          </div>
-                        </div>
-                      </div>
+                        topic={topic}
+                        isSelected={selectedTopicIds.includes(topic.id)}
+                        onToggle={toggleTopic}
+                      />
                     ))}
-                    {availableTopics.length === 0 && (
-                      <div className="text-center text-slate-500 dark:text-slate-400 py-4">
-                        No topics available. Create some topics first!
-                      </div>
-                    )}
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <Button 
-                    onClick={editingCollection ? saveEditedCollection : saveNewCollection}
-                    disabled={!newCollectionName || selectedTopicIds.length === 0}
-                    className={`${
-                      editingCollection 
-                        ? 'bg-blue-500 hover:bg-blue-600 text-white' 
-                        : 'bg-yellow-400 hover:bg-yellow-500 text-black'
-                    }`}
-                  >
-                    {editingCollection ? 'Save Changes' : 'Create Collection'}
-                  </Button>
-                  <Button 
-                    variant="outline"
-                    onClick={() => {
-                      setShowNewCollectionForm(false);
-                      setEditingCollection(null);
-                      setNewCollectionName('');
-                      setNewCollectionDesc('');
-                      setSelectedTopicIds([]);
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                </div>
+
+                {/* Reorderable Selected Topics */}
+                {selectedTopicIds.length > 0 && (
+                  <div className="mt-6 pt-6 border-t dark:border-slate-700">
+                    <h3 className="text-sm font-medium mb-3">Arrange Selected Topics</h3>
+                    <DndContext
+                      sensors={sensors}
+                      collisionDetection={closestCenter}
+                      onDragEnd={handleDragEnd}
+                    >
+                      <SortableContext
+                        items={selectedTopicIds}
+                        strategy={verticalListSortingStrategy}
+                      >
+                        <div className="space-y-2">
+                          {selectedTopicIds.map(topicId => {
+                            const topic = availableTopics.find(t => t.id === topicId);
+                            if (!topic) return null;
+                            return (
+                              <SortableTopicItem
+                                key={topicId}
+                                id={topicId}
+                                topic={topic}
+                                isSelected={true}
+                                onToggle={toggleTopic}
+                              />
+                            );
+                          })}
+                        </div>
+                      </SortableContext>
+                    </DndContext>
+                  </div>
+                )}
               </div>
-            </CardContent>
-          </Card>
-        )}
+
+              <div className="flex gap-2">
+                <Button 
+                  onClick={editingCollection ? saveEditedCollection : saveNewCollection}
+                  disabled={!newCollectionName || selectedTopicIds.length === 0}
+                  className={`${
+                    editingCollection 
+                      ? 'bg-blue-500 hover:bg-blue-600 text-white' 
+                      : 'bg-yellow-400 hover:bg-yellow-500 text-black'
+                  }`}
+                >
+                  {editingCollection ? 'Save Changes' : 'Create Collection'}
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => {
+                    setShowNewCollectionForm(false);
+                    setEditingCollection(null);
+                    setNewCollectionName('');
+                    setNewCollectionDesc('');
+                    setSelectedTopicIds([]);
+                  }}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
         {/* Collections Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -541,4 +663,4 @@ export default function Collections() {
       </div>
     </div>
   );
-}
+}            
