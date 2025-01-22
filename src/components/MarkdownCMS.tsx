@@ -7,7 +7,6 @@ import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import CodeMirror from '@uiw/react-codemirror';
 import { markdown } from '@codemirror/lang-markdown';
 import { oneDark } from '@codemirror/theme-one-dark';
@@ -16,11 +15,8 @@ import { useTopics } from '@/hooks/useTopics';
 import { 
   Plus, 
   Trash2, 
-  Download, 
   Eye, 
-  FileText, 
   Clock, 
-  MoreHorizontal,
   ArrowDownAZ,
   ArrowUpAZ,
   CalendarDays,
@@ -86,7 +82,41 @@ const EditorWithPreview = ({
   const [showPreview, setShowPreview] = useState(false);
 
   const handleToolbarAction = (action: string) => {
-    onChange(content + '\n' + action);
+    // Get selected text from CodeMirror
+    const selection = window.getSelection()?.toString() || '';
+    
+    let insertText = '';
+    switch (action) {
+      case 'bold':
+        insertText = selection ? `**${selection}**` : '**Bold text**';
+        break;
+      case 'italic':
+        insertText = selection ? `*${selection}*` : '*Italic text*';
+        break;
+      case 'h1':
+        insertText = `\n# ${selection || 'Heading 1'}\n`;
+        break;
+      case 'h2':
+        insertText = `\n## ${selection || 'Heading 2'}\n`;
+        break;
+      case 'h3':
+        insertText = `\n### ${selection || 'Heading 3'}\n`;
+        break;
+      case 'bulletList':
+        insertText = '\n- List item\n- Another item\n- And another\n';
+        break;
+      case 'numberedList':
+        insertText = '\n1. First item\n2. Second item\n3. Third item\n';
+        break;
+      case 'link':
+        insertText = selection ? `[${selection}](url)` : '[Link text](url)';
+        break;
+      case 'code':
+        insertText = selection ? `\`${selection}\`` : '`code`';
+        break;
+    }
+    
+    onChange(content + insertText);
   };
 
   const previewMarkdownToHtml = (markdown: string): string => {
@@ -96,6 +126,7 @@ const EditorWithPreview = ({
       .replace(/^### (.*$)/gm, '<h3 class="text-xl font-bold mt-3 mb-2">$1</h3>')
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/`(.*?)`/g, '<code class="bg-slate-100 dark:bg-slate-800 px-1 rounded">$1</code>')
       .replace(/\n\n/g, '</p><p class="my-2">')
       .replace(/\n/g, '<br>')
       .replace(/^(.+)$/gm, '<p class="my-2">$1</p>');
@@ -104,15 +135,90 @@ const EditorWithPreview = ({
   return (
     <div className="border rounded-md">
       <div className="flex items-center justify-between bg-slate-100 dark:bg-slate-800 px-2">
-        <div className="flex gap-1 p-1">
+        <div className="flex flex-wrap gap-1 p-1">
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => handleToolbarAction('**Bold**')}
+            onClick={() => handleToolbarAction('bold')}
             className="h-8 w-8 p-0"
             title="Bold"
           >
             <Bold className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleToolbarAction('italic')}
+            className="h-8 w-8 p-0"
+            title="Italic"
+          >
+            <Italic className="h-4 w-4" />
+          </Button>
+          <div className="w-px h-8 bg-slate-200 dark:bg-slate-700 mx-1" />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleToolbarAction('h1')}
+            className="h-8 w-8 p-0"
+            title="Heading 1"
+          >
+            <Heading className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleToolbarAction('h2')}
+            className="h-8 px-1 text-xs font-bold"
+            title="Heading 2"
+          >
+            H2
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleToolbarAction('h3')}
+            className="h-8 px-1 text-xs font-bold"
+            title="Heading 3"
+          >
+            H3
+          </Button>
+          <div className="w-px h-8 bg-slate-200 dark:bg-slate-700 mx-1" />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleToolbarAction('bulletList')}
+            className="h-8 w-8 p-0"
+            title="Bullet List"
+          >
+            <List className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleToolbarAction('numberedList')}
+            className="h-8 w-8 p-0 font-mono"
+            title="Numbered List"
+          >
+            1.
+          </Button>
+          <div className="w-px h-8 bg-slate-200 dark:bg-slate-700 mx-1" />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleToolbarAction('link')}
+            className="h-8 w-8 p-0"
+            title="Insert Link"
+          >
+            <LinkIcon className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleToolbarAction('code')}
+            className="h-8 w-8 p-0"
+            title="Insert Code"
+          >
+            <Code className="h-4 w-4" />
           </Button>
         </div>
         <Button
@@ -127,17 +233,17 @@ const EditorWithPreview = ({
       </div>
       <div className={`grid ${showPreview ? 'grid-cols-2' : 'grid-cols-1'} divide-x dark:divide-slate-700`}>
       <CodeMirror
-          value={content}
-          height="400px"
-          extensions={[
-            markdown(),
-            EditorView.lineWrapping
-          ]}
-          theme={theme === 'dark' ? oneDark : undefined}
-          onChange={onChange}
-          className="text-sm"
-          key={editorKey}
-        />
+        value={content}
+        height="400px"
+        extensions={[
+          markdown(),
+          EditorView.lineWrapping
+        ]}
+        theme={theme === 'dark' ? oneDark : undefined}
+        onChange={onChange}
+        className="text-sm"
+        key={editorKey}
+      />
         {showPreview && (
           <div className="p-4 prose dark:prose-invert max-w-none prose-sm">
             <div dangerouslySetInnerHTML={{ __html: previewMarkdownToHtml(content) }} />
@@ -147,6 +253,7 @@ const EditorWithPreview = ({
     </div>
   );
 };
+
 const Layout = ({ children, pathname }: { children: React.ReactNode; pathname: string }) => (
   <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
     <Navigation pathname={pathname} />
@@ -178,7 +285,7 @@ export default function MarkdownCMS() {
         .filter(doc => selectedDocs.includes(doc.id))
         .map(doc => doc.content)
         .join('\n\n---\n\n');
-      setCombinedPreview(MarkdownToHtml(selectedContent));
+      setCombinedPreview(previewMarkdownToHtml(selectedContent));
     } else {
       setCombinedPreview('');
     }
@@ -241,7 +348,7 @@ export default function MarkdownCMS() {
     return text.trim().split(/\s+/).filter(word => word.length > 0).length;
   };
 
-  const MarkdownToHtml = (markdown: string): string => {
+  const previewMarkdownToHtml = (markdown: string): string => {
     return markdown
       .replace(/^# (.*$)/gm, '<h1 class="text-3xl font-bold mt-4 mb-2">$1</h1>')
       .replace(/^## (.*$)/gm, '<h2 class="text-2xl font-bold mt-4 mb-2">$1</h2>')
@@ -475,4 +582,4 @@ export default function MarkdownCMS() {
       </div>
     </Layout>
   );
-}
+}        
