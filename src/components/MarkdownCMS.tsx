@@ -371,51 +371,101 @@ export default function MarkdownCMS() {
         </Card>
       )}
 
-      {/* Topics List */}
-      <div className="grid gap-4">
+{/* Topics List */}
+<div className="grid gap-4">
         {sortedTopics.length > 0 ? (
           sortedTopics.map((topic) => (
-            <Card key={topic.id} className="hover:shadow-md transition-shadow">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-lg font-semibold">{topic.name}</CardTitle>
-                <div className="flex space-x-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setEditingDoc({
-                      id: topic.id,
-                      name: topic.name,
-                      content: topic.content
-                    })}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDeleteDocument(topic.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-sm text-slate-500 dark:text-slate-400">
-                  {topic.content.substring(0, 200)}
-                  {topic.content.length > 200 && '...'}
-                </div>
-                <div className="mt-2 flex items-center space-x-4 text-sm text-slate-500 dark:text-slate-400">
-                  <div className="flex items-center">
-                    <Clock className="h-4 w-4 mr-1" />
-                    {new Date(topic.createdAt).toLocaleDateString()}
+            <React.Fragment key={topic.id}>
+              {editingDoc?.id === topic.id && (
+                <Card className="border-2 border-blue-400">
+                  <CardHeader>
+                    <CardTitle>Edit Topic</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div>
+                        <Input
+                          placeholder="Topic Name"
+                          value={editingDoc.name}
+                          onChange={(e) => setEditingDoc(prev => ({ ...prev!, name: e.target.value }))}
+                          className="mb-2"
+                        />
+                      </div>
+                      <EditorWithPreview
+                        content={editingDoc.content}
+                        onChange={(value) => setEditingDoc(prev => ({ ...prev!, content: value }))}
+                        theme={theme}
+                      />
+                      <div className="flex gap-2">
+                        <Button 
+                          onClick={saveEditedDocument}
+                          disabled={!editingDoc.name || !editingDoc.content}
+                          className="bg-blue-400 hover:bg-blue-500 text-black"
+                        >
+                          Save Changes
+                        </Button>
+                        <Button 
+                          variant="outline"
+                          onClick={() => setEditingDoc(null)}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+              <Card className="hover:shadow-md transition-shadow">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-lg font-semibold">{topic.name}</CardTitle>
+                  <div className="flex space-x-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setEditingDoc({
+                          id: topic.id,
+                          name: topic.name,
+                          content: topic.content
+                        });
+                        // Scroll the edit form into view
+                        setTimeout(() => {
+                          document.querySelector(`[data-topic-id="${topic.id}"]`)?.scrollIntoView({ 
+                            behavior: 'smooth',
+                            block: 'center'
+                          });
+                        }, 100);
+                      }}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeleteDocument(topic.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
-                  <div className="flex items-center">
-                    <TextQuote className="h-4 w-4 mr-1" />
-                    {getWordCount(topic.content)} words
+                </CardHeader>
+                <CardContent>
+                  <div className="text-sm text-slate-500 dark:text-slate-400">
+                    {topic.content.substring(0, 200)}
+                    {topic.content.length > 200 && '...'}
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                  <div className="mt-2 flex items-center space-x-4 text-sm text-slate-500 dark:text-slate-400">
+                    <div className="flex items-center">
+                      <Clock className="h-4 w-4 mr-1" />
+                      {new Date(topic.createdAt).toLocaleDateString()}
+                    </div>
+                    <div className="flex items-center">
+                      <TextQuote className="h-4 w-4 mr-1" />
+                      {getWordCount(topic.content)} words
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </React.Fragment>
           ))
         ) : (
           <div className="text-center py-8 text-slate-500 dark:text-slate-400">
@@ -423,47 +473,6 @@ export default function MarkdownCMS() {
           </div>
         )}
       </div>
-
-      {/* Edit Document Modal */}
-      {editingDoc && (
-        <Card className="mb-8 border-2 border-blue-400">
-          <CardHeader>
-            <CardTitle>Edit Topic</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div>
-                <Input
-                  placeholder="Topic Name"
-                  value={editingDoc.name}
-                  onChange={(e) => setEditingDoc(prev => ({ ...prev!, name: e.target.value }))}
-                  className="mb-2"
-                />
-              </div>
-              <EditorWithPreview
-                content={editingDoc.content}
-                onChange={(value) => setEditingDoc(prev => ({ ...prev!, content: value }))}
-                theme={theme}
-              />
-              <div className="flex gap-2">
-                <Button 
-                  onClick={saveEditedDocument}
-                  disabled={!editingDoc.name || !editingDoc.content}
-                  className="bg-blue-400 hover:bg-blue-500 text-black"
-                >
-                  Save Changes
-                </Button>
-                <Button 
-                  variant="outline"
-                  onClick={() => setEditingDoc(null)}
-                >
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </Layout>
   );
 }
