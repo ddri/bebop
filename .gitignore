@@ -35,3 +35,6 @@ yarn-error.log*
 # Ignore published files
 public/published/*
 !public/published/.gitkeep
+
+# Ignore those sweet sweet environment files 
+.env

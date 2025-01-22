@@ -1,0 +1,45 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Topic {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // For MongoDB, we use an array of references instead of a direct relation
+  collectionIds String[] @db.ObjectId
+  
+  @@map("topics")
+}
+
+model Collection {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  description  String?
+  publishedUrl String?
+  createdAt    DateTime @default(now())
+  lastEdited   DateTime @updatedAt
+  
+  // For MongoDB, we store topic IDs as an array
+  topicIds     String[] @db.ObjectId
+  
+  @@map("collections")
+}
+
+model PublishedContent {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  fileName  String
+  content   String
+  createdAt DateTime @default(now())
+
+  @@map("publishedContent")
+}

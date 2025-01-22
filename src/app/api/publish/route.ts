@@ -1,29 +1,35 @@
 import { NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
-import path from 'path';
+import { prisma } from '@/lib/prisma';
 
 export async function POST(request: Request) {
   try {
-    const { fileName, content } = await request.json();
+    const json = await request.json();
+    const { fileName, content } = json;
 
-    // Create the published directory if it doesn't exist
-    const publishDir = path.join(process.cwd(), 'public', 'published');
-    
-    // Write the file
-    await writeFile(
-      path.join(publishDir, fileName),
-      content,
-      'utf-8'
-    );
+    if (!fileName || !content) {
+      return NextResponse.json(
+        { error: 'Filename and content are required' },
+        { status: 400 }
+      );
+    }
 
-    return NextResponse.json({ 
-      success: true,
-      url: `/published/${fileName}` 
+    // Store the content in MongoDB using Prisma
+    const publishedContent = await prisma.publishedContent.create({
+      data: {
+        fileName,
+        content,
+        createdAt: new Date()
+      }
     });
+
+    // Generate a URL for accessing the content
+    const url = `/api/content/${publishedContent.id}`;
+
+    return NextResponse.json({ url });
   } catch (error) {
-    console.error('Publishing error:', error);
+    console.error('Failed to publish:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to publish' },
+      { error: 'Failed to publish content' },
       { status: 500 }
     );
   }
