@@ -478,8 +478,8 @@ export default function MarkdownCMS() {
         </Card>
       )}
 
-      {/* Topics List */}
-      <div className="grid gap-4">
+{/* Topics List */}
+<div className="grid gap-4">
         {sortedTopics.length > 0 ? (
           sortedTopics.map((topic) => (
             <React.Fragment key={topic.id}>
@@ -529,11 +529,20 @@ export default function MarkdownCMS() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => setEditingDoc({
-                        id: topic.id,
-                        name: topic.name,
-                        content: topic.content
-                      })}
+                      onClick={() => {
+                        setEditingDoc({
+                          id: topic.id,
+                          name: topic.name,
+                          content: topic.content
+                        });
+                        // Scroll the edit form into view
+                        setTimeout(() => {
+                          document.querySelector(`[data-topic-id="${topic.id}"]`)?.scrollIntoView({ 
+                            behavior: 'smooth',
+                            block: 'center'
+                          });
+                        }, 100);
+                      }}
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
