@@ -1,9 +1,6 @@
-'use client';
-
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTheme } from "next-themes";
 import { usePathname } from 'next/navigation';
-import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,6 +21,8 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { useCollections } from '@/hooks/useCollections';
+import { useTopics } from '@/hooks/useTopics';
 import { 
   Plus, 
   Clock, 
@@ -33,30 +32,31 @@ import {
   Globe,
   GripVertical
 } from 'lucide-react';
-
-interface Collection {
-  id: number;
-  name: string;
-  description?: string;
-  topicIds: number[];
-  lastEdited: number;
-}
-
-interface PublishedCollection extends Collection {
-  publishedUrl?: string;
-}
+import Layout from '@/components/Layout';
 
 interface Topic {
-  id: number;
+  id: string;
   name: string;
   content: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Collection {
+  id: string;
+  name: string;
+  description?: string;
+  topicIds: string[];
+  publishedUrl?: string;
+  lastEdited: string;
+  createdAt: string;
 }
 
 interface SortableTopicItemProps {
-  id: number;
+  id: string;
   topic: Topic;
   isSelected: boolean;
-  onToggle: (id: number) => void;
+  onToggle: (id: string) => void;
 }
 
 const SortableTopicItem = ({ id, topic, isSelected, onToggle }: SortableTopicItemProps) => {
@@ -99,7 +99,7 @@ const SortableTopicItem = ({ id, topic, isSelected, onToggle }: SortableTopicIte
 const TopicSelector = ({ topic, isSelected, onToggle }: { 
   topic: Topic; 
   isSelected: boolean; 
-  onToggle: (id: number) => void; 
+  onToggle: (id: string) => void; 
 }) => {
   return (
     <div className="flex items-center p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-md">
@@ -121,15 +121,15 @@ const TopicSelector = ({ topic, isSelected, onToggle }: {
 
 export default function Collections() {
   const pathname = usePathname();
-  const [mounted, setMounted] = useState(false);
   const { theme } = useTheme();
-  const [collections, setCollections] = useState<PublishedCollection[]>([]);
-  const [availableTopics, setAvailableTopics] = useState<Topic[]>([]);
+  const { collections, loading, error, createCollection, updateCollection, publishCollection, unpublishCollection } = useCollections();
+  const { topics } = useTopics();
+  const [mounted, setMounted] = useState(false);
   const [showNewCollectionForm, setShowNewCollectionForm] = useState(false);
-  const [editingCollection, setEditingCollection] = useState<PublishedCollection | null>(null);
+  const [editingCollection, setEditingCollection] = useState<Collection | null>(null);
   const [newCollectionName, setNewCollectionName] = useState('');
   const [newCollectionDesc, setNewCollectionDesc] = useState('');
-  const [selectedTopicIds, setSelectedTopicIds] = useState<number[]>([]);
+  const [selectedTopicIds, setSelectedTopicIds] = useState<string[]>([]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -138,31 +138,9 @@ export default function Collections() {
     })
   );
 
-  // Handle mounting state
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  // Load both collections and topics after component mounts
-  useEffect(() => {
-    if (mounted && typeof window !== 'undefined') {
-      const savedCollections = localStorage.getItem('collections');
-      const savedTopics = localStorage.getItem('markdown-docs');
-      if (savedCollections) {
-        setCollections(JSON.parse(savedCollections));
-      }
-      if (savedTopics) {
-        setAvailableTopics(JSON.parse(savedTopics));
-      }
-    }
-  }, [mounted]);
-
-  // Save collections to localStorage whenever they change
-  useEffect(() => {
-    if (mounted && typeof window !== 'undefined') {
-      localStorage.setItem('collections', JSON.stringify(collections));
-    }
-  }, [collections, mounted]);
 
   const markdownToHtml = (markdown: string): string => {
     return markdown
@@ -177,9 +155,8 @@ export default function Collections() {
   };
 
   const generateCollectionHTML = (collection: Collection) => {
-    // Use the ordered topicIds to maintain the user's preferred order
     const collectionTopics = collection.topicIds
-      .map(id => availableTopics.find(topic => topic.id === id))
+      .map(id => topics.find(topic => topic.id === id))
       .filter((topic): topic is Topic => topic !== undefined);
     
     const combinedContent = collectionTopics
@@ -228,7 +205,6 @@ export default function Collections() {
     `.trim();
   };
 
-  // Preview collection
   const previewCollection = (collection: Collection) => {
     const htmlContent = generateCollectionHTML(collection);
     const newTab = window.open();
@@ -238,7 +214,6 @@ export default function Collections() {
     }
   };
 
-  // Handle drag end for topic reordering
   const handleDragEnd = (event: any) => {
     const { active, over } = event;
 
@@ -251,8 +226,7 @@ export default function Collections() {
     }
   };
 
-  // Toggle topic selection
-  const toggleTopic = (topicId: number) => {
+  const toggleTopic = (topicId: string) => {
     setSelectedTopicIds(prev => 
       prev.includes(topicId)
         ? prev.filter(id => id !== topicId)
@@ -260,117 +234,66 @@ export default function Collections() {
     );
   };
 
-  // Publish collection
-  const publishCollection = async (collection: Collection) => {
+  const handlePublish = async (collection: Collection) => {
     try {
       const content = generateCollectionHTML(collection);
-      const fileName = `${collection.id}-${collection.name.toLowerCase().replace(/\s+/g, '-')}.html`;
-      
-      const response = await fetch('/api/publish', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          fileName,
-          content
-        }),
-      });
-
-      if (!response.ok) throw new Error('Failed to publish');
-
-      const { url } = await response.json();
-      
-      // Update collection with published URL
-      const updatedCollection = {
-        ...collection,
-        publishedUrl: url,
-      };
-
-      setCollections(collections.map(c => 
-        c.id === collection.id ? updatedCollection : c
-      ));
-
-      return url;
+      const url = await publishCollection(collection.id, content);
+      if (url) {
+        window.open(url, '_blank');
+      }
     } catch (error) {
-      console.error('Error publishing:', error);
+      console.error('Failed to publish:', error);
       alert('Failed to publish collection');
     }
   };
 
-  // Unpublish collection
-  const unpublishCollection = async (collection: PublishedCollection) => {
+  const handleUnpublish = async (collection: Collection) => {
     try {
-      const response = await fetch('/api/unpublish', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          fileName: collection.publishedUrl?.split('/').pop()
-        }),
-      });
-
-      if (!response.ok) throw new Error('Failed to unpublish');
-
-      // Update collection to remove publishedUrl
-      const updatedCollection = {
-        ...collection,
-        publishedUrl: undefined
-      };
-
-      setCollections(collections.map(c => 
-        c.id === collection.id ? updatedCollection : c
-      ));
-
-      return true;
+      const success = await unpublishCollection(collection.id);
+      if (success) {
+        alert('Collection unpublished successfully');
+      }
     } catch (error) {
-      console.error('Error unpublishing:', error);
+      console.error('Failed to unpublish:', error);
       alert('Failed to unpublish collection');
-      return false;
     }
   };
 
-  // Save new collection
-  const saveNewCollection = () => {
+  const saveNewCollection = async () => {
     if (newCollectionName && selectedTopicIds.length > 0) {
-      const newCollection: PublishedCollection = {
-        id: Date.now(),
-        name: newCollectionName,
-        description: newCollectionDesc,
-        topicIds: [...selectedTopicIds],
-        lastEdited: Date.now(),
-      };
-      setCollections([...collections, newCollection]);
-      setNewCollectionName('');
-      setNewCollectionDesc('');
-      setSelectedTopicIds([]);
-      setShowNewCollectionForm(false);
+      try {
+        await createCollection(newCollectionName, newCollectionDesc, selectedTopicIds);
+        setNewCollectionName('');
+        setNewCollectionDesc('');
+        setSelectedTopicIds([]);
+        setShowNewCollectionForm(false);
+      } catch (error) {
+        console.error('Failed to create collection:', error);
+        alert('Failed to create collection');
+      }
     }
   };
 
-  // Save edited collection
-  const saveEditedCollection = () => {
+  const saveEditedCollection = async () => {
     if (editingCollection && newCollectionName && selectedTopicIds.length > 0) {
-      const updatedCollection: PublishedCollection = {
-        ...editingCollection,
-        name: newCollectionName,
-        description: newCollectionDesc,
-        topicIds: [...selectedTopicIds],
-        lastEdited: Date.now(),
-      };
-      setCollections(collections.map(c => 
-        c.id === editingCollection.id ? updatedCollection : c
-      ));
-      setEditingCollection(null);
-      setNewCollectionName('');
-      setNewCollectionDesc('');
-      setSelectedTopicIds([]);
+      try {
+        await updateCollection(editingCollection.id, {
+          name: newCollectionName,
+          description: newCollectionDesc,
+          topicIds: selectedTopicIds,
+        });
+        setEditingCollection(null);
+        setNewCollectionName('');
+        setNewCollectionDesc('');
+        setSelectedTopicIds([]);
+      } catch (error) {
+        console.error('Failed to update collection:', error);
+        alert('Failed to update collection');
+      }
     }
   };
 
-  // Start editing a collection
-  const startEditing = (collection: PublishedCollection) => {
+  const startEditing = (collection: Collection) => {
     setEditingCollection(collection);
     setNewCollectionName(collection.name);
     setNewCollectionDesc(collection.description || '');
@@ -379,63 +302,46 @@ export default function Collections() {
 
   if (!mounted) return null;
 
+  if (loading) {
+    return (
+      <Layout pathname={pathname}>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-lg">Loading collections...</div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (error) {
+    return (
+      <Layout pathname={pathname}>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-lg text-red-500">Error: {error}</div>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
-      <nav className="bg-slate-800 text-white p-4">
-        <div className="container mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-8">
-            <span className="text-xl font-bold">Bebop</span>
-            <div className="flex space-x-6">
-              <Link 
-                href="/collections" 
-                className={`${pathname === '/collections' ? 'text-yellow-300' : 'hover:text-yellow-300'}`}
-              >
-                Collections
-              </Link>
-              <Link 
-                href="/" 
-                className={`${pathname === '/' ? 'text-yellow-300' : 'hover:text-yellow-300'}`}
-              >
-                Topics
-              </Link>
-              <Link 
-                href="#" 
-                className="hover:text-yellow-300"
-              >
-                Media
-              </Link>
-              <Link 
-                href="/settings" 
-                className={`${pathname === '/settings' ? 'text-yellow-300' : 'hover:text-yellow-300'}`}
-              >
-                Settings
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
+    <Layout pathname={pathname}>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-2xl font-semibold dark:text-white">Collections</h1>
+        <Button 
+          onClick={() => {
+            setShowNewCollectionForm(!showNewCollectionForm);
+            setEditingCollection(null);
+            setNewCollectionName('');
+            setNewCollectionDesc('');
+            setSelectedTopicIds([]);
+          }}
+          className="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          New Collection
+        </Button>
+      </div>
 
-      <div className="container mx-auto p-8 max-w-7xl">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-semibold dark:text-white">Collections</h1>
-          <Button 
-            onClick={() => {
-              setShowNewCollectionForm(!showNewCollectionForm);
-              setEditingCollection(null);
-              setNewCollectionName('');
-              setNewCollectionDesc('');
-              setSelectedTopicIds([]);
-            }}
-            className="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            New Collection
-          </Button>
-        </div>
-
-        {(showNewCollectionForm || editingCollection) && (
-
-
+      {(showNewCollectionForm || editingCollection) && (
         <Card className={`mb-8 border-2 ${editingCollection ? 'border-blue-400' : 'border-yellow-400'}`}>
           <CardHeader>
             <CardTitle>{editingCollection ? 'Edit Collection' : 'Create New Collection'}</CardTitle>
@@ -449,36 +355,21 @@ export default function Collections() {
                   onChange={(e) => setNewCollectionName(e.target.value)}
                   className="mb-2"
                 />
-              </div>
-              <div>
                 <Textarea
-                  placeholder="Collection Description"
+                  placeholder="Collection Description (optional)"
                   value={newCollectionDesc}
                   onChange={(e) => setNewCollectionDesc(e.target.value)}
-                  className="mb-2"
+                  className="mb-4"
                 />
               </div>
 
-              <div className="border rounded-md p-4">
-                {/* Topic Selection */}
-                <div className="mb-6">
-                  <h3 className="text-sm font-medium mb-3">Select Topics</h3>
-                  <div className="space-y-2">
-                    {availableTopics.map(topic => (
-                      <TopicSelector
-                        key={topic.id}
-                        topic={topic}
-                        isSelected={selectedTopicIds.includes(topic.id)}
-                        onToggle={toggleTopic}
-                      />
-                    ))}
+              {topics.length > 0 ? (
+                <div className="border rounded-md">
+                  <div className="p-4 border-b">
+                    <h3 className="font-medium">Selected Topics ({selectedTopicIds.length})</h3>
                   </div>
-                </div>
-
-                {/* Reorderable Selected Topics */}
-                {selectedTopicIds.length > 0 && (
-                  <div className="mt-6 pt-6 border-t dark:border-slate-700">
-                    <h3 className="text-sm font-medium mb-3">Arrange Selected Topics</h3>
+                  
+                  {selectedTopicIds.length > 0 && (
                     <DndContext
                       sensors={sensors}
                       collisionDetection={closestCenter}
@@ -488,14 +379,14 @@ export default function Collections() {
                         items={selectedTopicIds}
                         strategy={verticalListSortingStrategy}
                       >
-                        <div className="space-y-2">
-                          {selectedTopicIds.map(topicId => {
-                            const topic = availableTopics.find(t => t.id === topicId);
+                        <div className="p-2 space-y-1">
+                          {selectedTopicIds.map((id) => {
+                            const topic = topics.find(t => t.id === id);
                             if (!topic) return null;
                             return (
                               <SortableTopicItem
-                                key={topicId}
-                                id={topicId}
+                                key={id}
+                                id={id}
                                 topic={topic}
                                 isSelected={true}
                                 onToggle={toggleTopic}
@@ -505,19 +396,35 @@ export default function Collections() {
                         </div>
                       </SortableContext>
                     </DndContext>
+                  )}
+
+                  <div className="p-4 border-t">
+                    <h3 className="font-medium mb-2">Available Topics</h3>
+                    <div className="space-y-1">
+                      {topics
+                        .filter(topic => !selectedTopicIds.includes(topic.id))
+                        .map(topic => (
+                          <TopicSelector
+                            key={topic.id}
+                            topic={topic}
+                            isSelected={selectedTopicIds.includes(topic.id)}
+                            onToggle={toggleTopic}
+                          />
+                        ))}
+                    </div>
                   </div>
-                )}
-              </div>
+                </div>
+              ) : (
+                <div className="text-center py-4 text-slate-500">
+                  No topics available. Create some topics first.
+                </div>
+              )}
 
               <div className="flex gap-2">
                 <Button 
                   onClick={editingCollection ? saveEditedCollection : saveNewCollection}
                   disabled={!newCollectionName || selectedTopicIds.length === 0}
-                  className={`${
-                    editingCollection 
-                      ? 'bg-blue-500 hover:bg-blue-600 text-white' 
-                      : 'bg-yellow-400 hover:bg-yellow-500 text-black'
-                  }`}
+                  className={`${editingCollection ? 'bg-blue-400 hover:bg-blue-500' : 'bg-yellow-400 hover:bg-yellow-500'} text-black`}
                 >
                   {editingCollection ? 'Save Changes' : 'Create Collection'}
                 </Button>
@@ -539,128 +446,83 @@ export default function Collections() {
         </Card>
       )}
 
-        {/* Collections Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {collections.map(collection => (
-            <Card 
-              key={collection.id}
-              className="hover:border-yellow-400 transition-colors relative group"
-            >
-              <CardContent className="pt-6">
-                <h3 className="text-lg font-medium mb-2">{collection.name}</h3>
-                {collection.description && (
-                  <p className="text-sm text-slate-600 dark:text-slate-300 mb-4">
-                    {collection.description}
-                  </p>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {collections && collections.length > 0 ? collections.map((collection) => (
+          <Card key={collection.id} className="hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-lg font-semibold">{collection.name}</CardTitle>
+              <div className="flex space-x-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => startEditing(collection)}
+                  title="Edit"
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => previewCollection(collection)}
+                  title="Preview"
+                >
+                  <Eye className="h-4 w-4" />
+                </Button>
+                {collection.publishedUrl ? (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleUnpublish(collection)}
+                    title="Unpublish"
+                  >
+                    <Globe className="h-4 w-4 text-green-500" />
+                  </Button>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handlePublish(collection)}
+                    title="Publish"
+                  >
+                    <Globe className="h-4 w-4" />
+                  </Button>
                 )}
-                <div className="space-y-3 text-sm text-slate-500 dark:text-slate-400">
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-3 w-3" />
-                    Edited {new Date(collection.lastEdited).toLocaleString()}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <FileText className="h-3 w-3" />
-                    {collection.topicIds.length} Topics
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {collection.publishedUrl ? (
-                      <span className="inline-flex items-center gap-1 text-green-500">
-                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                        Published
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 text-slate-400">
-                        <div className="w-2 h-2 rounded-full bg-slate-400"></div>
-                        Draft
-                      </span>
-                    )}
-                  </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {collection.description && (
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">
+                  {collection.description}
+                </p>
+              )}
+              <div className="flex items-center space-x-4 text-sm text-slate-500 dark:text-slate-400">
+                <div className="flex items-center">
+                  <FileText className="h-4 w-4 mr-1" />
+                  {collection.topicIds.length} topics
                 </div>
-
-                {/* Action buttons at bottom */}
-                <div className="flex gap-3 pt-2 mt-4 border-t dark:border-slate-700">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      startEditing(collection);
-                    }}
-                    className="text-slate-400 hover:text-yellow-500"
-                  >
-                    <Pencil className="h-4 w-4 mr-2" />
-                    Edit
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      previewCollection(collection);
-                    }}
-                    className="text-slate-400 hover:text-blue-500"
-                  >
-                    <Eye className="h-4 w-4 mr-2" />
-                    Preview
-                  </Button>
-                  {collection.publishedUrl ? (
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          window.open(collection.publishedUrl, '_blank');
-                        }}
-                        className="text-slate-400 hover:text-green-500"
-                      >
-                        <Globe className="h-4 w-4 mr-2" />
-                        View
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={async (e) => {
-                          e.stopPropagation();
-                          if (await unpublishCollection(collection)) {
-                            alert('Collection unpublished successfully');
-                          }
-                        }}
-                        className="text-slate-400 hover:text-red-500"
-                      >
-                        <Globe className="h-4 w-4 mr-2" />
-                        Unpublish
-                      </Button>
-                    </div>
-                  ) : (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={async (e) => {
-                        e.stopPropagation();
-                        const url = await publishCollection(collection);
-                        if (url) {
-                          window.open(url, '_blank');
-                        }
-                      }}
-                      className="text-slate-400 hover:text-green-500"
-                    >
-                      <Globe className="h-4 w-4 mr-2" />
-                      Publish
-                    </Button>
-                  )}
+                <div className="flex items-center">
+                  <Clock className="h-4 w-4 mr-1" />
+                  {new Date(collection.lastEdited).toLocaleDateString()}
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-          
-          {collections.length === 0 && (
-            <div className="col-span-full text-center text-slate-500 dark:text-slate-400 py-12 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
-              No collections yet. Create one to get started!
-            </div>
-          )}
-        </div>
+                {collection.publishedUrl && (
+                  <a 
+                    href={collection.publishedUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-blue-500"
+                  >
+                    View Published
+                  </a>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )) : (
+          <div className="col-span-full text-center py-8 text-slate-500 dark:text-slate-400">
+            No collections yet. Click "New Collection" to create one.
+          </div>
+        )}
       </div>
-    </div>
+    </Layout>
   );
-}            
+}

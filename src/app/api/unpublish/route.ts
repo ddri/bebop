@@ -1,20 +1,74 @@
+// import { NextResponse } from 'next/server';
+// import { prisma } from '@/lib/prisma';
+
+// export async function POST(request: Request) {
+//   try {
+//     const json = await request.json();
+//     const { fileName } = json;
+
+//     if (!fileName) {
+//       return NextResponse.json(
+//         { error: 'Filename is required' },
+//         { status: 400 }
+//       );
+//     }
+
+//     // Delete the content from MongoDB using Prisma
+//     const deleteResult = await prisma.publishedContent.deleteMany({
+//       where: {
+//         fileName: fileName
+//       }
+//     });
+
+//     if (deleteResult.count === 0) {
+//       return NextResponse.json(
+//         { error: 'No published content found with that filename' },
+//         { status: 404 }
+//       );
+//     }
+
+//     return NextResponse.json({ success: true });
+//   } catch (error) {
+//     console.error('Failed to unpublish:', error);
+//     return NextResponse.json(
+//       { error: 'Failed to unpublish content' },
+//       { status: 500 }
+//     );
+//   }
+// }
+
+
 import { NextResponse } from 'next/server';
-import { unlink } from 'fs/promises';
-import path from 'path';
+import { prisma } from '@/lib/prisma';
 
-export async function POST(request: Request) {
+export async function GET(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
   try {
-    const { fileName } = await request.json();
-    
-    // Delete the file
-    const filePath = path.join(process.cwd(), 'public', 'published', fileName);
-    await unlink(filePath);
+    const publishedContent = await prisma.publishedContent.findUnique({
+      where: {
+        id: params.id
+      }
+    });
 
-    return NextResponse.json({ success: true });
+    if (!publishedContent) {
+      return NextResponse.json(
+        { error: 'Content not found' },
+        { status: 404 }
+      );
+    }
+
+    // Return the content with HTML content type
+    return new NextResponse(publishedContent.content, {
+      headers: {
+        'Content-Type': 'text/html',
+      },
+    });
   } catch (error) {
-    console.error('Unpublishing error:', error);
+    console.error('Failed to fetch content:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to unpublish' },
+      { error: 'Failed to fetch content' },
       { status: 500 }
     );
   }
