@@ -1,45 +1,25 @@
 # bebop
 
-Bebop is a personal project that is exploring content management methods for writers. I'm building it to support how I create and cross-post content across multiple publishing outputs. It's also a way to collection and combine existing content into one output.
+Bebop is an opinionated content publishing tool for technical content creators. It is built around the workflow familiar to roles such as Developer Relations, where managing content to publish and cross-post across multiple publishing destinations often involved a range of writing tools, copying and pasting, and spreadsheets to track it all. 
 
-An example of this is creating multiple research notes, and wanting to combine these together and publishing them to a private post for a single point of reference. One example where I've found this useful is having a document for a team discussion or a team member onboarding guide, where I can easily combine existing documents into a single canonical file for them... without copy and paste, and always being able to regenerate the combined file with one click, so all updates are always carried downstream. 
+Bebop is being built to enhance the writing workflow by:
+
+- **Eliminating content silos:** Bring all your writing together in one place.
+- **Saving time and effort:** Automate repetitive tasks and streamline the publishing process.
+- **Ensuring consistency:** Maintain a single source of truth for your content and easily update it across all platforms.
+
+Bebop has a suite of features in development that are inspired by prior products I've built either for large software companies (e.g. Red Hat's PressGang CCMS) or for commercial projects (the SaaS company Corilla) and have been annoying to live without. These allow the user to write in whatever writing tool they prefer, sync the files to Bebop, and then be able to:
+
+- **Combine content dynamically with Collections:** Merge multiple notes into a single output, like a team document or blog post, with the ability to regenerate and update all downstream copies with one click.
+- **Streamline cross-posting:** Publish your content to various platforms without the hassle of manual copying and pasting.
+- **Automate reporting:** Understand what content and communications are most effective in a devrel campaign, or to review product launches, etc.
+
 
 ## Stack
 
-The current version of Bebop is a local application using NextJS and Typescript, using the shadcn component library, and CodeMirror as basic text editor. 
+The current version of Bebop is a local application built on NextJS and Typescript, using the shadcn component library, and CodeMirror as basic text editor. The next milestone release is a webapp using MongoDB Atlas for document storage, and a host of publishing services integrated directly into the UI. 
 
 
 ## Upcoming features and roadmap
 
-- Publishing to Medium/Hashnode API
-- Improved storage/hosting
-- Media file management
-- Web-application build
-
-
-
-
-## Layout
-
-```
-src/
-  app/
-    page.tsx                    (main page - Topics)
-    collections/
-      page.tsx                  (Collections route)
-    globals.css
-    layout.tsx
-  components/
-    ui/                         (shadcn components)
-      button.tsx
-      card.tsx
-      input.tsx
-      separator.tsx
-      textarea.tsx
-    Collections.tsx             (Collections component)
-    MarkdownCMS.tsx            (Topics component)
-  providers/
-    ThemeProvider.tsx
-  lib/
-    utils.ts
-```    
+See the GitHub Issues for upcoming features and Milestone releases. 
