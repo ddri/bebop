@@ -6,6 +6,8 @@ interface Topic {
   content: string;
   description: string;
   createdAt: string;
+  updatedAt: string;
+  collectionIds?: string[];
 }
 
 export function useTopics() {
