@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import CodeMirror from '@uiw/react-codemirror';
 import { markdown } from '@codemirror/lang-markdown';
 import { oneDark } from '@codemirror/theme-one-dark';
@@ -232,18 +233,18 @@ const EditorWithPreview = ({
         </Button>
       </div>
       <div className={`grid ${showPreview ? 'grid-cols-2' : 'grid-cols-1'} divide-x dark:divide-slate-700`}>
-      <CodeMirror
-        value={content}
-        height="400px"
-        extensions={[
-          markdown(),
-          EditorView.lineWrapping
-        ]}
-        theme={theme === 'dark' ? oneDark : undefined}
-        onChange={onChange}
-        className="text-sm"
-        key={editorKey}
-      />
+        <CodeMirror
+          value={content}
+          height="400px"
+          extensions={[
+            markdown(),
+            EditorView.lineWrapping
+          ]}
+          theme={theme === 'dark' ? oneDark : undefined}
+          onChange={onChange}
+          className="text-sm"
+          key={editorKey}
+        />
         {showPreview && (
           <div className="p-4 prose dark:prose-invert max-w-none prose-sm">
             <div dangerouslySetInnerHTML={{ __html: previewMarkdownToHtml(content) }} />
@@ -273,9 +274,15 @@ export default function MarkdownCMS() {
   const [combinedPreview, setCombinedPreview] = useState('');
   const [newDocName, setNewDocName] = useState('');
   const [newDocContent, setNewDocContent] = useState('');
+  const [newDocDescription, setNewDocDescription] = useState('');
   const [showNewDocForm, setShowNewDocForm] = useState(false);
   const [sortBy, setSortBy] = useState<SortOption>('newest');
-  const [editingDoc, setEditingDoc] = useState<{ id: string; name: string; content: string } | null>(null);
+  const [editingDoc, setEditingDoc] = useState<{ 
+    id: string; 
+    name: string; 
+    content: string;
+    description: string;
+  } | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -363,9 +370,10 @@ export default function MarkdownCMS() {
   const saveDocument = async () => {
     if (newDocName && newDocContent) {
       try {
-        await createTopic(newDocName, newDocContent);
+        await createTopic(newDocName, newDocContent, newDocDescription);
         setNewDocName('');
         setNewDocContent('');
+        setNewDocDescription('');
         setShowNewDocForm(false);
       } catch (error) {
         console.error('Failed to create topic:', error);
@@ -393,7 +401,7 @@ export default function MarkdownCMS() {
   const saveEditedDocument = async () => {
     if (editingDoc && editingDoc.name && editingDoc.content) {
       try {
-        await updateTopic(editingDoc.id, editingDoc.name, editingDoc.content);
+        await updateTopic(editingDoc.id, editingDoc.name, editingDoc.content, editingDoc.description);
         setEditingDoc(null);
       } catch (error) {
         console.error('Failed to update topic:', error);
@@ -452,6 +460,12 @@ export default function MarkdownCMS() {
                   onChange={(e) => setNewDocName(e.target.value)}
                   className="mb-2"
                 />
+                <Textarea
+                  placeholder="Brief description of your topic (shown in preview cards)"
+                  value={newDocDescription}
+                  onChange={(e) => setNewDocDescription(e.target.value)}
+                  className="mb-2 h-20"
+                />
               </div>
               <EditorWithPreview
                 content={newDocContent}
@@ -478,8 +492,8 @@ export default function MarkdownCMS() {
         </Card>
       )}
 
-{/* Topics List */}
-<div className="grid gap-4">
+      {/* Topics List */}
+      <div className="grid gap-4">
         {sortedTopics.length > 0 ? (
           sortedTopics.map((topic) => (
             <React.Fragment key={topic.id}>
@@ -496,6 +510,12 @@ export default function MarkdownCMS() {
                           value={editingDoc.name}
                           onChange={(e) => setEditingDoc(prev => ({ ...prev!, name: e.target.value }))}
                           className="mb-2"
+                        />
+                        <Textarea
+                          placeholder="Brief description of your topic (shown in preview cards)"
+                          value={editingDoc.description}
+                          onChange={(e) => setEditingDoc(prev => ({ ...prev!, description: e.target.value }))}
+                          className="mb-2 h-20"
                         />
                       </div>
                       <EditorWithPreview
@@ -529,20 +549,12 @@ export default function MarkdownCMS() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => {
-                        setEditingDoc({
-                          id: topic.id,
-                          name: topic.name,
-                          content: topic.content
-                        });
-                        // Scroll the edit form into view
-                        setTimeout(() => {
-                          document.querySelector(`[data-topic-id="${topic.id}"]`)?.scrollIntoView({ 
-                            behavior: 'smooth',
-                            block: 'center'
-                          });
-                        }, 100);
-                      }}
+                      onClick={() => setEditingDoc({
+                        id: topic.id,
+                        name: topic.name,
+                        content: topic.content,
+                        description: topic.description
+                      })}
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
@@ -557,8 +569,7 @@ export default function MarkdownCMS() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-sm text-slate-500 dark:text-slate-400">
-                    {topic.content.substring(0, 200)}
-                    {topic.content.length > 200 && '...'}
+                    {topic.description || 'No description provided'}
                   </div>
                   <div className="mt-2 flex items-center space-x-4 text-sm text-slate-500 dark:text-slate-400">
                     <div className="flex items-center">
@@ -582,4 +593,4 @@ export default function MarkdownCMS() {
       </div>
     </Layout>
   );
-}        
+}

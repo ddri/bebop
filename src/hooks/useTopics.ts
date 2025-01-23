@@ -1,108 +1,88 @@
-import useSWR from 'swr';
+import { useState, useEffect } from 'react';
 
 interface Topic {
   id: string;
   name: string;
   content: string;
+  description: string;
   createdAt: string;
-  updatedAt: string;
 }
 
-const fetcher = async (url: string) => {
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error('Failed to fetch topics');
-  }
-  return response.json();
-};
-
 export function useTopics() {
-  const { data: topics = [], error, mutate } = useSWR<Topic[]>('/api/topics', fetcher);
+  const [topics, setTopics] = useState<Topic[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Create a new topic
-  const createTopic = async (name: string, content: string) => {
+  const fetchTopics = async () => {
+    try {
+      const response = await fetch('/api/topics');
+      if (!response.ok) throw new Error('Failed to fetch topics');
+      const data = await response.json();
+      setTopics(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch topics');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createTopic = async (name: string, content: string, description: string) => {
     try {
       const response = await fetch('/api/topics', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, content })
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, content, description }),
       });
       if (!response.ok) throw new Error('Failed to create topic');
-      const newTopic = await response.json();
-      
-      // Optimistically update the local data
-      mutate(current => [newTopic, ...(current || [])], false);
-      
-      // Revalidate
-      await mutate();
-      return newTopic;
+      await fetchTopics();
     } catch (err) {
-      console.error('Failed to create topic:', err);
-      // Revalidate on error to ensure UI is in sync
-      await mutate();
+      setError(err instanceof Error ? err.message : 'Failed to create topic');
       throw err;
     }
   };
 
-  // Update an existing topic
-  const updateTopic = async (id: string, name: string, content: string) => {
+  const updateTopic = async (id: string, name: string, content: string, description: string) => {
     try {
       const response = await fetch(`/api/topics/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, content })
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, content, description }),
       });
       if (!response.ok) throw new Error('Failed to update topic');
-      const updatedTopic = await response.json();
-      
-      // Optimistically update the local data
-      mutate(
-        current => (current || []).map(topic => 
-          topic.id === id ? updatedTopic : topic
-        ),
-        false
-      );
-      
-      // Revalidate
-      await mutate();
-      return updatedTopic;
+      await fetchTopics();
     } catch (err) {
-      console.error('Failed to update topic:', err);
-      await mutate();
+      setError(err instanceof Error ? err.message : 'Failed to update topic');
       throw err;
     }
   };
 
-  // Delete a topic
   const deleteTopic = async (id: string) => {
     try {
       const response = await fetch(`/api/topics/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
       });
       if (!response.ok) throw new Error('Failed to delete topic');
-      
-      // Optimistically update the local data
-      mutate(
-        current => (current || []).filter(topic => topic.id !== id),
-        false
-      );
-      
-      // Revalidate
-      await mutate();
+      await fetchTopics();
     } catch (err) {
-      console.error('Failed to delete topic:', err);
-      await mutate();
+      setError(err instanceof Error ? err.message : 'Failed to delete topic');
       throw err;
     }
   };
 
+  useEffect(() => {
+    fetchTopics();
+  }, []);
+
   return {
     topics,
-    loading: !error && !topics,
-    error: error?.message,
+    loading,
+    error,
     createTopic,
     updateTopic,
     deleteTopic,
-    refreshTopics: () => mutate()
   };
 }
