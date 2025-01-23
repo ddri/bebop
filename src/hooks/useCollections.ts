@@ -105,15 +105,14 @@ export function useCollections() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          fileName: `${id}.html`,
+          collectionId: id,
           content: htmlContent
         }),
       });
-
+  
       if (!response.ok) throw new Error('Failed to publish');
       const { url } = await response.json();
       
-      // Update collection with published URL
       await updateCollection(id, { publishedUrl: url });
       return url;
     } catch (err) {
@@ -128,7 +127,7 @@ export function useCollections() {
       if (!collection?.publishedUrl) {
         throw new Error('Collection is not published');
       }
-
+  
       // Optimistic update
       mutate(
         collections.map(c => 
@@ -138,22 +137,17 @@ export function useCollections() {
         ),
         false
       );
-
+  
       const response = await fetch('/api/unpublish', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fileName: collection.publishedUrl.split('/').pop()
-        }),
+        body: JSON.stringify({ collectionId: id }),
       });
-
+  
       if (!response.ok) {
         throw new Error('Failed to unpublish');
       }
-
-      // Update the collection in the database to remove publishedUrl
-      await updateCollection(id, { publishedUrl: undefined });
-      
+  
       // Revalidate after successful unpublish
       await mutate();
       return true;
