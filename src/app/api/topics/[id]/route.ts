@@ -1,47 +1,33 @@
 import { NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 
-export async function PUT(
+export async function GET(
   request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
-    const { name, content, description } = await request.json();
-    const topic = await prisma.topic.update({
+    const publishedContent = await prisma.publishedContent.findUnique({
       where: {
-        id: params.id,
-      },
-      data: {
-        name,
-        content,
-        description,
-      },
+        id: params.id
+      }
     });
-    return NextResponse.json(topic);
-  } catch (error) {
-    console.error('Failed to update topic:', error);
-    return NextResponse.json(
-      { error: 'Failed to update topic' },
-      { status: 500 }
-    );
-  }
-}
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
-  try {
-    await prisma.topic.delete({
-      where: {
-        id: params.id,
+    if (!publishedContent) {
+      return NextResponse.json(
+        { error: 'Content not found' },
+        { status: 404 }
+      );
+    }
+
+    return new NextResponse(publishedContent.content, {
+      headers: {
+        'Content-Type': 'text/html',
       },
     });
-    return new NextResponse(null, { status: 204 });
   } catch (error) {
-    console.error('Failed to delete topic:', error);
+    console.error('Failed to fetch content:', error);
     return NextResponse.json(
-      { error: 'Failed to delete topic' },
+      { error: 'Failed to fetch content' },
       { status: 500 }
     );
   }
