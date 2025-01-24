@@ -2,13 +2,11 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 interface TopicParams {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export async function GET(
-  request: Request,
-  { params }: TopicParams
-) {
+export async function GET(request: Request, props: TopicParams) {
+  const params = await props.params;
   try {
     const topic = await prisma.topic.findUnique({
       where: { id: params.id }
@@ -31,10 +29,8 @@ export async function GET(
   }
 }
 
-export async function PUT(
-  request: Request,
-  { params }: TopicParams
-) {
+export async function PUT(request: Request, props: TopicParams) {
+  const params = await props.params;
   try {
     const body = await request.json();
     const updatedTopic = await prisma.topic.update({
