@@ -1,13 +1,18 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-type IdParams = { params: { id: string } };
+// Define an interface for the expected params object
+interface TopicParams {
+  params: { id: string };
+}
 
-export async function GET(request: Request, props: IdParams & { id?: never }) {
-  const params = await props.params;
+export async function GET(
+  request: Request,
+  // Use the interface to type the second argument
+  { params }: TopicParams  
+) {
   try {
     const topic = await prisma.topic.findUnique({
- // @ts-ignore next/async-params
       where: { id: params.id }
     });
 
