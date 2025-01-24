@@ -59,4 +59,4 @@ export async function DELETE(
     console.error('Failed to delete collection:', error);
     return NextResponse.json({ error: 'Failed to delete collection' }, { status: 500 });
   }
-}
+} 
