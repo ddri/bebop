@@ -11,13 +11,19 @@ export async function GET(
     });
 
     if (!collection) {
-      return NextResponse.json({ error: 'Collection not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Collection not found' },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json(collection);
   } catch (error) {
     console.error('Failed to fetch collection:', error);
-    return NextResponse.json({ error: 'Failed to fetch collection' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to fetch collection' },
+      { status: 500 }
+    );
   }
 }
 
