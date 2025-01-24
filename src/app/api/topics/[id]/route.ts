@@ -1,15 +1,13 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-// Define an interface for the expected params object
 interface TopicParams {
   params: { id: string };
 }
 
 export async function GET(
   request: Request,
-  // Use the interface to type the second argument
-  { params }: TopicParams  
+  { params }: TopicParams
 ) {
   try {
     const topic = await prisma.topic.findUnique({
@@ -33,14 +31,15 @@ export async function GET(
   }
 }
 
-export async function PUT(request: Request, props: IdParams & { id?: never }) {
-  const params = await props.params;
+export async function PUT(
+  request: Request,
+  { params }: TopicParams
+) {
   try {
     const body = await request.json();
     const updatedTopic = await prisma.topic.update({
- // @ts-ignore next/async-params
       where: { id: params.id },
-      data: body
+      data: body,
     });
     return NextResponse.json(updatedTopic);
   } catch (error) {
