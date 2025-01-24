@@ -7,7 +7,7 @@ export async function GET(
 ) {
   try {
     const collection = await prisma.collection.findUnique({
-      where: { id: params.id }
+      where: { id: (params as { id: string }).id } 
     });
 
     if (!collection) {
