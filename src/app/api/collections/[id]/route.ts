@@ -1,15 +1,16 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const collection = await prisma.collection.findUnique({
-      where: { id: params.id }
-    });
 
+
+
+export async function GET(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  try {
+    // Access params.id without any type assertions
+    const collection = await prisma.collection.findUnique({
+      where: { id: params.id } 
+    });    
     if (!collection) {
       return NextResponse.json(
         { error: 'Collection not found' },
@@ -27,7 +28,8 @@ export async function GET(
   }
 }
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const { name, description, topicIds, publishedUrl } = await request.json();
     const collection = await prisma.collection.update({
@@ -46,10 +48,8 @@ export async function PUT(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     await prisma.collection.delete({
       where: { id: params.id }
@@ -59,4 +59,4 @@ export async function DELETE(
     console.error('Failed to delete collection:', error);
     return NextResponse.json({ error: 'Failed to delete collection' }, { status: 500 });
   }
-}
+} 
