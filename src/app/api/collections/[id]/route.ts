@@ -1,15 +1,19 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+
+
+
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  // Explicitly define the type of the second argument
+  { params }: { params: { id: string } } 
 ) {
   try {
+    // Access params.id without any type assertions
     const collection = await prisma.collection.findUnique({
-      where: { id: (params as { id: string }).id } 
-    });
-
+      where: { id: params.id } 
+    });    
     if (!collection) {
       return NextResponse.json(
         { error: 'Collection not found' },
