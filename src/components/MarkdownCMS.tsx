@@ -30,6 +30,7 @@ import {
   Link as LinkIcon,
   Code
 } from 'lucide-react';
+import ConfirmationDialog from './ConfirmationDialog';
 
 type SortOption = 'newest' | 'oldest' | 'az' | 'za' | 'longest' | 'shortest';
 
@@ -277,6 +278,7 @@ export default function MarkdownCMS() {
   const [newDocDescription, setNewDocDescription] = useState('');
   const [showNewDocForm, setShowNewDocForm] = useState(false);
   const [sortBy, setSortBy] = useState<SortOption>('newest');
+  const [isConfirmDialogOpen, setIsConfirmDialog] = useState(false);
   const [editingDoc, setEditingDoc] = useState<{ 
     id: string; 
     name: string; 
@@ -393,6 +395,7 @@ export default function MarkdownCMS() {
     try {
       await deleteTopic(docId);
       setSelectedDocs(prev => prev.filter(id => id !== docId));
+      setIsConfirmDialog(false);
     } catch (error) {
       console.error('Failed to delete topic:', error);
     }
@@ -556,14 +559,15 @@ export default function MarkdownCMS() {
                         description: topic.description
                       })}
                     >
-                      <Pencil className="h-4 w-4" />
+                       <Pencil className="h-4 w-4" />
                     </Button>
                     <Button
+                    
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleDeleteDocument(topic.id)}
+                     
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <ConfirmationDialog action={handleDeleteDocument} id={topic.id} isDialogOpen={isConfirmDialogOpen} setIsDialogOpen={setIsConfirmDialog}/>
                     </Button>
                   </div>
                 </CardHeader>

@@ -31,6 +31,7 @@ export async function GET(request: Request, props: TopicParams) {
 
 export async function PUT(request: Request, props: TopicParams) {
   const params = await props.params;
+ 
   try {
     const body = await request.json();
     const updatedTopic = await prisma.topic.update({
@@ -45,4 +46,18 @@ export async function PUT(request: Request, props: TopicParams) {
       { status: 500 }
     );
   }
+}
+
+export async function DELETE(request: Request, props:TopicParams){
+  const params = await props.params;
+   try{
+    const deletedTopic = await prisma.topic.delete({
+      where: {
+        id: params.id,
+      },
+    })
+    return NextResponse.json(deletedTopic);
+     }catch(error){
+     return NextResponse.json({error: 'Failed to delete topic'},{status:500})
+    }
 }
