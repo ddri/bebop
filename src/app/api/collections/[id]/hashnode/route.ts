@@ -1,28 +1,25 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import type { Collection } from '@prisma/client';
 
-// Create a type that only includes the fields we want to update
-type CollectionUpdateInput = {
-  hashnodeUrl: string | null;
-  lastEdited: Date;
-};
+interface RouteParams {
+  params: {
+    id: string;
+  }
+}
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: RouteParams  // This is the fixed type
 ) {
   try {
     const { hashnodeUrl } = await request.json();
     
-    const updateData: CollectionUpdateInput = {
-      hashnodeUrl,
-      lastEdited: new Date()
-    };
-    
     const collection = await prisma.collection.update({
       where: { id: params.id },
-      data: updateData
+      data: {
+        hashnodeUrl,
+        lastEdited: new Date(),
+      },
     });
     
     return NextResponse.json(collection);
