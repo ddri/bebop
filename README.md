@@ -38,3 +38,8 @@ The Collections page is where we create collections, which are a logical contain
 
 <img width="1396" alt="image" src="https://github.com/user-attachments/assets/66ed4260-61e5-48dc-a061-fa051fc17537" />
 
+Collections allow you to pick what Topics are included, order and reorder them, and then publish to the Bebop hosted blog posts, or your choice of a range of popular blogging sites (such as Hashnode and Medium).
+
+<img width="1386" alt="image" src="https://github.com/user-attachments/assets/25701431-cf06-4065-bbb6-28e10a2bfea2" />
+
+
