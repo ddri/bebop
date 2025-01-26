@@ -23,3 +23,16 @@ The current version of Bebop is a local application built on NextJS and Typescri
 ## Upcoming features and roadmap
 
 See the GitHub Issues for upcoming features and Milestone releases. 
+
+
+## Screenshots
+
+The Topcis page is a collection of topics, which is the name given to the document files covering a specific topic. 
+
+<img width="1395" alt="image" src="https://github.com/user-attachments/assets/585f1225-a876-4dfb-b99f-6cb96133d969" />
+
+
+The Collections page is where we create collections, which are a logical container for topics. Whatever documents we include in here, are combined together and published as a document, blog post, whatever the end point publishes to.
+
+<img width="1396" alt="image" src="https://github.com/user-attachments/assets/66ed4260-61e5-48dc-a061-fa051fc17537" />
+
