@@ -10,7 +10,7 @@ export default function LandingPage() {
       <nav className="border-b border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="text-xl font-bold">Bebop</div>
+            <div className="text-xl font-bold">Bebop.</div>
             <div>
               <Link href="/collections">
                 <Button variant="link" className="text-white hover:text-yellow-300">
@@ -30,7 +30,7 @@ export default function LandingPage() {
               Write, Organize, Publish
             </h1>
             <p className="text-xl text-slate-300 mb-8 max-w-2xl mx-auto">
-              A modern writing platform for developers and technical writers. 
+              A content management platform for developers and technical writers. 
               Create collections of content and publish them anywhere.
             </p>
             <Link href="/collections">
@@ -62,7 +62,7 @@ export default function LandingPage() {
             </div>
             <h3 className="text-xl font-semibold mb-2">Collections</h3>
             <p className="text-slate-300">
-              Organize your content into collections for better management.
+            Organize your content into collections and stage them for specific campaigns.
             </p>
           </div>
           
@@ -72,7 +72,7 @@ export default function LandingPage() {
             </div>
             <h3 className="text-xl font-semibold mb-2">Publish Anywhere</h3>
             <p className="text-slate-300">
-              Publish directly to Hashnode or export your content.
+            Publish directly to Bebop hosting, or push to external sites like Hashnode, Medium, or your company blog.
             </p>
           </div>
         </div>
@@ -82,7 +82,7 @@ export default function LandingPage() {
       <footer className="border-t border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center text-slate-400">
-            <p>Built with Next.js and Tailwind CSS</p>
+            <p>Built with vegemite by an Australian in Seattle</p>
           </div>
         </div>
       </footer>
