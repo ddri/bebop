@@ -567,7 +567,7 @@ export default function MarkdownCMS() {
                       size="sm"
                      
                     >
-                      <ConfirmationDialog action={handleDeleteDocument} id={topic.id} isDialogOpen={isConfirmDialogOpen} setIsDialogOpen={setIsConfirmDialog}/>
+                      <ConfirmationDialog action={handleDeleteDocument} id={topic.id} isDialogOpen={isConfirmDialogOpen} setIsDialogOpen={setIsConfirmDialog} title='Topic'/>
                     </Button>
                   </div>
                 </CardHeader>

@@ -50,11 +50,12 @@ export async function PUT(request: Request, props: { params: Promise<{ id: strin
 
 export async function DELETE(request: Request, props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
+  
   try {
-    await prisma.collection.delete({
+    const deletedCollection = await prisma.collection.delete({
       where: { id: params.id }
     });
-    return new NextResponse(null, { status: 204 });
+    return  NextResponse.json(deletedCollection);
   } catch (error) {
     console.error('Failed to delete collection:', error);
     return NextResponse.json({ error: 'Failed to delete collection' }, { status: 500 });

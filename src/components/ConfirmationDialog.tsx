@@ -16,9 +16,10 @@ interface ConfirmationDialogProps {
     setIsDialogOpen: React.Dispatch<React.SetStateAction<boolean>>
     id:string
     action: (id:string)=>Promise<void>
+    title: string
 
 }
-export default function ConfirmationDialog({isDialogOpen,setIsDialogOpen,id,action}:ConfirmationDialogProps) {
+export default function ConfirmationDialog({isDialogOpen,setIsDialogOpen,id,action,title}:ConfirmationDialogProps) {
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger asChild>
@@ -28,8 +29,8 @@ export default function ConfirmationDialog({isDialogOpen,setIsDialogOpen,id,acti
         <DialogHeader>
           <DialogTitle>Are you absolutely sure?</DialogTitle>
           <DialogDescription>
-          This action cannot be undone. Are you sure you want to permanently
-          delete this Topic from our servers?
+          {`This action cannot be undone. Are you sure you want to permanently
+          delete this ${title}  from our servers?`}
           </DialogDescription>
         </DialogHeader>
 

@@ -35,6 +35,7 @@ import {
   MinusCircle
 } from 'lucide-react';
 import Layout from '@/components/Layout';
+import ConfirmationDialog from './ConfirmationDialog';
 
 interface Topic {
   id: string;
@@ -136,10 +137,11 @@ const TopicSelector = ({ topic, isSelected, onToggle }: {
     </div>
   );
 };
+
 export default function Collections() {
   const pathname = usePathname();
   const { theme } = useTheme();
-  const { collections, loading, error, createCollection, updateCollection, publishCollection, unpublishCollection } = useCollections();
+  const { collections, loading, error, createCollection, updateCollection, publishCollection, unpublishCollection, deleteCollection } = useCollections();
   const { topics } = useTopics();
   const [mounted, setMounted] = useState(false);
   const [showNewCollectionForm, setShowNewCollectionForm] = useState(false);
@@ -147,7 +149,7 @@ export default function Collections() {
   const [newCollectionName, setNewCollectionName] = useState('');
   const [newCollectionDesc, setNewCollectionDesc] = useState('');
   const [selectedTopicIds, setSelectedTopicIds] = useState<string[]>([]);
-
+  const [isConfirmDialogOpen, setIsConfirmDialog] = useState(false);
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -319,6 +321,15 @@ export default function Collections() {
     setNewCollectionDesc(collection.description || '');
     setSelectedTopicIds([...collection.topicIds]);
   };
+
+  const handleDeleteDocument = async (docId: string) => {
+    try {
+      await deleteCollection(docId);
+      setIsConfirmDialog(false); 
+    } catch (error) {
+      console.error('Failed to delete collection:', error);
+    }
+  }
 
   if (!mounted) return null;
 
@@ -510,6 +521,11 @@ export default function Collections() {
                     <Globe className="h-4 w-4" />
                   </Button>
                 )}
+
+                <Button variant="ghost" size="sm">
+                  <ConfirmationDialog  action={handleDeleteDocument} id={collection.id} isDialogOpen={isConfirmDialogOpen} setIsDialogOpen={setIsConfirmDialog} title='Collection'/>
+                </Button>
+
               </div>
             </CardHeader>
             <CardContent>
@@ -528,7 +544,7 @@ export default function Collections() {
                   {new Date(collection.lastEdited).toLocaleDateString()}
                 </div>
                 {collection.publishedUrl && (
-                  <a 
+                  <a
                     href={collection.publishedUrl}
                     target="_blank"
                     rel="noopener noreferrer"
