@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import {
   DndContext,
   closestCenter,
@@ -35,6 +36,8 @@ import {
   MinusCircle
 } from 'lucide-react';
 import Layout from '@/components/Layout';
+import { HashnodePublisher } from './HashnodePublisher';
+import { cn } from '@/lib/utils';
 
 interface Topic {
   id: string;
@@ -42,8 +45,8 @@ interface Topic {
   content: string;
   description: string;
   createdAt: string;
-  updatedAt: string;  // This was missing and causing the error
-  collectionIds?: string[];  // Making this optional since it might not always be present
+  updatedAt: string;
+  collectionIds?: string[];
 }
 
 interface Collection {
@@ -52,6 +55,7 @@ interface Collection {
   description?: string;
   topicIds: string[];
   publishedUrl?: string;
+  hashnodeUrl?: string | null;
   lastEdited: string;
   createdAt: string;
 }
@@ -136,6 +140,7 @@ const TopicSelector = ({ topic, isSelected, onToggle }: {
     </div>
   );
 };
+
 export default function Collections() {
   const pathname = usePathname();
   const { theme } = useTheme();
@@ -147,6 +152,8 @@ export default function Collections() {
   const [newCollectionName, setNewCollectionName] = useState('');
   const [newCollectionDesc, setNewCollectionDesc] = useState('');
   const [selectedTopicIds, setSelectedTopicIds] = useState<string[]>([]);
+  const [showHashnodePublisher, setShowHashnodePublisher] = useState(false);
+  const [publishingCollection, setPublishingCollection] = useState<Collection | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -159,19 +166,7 @@ export default function Collections() {
     setMounted(true);
   }, []);
 
-  const markdownToHtml = (markdown: string): string => {
-    return markdown
-      .replace(/^# (.*$)/gm, '<h1 class="text-3xl font-bold mt-4 mb-2">$1</h1>')
-      .replace(/^## (.*$)/gm, '<h2 class="text-2xl font-bold mt-4 mb-2">$1</h2>')
-      .replace(/^### (.*$)/gm, '<h3 class="text-xl font-bold mt-3 mb-2">$1</h3>')
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/\n\n/g, '</p><p class="my-2">')
-      .replace(/\n/g, '<br>')
-      .replace(/^(.+)$/gm, '<p class="my-2">$1</p>');
-  };
-
-  const generateCollectionHTML = (collection: Collection) => {
+  const generateCollectionHTML = (collection: Collection): string => {
     const collectionTopics = collection.topicIds
       .map(id => topics.find(topic => topic.id === id))
       .filter((topic): topic is Topic => topic !== undefined);
@@ -222,6 +217,18 @@ export default function Collections() {
     `.trim();
   };
 
+  const markdownToHtml = (markdown: string): string => {
+    return markdown
+      .replace(/^# (.*$)/gm, '<h1 class="text-3xl font-bold mt-4 mb-2">$1</h1>')
+      .replace(/^## (.*$)/gm, '<h2 class="text-2xl font-bold mt-4 mb-2">$1</h2>')
+      .replace(/^### (.*$)/gm, '<h3 class="text-xl font-bold mt-3 mb-2">$1</h3>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/\n\n/g, '</p><p class="my-2">')
+      .replace(/\n/g, '<br>')
+      .replace(/^(.+)$/gm, '<p class="my-2">$1</p>');
+  };
+
   const handleRemoveFromCollection = (topicId: string) => {
     setSelectedTopicIds(prev => prev.filter(id => id !== topicId));
   };
@@ -254,6 +261,7 @@ export default function Collections() {
         : [...prev, topicId]
     );
   };
+
   const handlePublish = async (collection: Collection) => {
     try {
       const content = generateCollectionHTML(collection);
@@ -264,6 +272,24 @@ export default function Collections() {
     } catch (error) {
       console.error('Failed to publish:', error);
       alert('Failed to publish collection');
+    }
+  };
+
+  const handleHashnodePublish = (collection: Collection) => {
+    setPublishingCollection(collection);
+    setShowHashnodePublisher(true);
+  };
+
+  const handleHashnodeUnpublish = async (collection: Collection) => {
+    try {
+      await fetch(`/api/collections/${collection.id}/hashnode`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hashnodeUrl: null })
+      });
+      // Refresh collections or update local state
+    } catch (error) {
+      console.error('Failed to unpublish from Hashnode:', error);
     }
   };
 
@@ -468,6 +494,26 @@ export default function Collections() {
         </Card>
       )}
 
+      {/* Hashnode Publisher Modal */}
+      {showHashnodePublisher && publishingCollection && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-lg">
+            <HashnodePublisher
+              collection={publishingCollection}
+              content={generateCollectionHTML(publishingCollection)}
+              onSuccess={(url: string) => {
+                setShowHashnodePublisher(false);
+                setPublishingCollection(null);
+              }}
+              onClose={() => {
+                setShowHashnodePublisher(false);
+                setPublishingCollection(null);
+              }}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Collections Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {collections && collections.length > 0 ? collections.map((collection) => (
@@ -491,25 +537,51 @@ export default function Collections() {
                 >
                   <Eye className="h-4 w-4" />
                 </Button>
-                {collection.publishedUrl ? (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleUnpublish(collection)}
-                    title="Unpublish"
-                  >
-                    <Globe className="h-4 w-4 text-green-500" />
-                  </Button>
-                ) : (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handlePublish(collection)}
-                    title="Publish"
-                  >
-                    <Globe className="h-4 w-4" />
-                  </Button>
-                )}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      title="Publish"
+                    >
+                      <Globe className={cn(
+                        "h-4 w-4",
+                        collection.publishedUrl && "text-green-500"
+                      )} />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-40">
+                    <DropdownMenuItem onClick={() => handlePublish(collection)}>
+                      <Globe className="h-4 w-4 mr-2" />
+                      Publish to Web
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleHashnodePublish(collection)}>
+                      <svg 
+                        className="h-4 w-4 mr-2" 
+                        viewBox="0 0 337 337" 
+                        fill="currentColor"
+                      >
+                        <path d="M168.5,0C75.45,0,0,75.45,0,168.5S75.45,337,168.5,337S337,261.55,337,168.5S261.55,0,168.5,0z M168.5,304.5  c-75.11,0-136-60.89-136-136s60.89-136,136-136s136,60.89,136,136S243.61,304.5,168.5,304.5z"/>
+                      </svg>
+                      {collection.hashnodeUrl ? 'Republish to Hashnode' : 'Publish to Hashnode'}
+                    </DropdownMenuItem>
+                    {(collection.publishedUrl || collection.hashnodeUrl) && (
+                      <DropdownMenuSeparator />
+                    )}
+                    {collection.publishedUrl && (
+                      <DropdownMenuItem onClick={() => handleUnpublish(collection)}>
+                        <X className="h-4 w-4 mr-2" />
+                        Unpublish from Web
+                      </DropdownMenuItem>
+                    )}
+                    {collection.hashnodeUrl && (
+                      <DropdownMenuItem onClick={() => handleHashnodeUnpublish(collection)}>
+                        <X className="h-4 w-4 mr-2" />
+                        Unpublish from Hashnode
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </CardHeader>
             <CardContent>
@@ -537,6 +609,16 @@ export default function Collections() {
                     View Published
                   </a>
                 )}
+                {collection.hashnodeUrl && (
+                  <a 
+                    href={collection.hashnodeUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-blue-500"
+                  >
+                    View on Hashnode
+                  </a>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -548,4 +630,4 @@ export default function Collections() {
       </div>
     </Layout>
   );
-}                  
+}
