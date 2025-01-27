@@ -30,7 +30,9 @@ import {
   Pencil,
   Eye,
   Globe,
-  GripVertical
+  GripVertical,
+  X,
+  MinusCircle
 } from 'lucide-react';
 import Layout from '@/components/Layout';
 
@@ -38,8 +40,10 @@ interface Topic {
   id: string;
   name: string;
   content: string;
+  description: string;
   createdAt: string;
-  updatedAt: string;
+  updatedAt: string;  // This was missing and causing the error
+  collectionIds?: string[];  // Making this optional since it might not always be present
 }
 
 interface Collection {
@@ -57,9 +61,10 @@ interface SortableTopicItemProps {
   topic: Topic;
   isSelected: boolean;
   onToggle: (id: string) => void;
+  onRemove: (id: string) => void;
 }
 
-const SortableTopicItem = ({ id, topic, isSelected, onToggle }: SortableTopicItemProps) => {
+const SortableTopicItem = ({ id, topic, isSelected, onToggle, onRemove }: SortableTopicItemProps) => {
   const {
     attributes,
     listeners,
@@ -89,9 +94,22 @@ const SortableTopicItem = ({ id, topic, isSelected, onToggle }: SortableTopicIte
       <div className="flex-grow min-w-0">
         <div className="font-medium truncate">{topic.name}</div>
         <div className="text-sm text-slate-500 dark:text-slate-400 truncate">
-          {topic.content.substring(0, 100)}...
+          {topic.description || topic.content.substring(0, 100)}...
         </div>
       </div>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onRemove(id);
+        }}
+        className="ml-2"
+        title="Remove from collection"
+      >
+        <MinusCircle className="h-4 w-4 text-slate-500 hover:text-red-500" />
+      </Button>
     </div>
   );
 };
@@ -112,13 +130,12 @@ const TopicSelector = ({ topic, isSelected, onToggle }: {
       <div>
         <div className="font-medium">{topic.name}</div>
         <div className="text-sm text-slate-500 dark:text-slate-400">
-          {topic.content.substring(0, 100)}...
+          {topic.description || topic.content.substring(0, 100)}...
         </div>
       </div>
     </div>
   );
 };
-
 export default function Collections() {
   const pathname = usePathname();
   const { theme } = useTheme();
@@ -205,6 +222,10 @@ export default function Collections() {
     `.trim();
   };
 
+  const handleRemoveFromCollection = (topicId: string) => {
+    setSelectedTopicIds(prev => prev.filter(id => id !== topicId));
+  };
+
   const previewCollection = (collection: Collection) => {
     const htmlContent = generateCollectionHTML(collection);
     const newTab = window.open();
@@ -233,7 +254,6 @@ export default function Collections() {
         : [...prev, topicId]
     );
   };
-
   const handlePublish = async (collection: Collection) => {
     try {
       const content = generateCollectionHTML(collection);
@@ -324,6 +344,7 @@ export default function Collections() {
 
   return (
     <Layout pathname={pathname}>
+      {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-semibold dark:text-white">Collections</h1>
         <Button 
@@ -341,6 +362,7 @@ export default function Collections() {
         </Button>
       </div>
 
+      {/* Collection Form */}
       {(showNewCollectionForm || editingCollection) && (
         <Card className={`mb-8 border-2 ${editingCollection ? 'border-blue-400' : 'border-yellow-400'}`}>
           <CardHeader>
@@ -368,7 +390,6 @@ export default function Collections() {
                   <div className="p-4 border-b">
                     <h3 className="font-medium">Selected Topics ({selectedTopicIds.length})</h3>
                   </div>
-                  
                   {selectedTopicIds.length > 0 && (
                     <DndContext
                       sensors={sensors}
@@ -390,6 +411,7 @@ export default function Collections() {
                                 topic={topic}
                                 isSelected={true}
                                 onToggle={toggleTopic}
+                                onRemove={handleRemoveFromCollection}
                               />
                             );
                           })}
@@ -446,6 +468,7 @@ export default function Collections() {
         </Card>
       )}
 
+      {/* Collections Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {collections && collections.length > 0 ? collections.map((collection) => (
           <Card key={collection.id} className="hover:shadow-md transition-shadow">
@@ -525,4 +548,4 @@ export default function Collections() {
       </div>
     </Layout>
   );
-}
+}                  

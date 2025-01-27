@@ -12,6 +12,7 @@ model Topic {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   name      String
   content   String
+  description String   @default("")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -20,7 +21,6 @@ model Topic {
   
   @@map("topics")
 }
-
 model Collection {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
   name         String
