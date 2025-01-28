@@ -37,7 +37,7 @@ interface Topic {
   collectionIds?: string[];
 }
 
-type SortOption = 'newest' | 'oldest' | 'az' | 'za' | 'longest' | 'shortest';
+type SortOption = 'newest' | 'oldest' | 'az' | 'za' ;
 
 const EditorWithPreview = ({
   content,
@@ -254,8 +254,6 @@ const EditorWithPreview = ({
       { value: 'oldest', label: 'Oldest First', icon: CalendarDays },
       { value: 'az', label: 'A-Z', icon: ArrowDownAZ },
       { value: 'za', label: 'Z-A', icon: ArrowUpAZ },
-      { value: 'longest', label: 'Longest First', icon: TextQuote },
-      { value: 'shortest', label: 'Shortest First', icon: TextQuote },
     ];
   
     const sortedTopics = useMemo(() => {
@@ -271,10 +269,6 @@ const EditorWithPreview = ({
           return sorted.sort((a, b) => a.name.localeCompare(b.name));
         case 'za':
           return sorted.sort((a, b) => b.name.localeCompare(a.name));
-        case 'longest':
-          return sorted.sort((a, b) => getWordCount(b.content) - getWordCount(a.content));
-        case 'shortest':
-          return sorted.sort((a, b) => getWordCount(a.content) - getWordCount(b.content));
         default:
           return sorted;
       }
