@@ -47,6 +47,16 @@ model PublishedContent {
   @@map("publishedContent")
 }
 
+model MediaItem {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  filename  String
+  url       String
+  size      Int
+  mimeType  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Settings {
   id              String    @id @default(auto()) @map("_id") @db.ObjectId
   hashnodeToken   String?

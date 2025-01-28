@@ -38,8 +38,8 @@ export default function Layout({ children, pathname }: LayoutProps) {
                 Topics
               </Link>
               <Link 
-                href="#" 
-                className="hover:text-yellow-300"
+                href="/media" 
+                className={`${pathname === '/media' ? 'text-yellow-300' : 'hover:text-yellow-300'}`}
               >
                 Media
               </Link>
