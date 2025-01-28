@@ -4,10 +4,8 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { deleteFileFromStorage } from '@/lib/storage';
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const mediaItem = await prisma.mediaItem.findUnique({
       where: { id: params.id }
