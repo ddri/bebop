@@ -27,11 +27,13 @@ model Collection {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
   name         String
   description  String?
+  topicIds     String[] @db.ObjectId
   publishedUrl String?
   hashnodeUrl  String?
+  devToUrl     String?
   createdAt    DateTime @default(now())
   lastEdited   DateTime @updatedAt
-  topicIds     String[] @db.ObjectId
+
 
   @@map("collections")
 }

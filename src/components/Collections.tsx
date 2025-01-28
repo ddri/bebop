@@ -37,6 +37,7 @@ import {
 } from 'lucide-react';
 import Layout from '@/components/Layout';
 import { HashnodePublisher } from './HashnodePublisher';
+import { DevToPublisher } from './DevToPublisher';
 import { cn } from '@/lib/utils';
 
 interface Topic {
@@ -56,6 +57,7 @@ interface Collection {
   topicIds: string[];
   publishedUrl?: string;
   hashnodeUrl?: string | null;
+  devToUrl?: string | null;
   lastEdited: string;
   createdAt: string;
 }
@@ -144,7 +146,7 @@ const TopicSelector = ({ topic, isSelected, onToggle }: {
 export default function Collections() {
   const pathname = usePathname();
   const { theme } = useTheme();
-  const { collections, loading, error, createCollection, updateCollection, publishCollection, unpublishCollection } = useCollections();
+  const { collections, loading, error, createCollection, updateCollection, publishCollection, unpublishCollection, refreshCollections } = useCollections();
   const { topics } = useTopics();
   const [mounted, setMounted] = useState(false);
   const [showNewCollectionForm, setShowNewCollectionForm] = useState(false);
@@ -153,6 +155,7 @@ export default function Collections() {
   const [newCollectionDesc, setNewCollectionDesc] = useState('');
   const [selectedTopicIds, setSelectedTopicIds] = useState<string[]>([]);
   const [showHashnodePublisher, setShowHashnodePublisher] = useState(false);
+  const [showDevToPublisher, setShowDevToPublisher] = useState(false);
   const [publishingCollection, setPublishingCollection] = useState<Collection | null>(null);
 
   const sensors = useSensors(
@@ -275,6 +278,8 @@ export default function Collections() {
     }
   };
 
+ // Handlers for Hashnode external publishing
+
   const handleHashnodePublish = (collection: Collection) => {
     setPublishingCollection(collection);
     setShowHashnodePublisher(true);
@@ -290,6 +295,27 @@ export default function Collections() {
       // Refresh collections or update local state
     } catch (error) {
       console.error('Failed to unpublish from Hashnode:', error);
+    }
+  };
+
+// Handlers for Devto external publishing
+
+  const handleDevToPublish = (collection: Collection) => {
+    setPublishingCollection(collection);
+    setShowDevToPublisher(true);
+  };
+
+  const handleDevToUnpublish = async (collection: Collection) => {
+    try {
+      await fetch(`/api/collections/${collection.id}/devto`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ devToUrl: null })
+      });
+      // Refresh collections or update local state
+      await refreshCollections();
+    } catch (error) {
+      console.error('Failed to unpublish from Dev.to:', error);
     }
   };
 
@@ -514,6 +540,26 @@ export default function Collections() {
         </div>
       )}
 
+      {/* Dev Publisher Modal */}
+      {showDevToPublisher && publishingCollection && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-lg">
+            <DevToPublisher
+              collection={publishingCollection}
+              content={generateCollectionHTML(publishingCollection)}
+              onSuccess={(url: string) => {
+                setShowDevToPublisher(false);
+                setPublishingCollection(null);
+              }}
+              onClose={() => {
+                setShowDevToPublisher(false);
+                setPublishingCollection(null);
+              }}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Collections Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {collections && collections.length > 0 ? collections.map((collection) => (
@@ -551,10 +597,19 @@ export default function Collections() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-40">
+
                     <DropdownMenuItem onClick={() => handlePublish(collection)}>
                       <Globe className="h-4 w-4 mr-2" />
                       Publish to Web
                     </DropdownMenuItem>
+
+                    <DropdownMenuItem onClick={() => handleDevToPublish(collection)}>
+                      <svg viewBox="0 0 448 512" className="h-4 w-4 mr-2" fill="currentColor">
+                        <path d="M120.12 208.29c-3.88-2.9-7.77-4.35-11.65-4.35H91.03v104.47h17.45c3.88 0 7.77-1.45 11.65-4.35 3.88-2.9 5.82-7.25 5.82-13.06v-69.65c-.01-5.8-1.96-10.16-5.83-13.06zM404.1 32H43.9C19.7 32 .06 51.59 0 75.8v360.4C.06 460.41 19.7 480 43.9 480h360.2c24.21 0 43.84-19.59 43.9-43.8V75.8c-.06-24.21-19.7-43.8-43.9-43.8zM154.2 291.19c0 18.81-11.61 47.31-48.36 47.25h-46.4V172.98h47.38c35.44 0 47.36 28.46 47.37 47.28l.01 70.93zm100.68-88.66H201.6v38.42h32.57v29.57H201.6v38.41h53.29v29.57h-62.18c-11.16.29-20.44-8.53-20.72-19.69V193.7c-.27-11.15 8.56-20.41 19.71-20.69h63.19l-.01 29.52zm103.64 115.29c-13.2 30.75-36.85 24.63-47.44 0l-38.53-144.8h32.57l29.71 113.72 29.57-113.72h32.58l-38.46 144.8z"/>
+                      </svg>
+                      {collection.devToUrl ? 'Republish to Dev.to' : 'Publish to Dev.to'}
+                    </DropdownMenuItem>
+
                     <DropdownMenuItem onClick={() => handleHashnodePublish(collection)}>
                       <svg 
                         className="h-4 w-4 mr-2" 
@@ -578,6 +633,12 @@ export default function Collections() {
                       <DropdownMenuItem onClick={() => handleHashnodeUnpublish(collection)}>
                         <X className="h-4 w-4 mr-2" />
                         Unpublish from Hashnode
+                      </DropdownMenuItem>
+                    )}
+                    {collection.devToUrl && (
+                      <DropdownMenuItem onClick={() => handleDevToUnpublish(collection)}>
+                        <X className="h-4 w-4 mr-2" />
+                        Unpublish from Dev.to
                       </DropdownMenuItem>
                     )}
                   </DropdownMenuContent>
@@ -617,6 +678,16 @@ export default function Collections() {
                     className="hover:text-blue-500"
                   >
                     View on Hashnode
+                  </a>
+                )}
+                {collection.devToUrl && (
+                  <a 
+                    href={collection.devToUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-blue-500"
+                  >
+                    View on Dev.to
                   </a>
                 )}
               </div>
