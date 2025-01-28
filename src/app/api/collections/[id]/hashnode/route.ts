@@ -2,15 +2,13 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     id: string;
-  }
+  }>
 }
 
-export async function PUT(
-  request: Request,
-  { params }: RouteParams  // This is the fixed type
-) {
+export async function PUT(request: Request, props: RouteParams) {
+  const params = await props.params;
   try {
     const { hashnodeUrl } = await request.json();
     
