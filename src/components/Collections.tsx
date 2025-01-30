@@ -322,6 +322,18 @@ export default function Collections() {
     setShowDevToPublisher(true);
   };
 
+  // This function gets raw markdown content for Dev
+  const generateCollectionMarkdown = (collection: Collection): string => {
+    const collectionTopics = collection.topicIds
+      .map(id => topics.find(topic => topic.id === id))
+      .filter((topic): topic is Topic => topic !== undefined);
+    
+    // Join topics with markdown horizontal rule separator
+    return collectionTopics
+      .map(topic => topic.content)
+      .join('\n\n---\n\n');
+  };
+
   const handleDevToUnpublish = async (collection: Collection) => {
     try {
       await fetch(`/api/collections/${collection.id}/devto`, {
@@ -563,10 +575,12 @@ export default function Collections() {
           <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-lg">
             <DevToPublisher
               collection={publishingCollection}
-              content={generateCollectionHTML(publishingCollection)}
+              content={generateCollectionHTML(publishingCollection)} // for preview if needed
+              rawMarkdown={generateCollectionMarkdown(publishingCollection)} // for Dev.to
               onSuccess={(url: string) => {
                 setShowDevToPublisher(false);
                 setPublishingCollection(null);
+                refreshCollections(); // Make sure this is called to update the UI
               }}
               onClose={() => {
                 setShowDevToPublisher(false);

@@ -15,7 +15,9 @@ interface DevToPublisherProps {
     description?: string;
     topicIds: string[];
   };
+  // We'll now get both HTML and Markdown content
   content: string;
+  rawMarkdown: string;
   onSuccess: (url: string) => void;
   onClose: () => void;
 }
@@ -23,6 +25,7 @@ interface DevToPublisherProps {
 export function DevToPublisher({
   collection,
   content,
+  rawMarkdown,
   onSuccess,
   onClose
 }: DevToPublisherProps) {
@@ -40,18 +43,12 @@ export function DevToPublisher({
   const publishToDevTo = async () => {
     setIsLoading(true);
     setStatus({ type: '', message: '' });
-    console.log('Starting publish to Dev.to...', {
-      title: collection.name,
-      contentLength: content.length
-    });
 
     try {
-      localStorage.setItem('devToToken', apiKey);
-
       const article = {
         article: {
           title: collection.name,
-          body_markdown: content,
+          body_markdown: rawMarkdown, // Use the raw Markdown content instead of HTML
           description: collection.description,
           published,
           tags: tags.split(',').map(tag => tag.trim()),
@@ -59,7 +56,11 @@ export function DevToPublisher({
         }
       };
 
-      console.log('Sending request to Dev.to:', article);
+      console.log('Publishing to Dev.to with markdown content:', {
+        title: article.article.title,
+        contentPreview: article.article.body_markdown.substring(0, 100) + '...',
+        tags: article.article.tags
+      });
 
       const response = await fetch('/api/publish/devto', {
         method: 'POST',
@@ -78,8 +79,7 @@ export function DevToPublisher({
       }
 
       const data = await response.json();
-      console.log('Dev.to response:', data);
-
+      
       if (!data.url) {
         throw new Error('No URL returned from Dev.to');
       }
@@ -120,54 +120,51 @@ export function DevToPublisher({
       </CardHeader>
 
       <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="apiKey">API Key</Label>
-          <Input
-            id="apiKey"
-            type="password"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-            placeholder="Enter your Dev.to API Key"
-          />
-          <p className="text-sm text-slate-500">
-            Get your API key from{' '}
-            <a 
-              href="https://dev.to/settings/extensions"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-500 hover:underline"
-            >
-              Dev.to Settings
-            </a>
-          </p>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="tags">Tags (comma-separated)</Label>
-          <Input
-            id="tags"
-            value={tags}
-            onChange={(e) => setTags(e.target.value)}
-            placeholder="Enter tags (e.g., webdev, javascript)"
-          />
-        </div>
-
-        <div className="flex items-center space-x-2">
-          <Switch
-            id="published"
-            checked={published}
-            onCheckedChange={setPublished}
-          />
-          <Label htmlFor="published">
-            {published ? 'Publish immediately' : 'Save as draft'}
-          </Label>
-        </div>
-
-        {status.message && (
-          <Alert variant={status.type === 'error' ? 'destructive' : 'default'}>
+        {!savedSettings.token ? (
+          <Alert>
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{status.message}</AlertDescription>
+            <AlertDescription>
+              No Dev.to API key found. Please add your API key in the{' '}
+              <a 
+                href="/settings" 
+                className="text-blue-500 hover:underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Settings page
+              </a>
+            </AlertDescription>
           </Alert>
+        ) : (
+          <>
+            <div className="space-y-2">
+              <Label htmlFor="tags">Tags (comma-separated)</Label>
+              <Input
+                id="tags"
+                value={tags}
+                onChange={(e) => setTags(e.target.value)}
+                placeholder="Enter tags (e.g., webdev, javascript)"
+              />
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="published"
+                checked={published}
+                onCheckedChange={setPublished}
+              />
+              <Label htmlFor="published">
+                {published ? 'Publish immediately' : 'Save as draft'}
+              </Label>
+            </div>
+
+            {status.message && (
+              <Alert variant={status.type === 'error' ? 'destructive' : 'default'}>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{status.message}</AlertDescription>
+              </Alert>
+            )}
+          </>
         )}
       </CardContent>
 
@@ -181,7 +178,7 @@ export function DevToPublisher({
         </Button>
         <Button 
           onClick={publishToDevTo}
-          disabled={isLoading || !apiKey}
+          disabled={isLoading || !savedSettings.token}
           className="bg-yellow-400 hover:bg-yellow-500 text-black"
         >
           {isLoading ? 'Publishing...' : 'Publish'}

@@ -1,14 +1,15 @@
+// src/hooks/useDevToSettings.ts
 export function useDevToSettings() {
-    const getSettings = () => ({
-      token: localStorage.getItem('devToToken') || '',
-    });
-  
-    const saveSettings = (token: string) => {
-      localStorage.setItem('devToToken', token);
-    };
-  
-    return {
-      getSettings,
-      saveSettings
-    };
-  }
+  const getSettings = () => ({
+    token: localStorage.getItem('devToToken') || ''
+  });
+
+  const saveSettings = (token: string) => {
+    localStorage.setItem('devToToken', token);
+  };
+
+  return {
+    getSettings,
+    saveSettings
+  };
+}
