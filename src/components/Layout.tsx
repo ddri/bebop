@@ -1,4 +1,3 @@
-// src/components/Layout.tsx
 import Link from 'next/link';
 
 interface LayoutProps {
@@ -7,11 +6,6 @@ interface LayoutProps {
 }
 
 export default function Layout({ children, pathname }: LayoutProps) {
-  // Don't show the navigation on the landing page
-  if (pathname === '/') {
-    return children;
-  }
-
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       {/* Navigation Bar */}
