@@ -200,6 +200,20 @@ export default function Collections() {
             h1, h2, h3 { margin-top: 2rem; }
             p { margin: 1rem 0; }
             hr { margin: 2rem 0; }
+            img {
+              max-width: 100%;
+              height: auto;
+              border-radius: 0.5rem;
+              margin: 1rem 0;
+              ${theme === 'dark' ? 'filter: brightness(0.9);' : ''}
+            }
+            a { /* Add this block */
+              color: #3b82f6;
+              text-decoration: none;
+            }
+            a:hover {
+              text-decoration: underline;
+            }
           </style>
       </head>
       <body>
@@ -227,6 +241,9 @@ export default function Collections() {
       .replace(/^### (.*$)/gm, '<h3 class="text-xl font-bold mt-3 mb-2">$1</h3>')
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/!\[(.*?)\]\((.*?)\)/g, '<img src="$2" alt="$1" class="max-w-full h-auto rounded-lg my-4" loading="lazy">') 
+      .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" class="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">$1</a>')
+      .replace(/`(.*?)`/g, '<code class="bg-slate-100 dark:bg-slate-800 px-1 rounded">$1</code>')
       .replace(/\n\n/g, '</p><p class="my-2">')
       .replace(/\n/g, '<br>')
       .replace(/^(.+)$/gm, '<p class="my-2">$1</p>');

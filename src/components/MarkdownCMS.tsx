@@ -26,6 +26,7 @@ import {
   Link as LinkIcon,
   Code
 } from 'lucide-react';
+import ImageUploader from '@/components/ImageUploader';
 
 interface Topic {
   id: string;
@@ -96,6 +97,7 @@ const EditorWithPreview = ({
       .replace(/^### (.*$)/gm, '<h3 class="text-xl font-bold mt-3 mb-2">$1</h3>')
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/!\[(.*?)\]\((.*?)\)/g, '<img src="$2" alt="$1" class="max-w-full h-auto rounded-lg my-4" loading="lazy">') 
       .replace(/`(.*?)`/g, '<code class="bg-slate-100 dark:bg-slate-800 px-1 rounded">$1</code>')
       .replace(/\n\n/g, '</p><p class="my-2">')
       .replace(/\n/g, '<br>')
@@ -171,6 +173,7 @@ const EditorWithPreview = ({
           >
             1.
           </Button>
+          {/* Links, Code, and Images group */}
           <div className="w-px h-8 bg-slate-200 dark:bg-slate-700 mx-1" />
           <Button
             variant="ghost"
@@ -190,6 +193,12 @@ const EditorWithPreview = ({
           >
             <Code className="h-4 w-4" />
           </Button>
+          <div className="w-px h-8 bg-slate-200 dark:bg-slate-700 mx-1" />
+          <ImageUploader 
+            onImageInsert={(imageMarkdown) => {
+              onChange(content + imageMarkdown);
+            }} 
+          />
         </div>
         <Button
           variant="ghost"
@@ -221,8 +230,8 @@ const EditorWithPreview = ({
         )}
       </div>
     </div>
-  );  // Close parenthesis for EditorWithPreview return
-};   // Close brace for EditorWithPreview component
+  ); 
+};   
 
 // main function begins here
 
