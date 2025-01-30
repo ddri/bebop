@@ -28,6 +28,7 @@ yarn-error.log*
 
 # local env files
 .env*.local
+.env
 
 # vercel
 .vercel
@@ -36,5 +37,3 @@ yarn-error.log*
 public/published/*
 !public/published/.gitkeep
 
-# Ignore those sweet sweet environment files 
-.env

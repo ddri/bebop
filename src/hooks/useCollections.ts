@@ -6,6 +6,8 @@ interface Collection {
   description?: string;
   topicIds: string[];
   publishedUrl?: string;
+  hashnodeUrl?: string | null; 
+  devToUrl?: string | null;
   lastEdited: string;
   createdAt: string;
 }
