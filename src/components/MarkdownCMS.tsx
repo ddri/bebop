@@ -27,6 +27,7 @@ import {
   Code
 } from 'lucide-react';
 import ImageUploader from '@/components/ImageUploader';
+import { cn } from '@/lib/utils';
 
 interface Topic {
   id: string;
@@ -38,7 +39,7 @@ interface Topic {
   collectionIds?: string[];
 }
 
-type SortOption = 'newest' | 'oldest' | 'az' | 'za' ;
+type SortOption = 'newest' | 'oldest' | 'az' | 'za';
 
 const EditorWithPreview = ({
   content,
@@ -52,6 +53,51 @@ const EditorWithPreview = ({
   editorKey?: string | number;
 }) => {
   const [showPreview, setShowPreview] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    
+    const file = e.dataTransfer.files[0];
+    if (!file || !file.type.startsWith('image/')) return;
+    
+    // Size validation (same as ImageUploader)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size must be less than 5MB');
+      return;
+    }
+    
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+      const response = await fetch('/api/media', {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (!response.ok) throw new Error('Upload failed');
+      
+      const data = await response.json();
+      
+      // Generate clean alt text from filename
+      const altText = file.name
+        .replace(/\.[^/.]+$/, '')
+        .replace(/[_-]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      
+      onChange(content + `\n![${altText}](${data.url})\n`);
+    } catch (error) {
+      console.error('Failed to upload:', error);
+      alert('Failed to upload image');
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const handleToolbarAction = (action: string) => {
     const selection = window.getSelection()?.toString() || '';
@@ -97,7 +143,7 @@ const EditorWithPreview = ({
       .replace(/^### (.*$)/gm, '<h3 class="text-xl font-bold mt-3 mb-2">$1</h3>')
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/!\[(.*?)\]\((.*?)\)/g, '<img src="$2" alt="$1" class="max-w-full h-auto rounded-lg my-4" loading="lazy">') 
+      .replace(/!\[(.*?)\]\((.*?)\)/g, '<img src="$2" alt="$1" class="max-w-full h-auto rounded-lg my-4" loading="lazy">')
       .replace(/`(.*?)`/g, '<code class="bg-slate-100 dark:bg-slate-800 px-1 rounded">$1</code>')
       .replace(/\n\n/g, '</p><p class="my-2">')
       .replace(/\n/g, '<br>')
@@ -105,8 +151,34 @@ const EditorWithPreview = ({
   };
 
   return (
-    <div className="border rounded-md">
-      <div className="flex items-center justify-between bg-slate-100 dark:bg-slate-800 px-2">
+    <div 
+      className={cn(
+        "border rounded-md relative",
+        isDragging && "ring-2 ring-yellow-400",
+        isUploading && "opacity-50"
+      )}
+      onDrop={handleDrop}
+      onDragOver={(e) => {
+        e.preventDefault();
+        setIsDragging(true);
+      }}
+      onDragLeave={() => setIsDragging(false)}
+    >
+      {isDragging && (
+        <div className="absolute inset-0 bg-yellow-400/10 flex items-center justify-center pointer-events-none z-50">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg px-4 py-2">
+            Drop image to upload
+          </div>
+        </div>
+      )}
+      {isUploading && (
+        <div className="absolute inset-0 bg-black/10 flex items-center justify-center pointer-events-none z-50">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg px-4 py-2">
+            Uploading image...
+          </div>
+        </div>
+      )}
+<div className="flex items-center justify-between bg-slate-100 dark:bg-slate-800 px-2">
         <div className="flex flex-wrap gap-1 p-1">
           <Button
             variant="ghost"
@@ -173,7 +245,6 @@ const EditorWithPreview = ({
           >
             1.
           </Button>
-          {/* Links, Code, and Images group */}
           <div className="w-px h-8 bg-slate-200 dark:bg-slate-700 mx-1" />
           <Button
             variant="ghost"
@@ -230,288 +301,286 @@ const EditorWithPreview = ({
         )}
       </div>
     </div>
-  ); 
-};   
+  );
+};
 
-// main function begins here
+export function MarkdownCMS({ pathname }: { pathname: string }) {
+  const { theme } = useTheme();
+  const { topics, loading, error, createTopic, updateTopic, deleteTopic } = useTopics();
 
-  export function MarkdownCMS({ pathname }: { pathname: string }) {
-    const { theme } = useTheme();
-    const { topics, loading, error, createTopic, updateTopic, deleteTopic } = useTopics();
-  
-    const [mounted, setMounted] = useState(false);
-    const [selectedDocs, setSelectedDocs] = useState<string[]>([]);
-    const [combinedPreview, setCombinedPreview] = useState('');
-    const [newDocName, setNewDocName] = useState('');
-    const [newDocContent, setNewDocContent] = useState('');
-    const [newDocDescription, setNewDocDescription] = useState('');
-    const [showNewDocForm, setShowNewDocForm] = useState(false);
-    const [sortBy, setSortBy] = useState<SortOption>('newest');
-    const [editingDoc, setEditingDoc] = useState<{ 
-      id: string; 
-      name: string; 
-      content: string;
-      description: string;
-    } | null>(null);
-  
-    useEffect(() => {
-      setMounted(true);
-    }, []);
-  
-    const sortOptions = [
-      { value: 'newest', label: 'Newest First', icon: CalendarDays },
-      { value: 'oldest', label: 'Oldest First', icon: CalendarDays },
-      { value: 'az', label: 'A-Z', icon: ArrowDownAZ },
-      { value: 'za', label: 'Z-A', icon: ArrowUpAZ },
-    ];
-  
-    const sortedTopics = useMemo(() => {
-      if (!topics) return [];
-      
-      const sorted = [...topics];
-      switch (sortBy) {
-        case 'newest':
-          return sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-        case 'oldest':
-          return sorted.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-        case 'az':
-          return sorted.sort((a, b) => a.name.localeCompare(b.name));
-        case 'za':
-          return sorted.sort((a, b) => b.name.localeCompare(a.name));
-        default:
-          return sorted;
-      }
-    }, [topics, sortBy]);
-  
-    if (!mounted) return null;
-  
-    if (loading) {
-      return <div className="text-lg">Loading topics...</div>;
+  const [mounted, setMounted] = useState(false);
+  const [selectedDocs, setSelectedDocs] = useState<string[]>([]);
+  const [combinedPreview, setCombinedPreview] = useState('');
+  const [newDocName, setNewDocName] = useState('');
+  const [newDocContent, setNewDocContent] = useState('');
+  const [newDocDescription, setNewDocDescription] = useState('');
+  const [showNewDocForm, setShowNewDocForm] = useState(false);
+  const [sortBy, setSortBy] = useState<SortOption>('newest');
+  const [editingDoc, setEditingDoc] = useState<{ 
+    id: string; 
+    name: string; 
+    content: string;
+    description: string;
+  } | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const sortOptions = [
+    { value: 'newest', label: 'Newest First', icon: CalendarDays },
+    { value: 'oldest', label: 'Oldest First', icon: CalendarDays },
+    { value: 'az', label: 'A-Z', icon: ArrowDownAZ },
+    { value: 'za', label: 'Z-A', icon: ArrowUpAZ },
+  ];
+
+  const sortedTopics = useMemo(() => {
+    if (!topics) return [];
+    
+    const sorted = [...topics];
+    switch (sortBy) {
+      case 'newest':
+        return sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      case 'oldest':
+        return sorted.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      case 'az':
+        return sorted.sort((a, b) => a.name.localeCompare(b.name));
+      case 'za':
+        return sorted.sort((a, b) => b.name.localeCompare(a.name));
+      default:
+        return sorted;
     }
-  
-    if (error) {
-      return <div className="text-lg text-red-500">Error: {error}</div>;
-    }
-  
-    const getWordCount = (text: string): number => {
-      return text.trim().split(/\s+/).filter(word => word.length > 0).length;
-    };
-  
-    const saveDocument = async () => {
-      if (newDocName && newDocContent) {
-        try {
-          await createTopic(newDocName, newDocContent, newDocDescription);
-          setNewDocName('');
-          setNewDocContent('');
-          setNewDocDescription('');
-          setShowNewDocForm(false);
-        } catch (error) {
-          console.error('Failed to create topic:', error);
-        }
-      }
-    };
-  
-    const saveEditedDocument = async () => {
-      if (editingDoc && editingDoc.name && editingDoc.content) {
-        try {
-          await updateTopic(editingDoc.id, editingDoc.name, editingDoc.content, editingDoc.description);
-          setEditingDoc(null);
-        } catch (error) {
-          console.error('Failed to update topic:', error);
-        }
-      }
-    };
-  
-    const handleDeleteDocument = async (docId: string) => {
-      try {
-        await deleteTopic(docId);
-        setSelectedDocs(prev => prev.filter(id => id !== docId));
-      } catch (error) {
-        console.error('Failed to delete topic:', error);
-      }
-    };
-  
-    return (
-      <div>
-        {/* Header with sort controls */}
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-semibold dark:text-white">Topics</h1>
-            <div className="relative">
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as SortOption)}
-                className="appearance-none bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md pl-9 pr-8 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
-              >
-                {sortOptions.map(option => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-              {React.createElement(
-                sortOptions.find(opt => opt.value === sortBy)?.icon || CalendarDays,
-                {
-                  className: "h-4 w-4 absolute left-2 top-1/2 transform -translate-y-1/2 text-slate-500",
-                }
-              )}
-            </div>
-          </div>
-          <Button 
-            onClick={() => setShowNewDocForm(true)}
-            className="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            New Topic
-          </Button>
-        </div>
-  
-        {/* New Topic Form */}
-        {showNewDocForm && (
-          <Card className="mb-8 border-2 border-yellow-400">
-            <CardHeader>
-              <CardTitle>Create New Topic</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <Input
-                    placeholder="Topic Name"
-                    value={newDocName}
-                    onChange={(e) => setNewDocName(e.target.value)}
-                    className="mb-2"
-                  />
-                  <Textarea
-                    placeholder="Brief description of your topic (shown in preview cards)"
-                    value={newDocDescription}
-                    onChange={(e) => setNewDocDescription(e.target.value)}
-                    className="mb-2 h-20"
-                  />
-                </div>
-                <EditorWithPreview
-                  content={newDocContent}
-                  onChange={setNewDocContent}
-                  theme={theme}
-                />
-                <div className="flex gap-2">
-                  <Button 
-                    onClick={saveDocument}
-                    disabled={!newDocName || !newDocContent}
-                    className="bg-yellow-400 hover:bg-yellow-500 text-black"
-                  >
-                    Save Topic
-                  </Button>
-                  <Button 
-                    variant="outline"
-                    onClick={() => setShowNewDocForm(false)}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-  
-        {/* Topics List */}
-        <div className="grid gap-4">
-          {sortedTopics.map((topic) => (
-            <React.Fragment key={topic.id}>
-              {editingDoc?.id === topic.id ? (
-                <Card className="border-2 border-blue-400">
-                  <CardHeader>
-                    <CardTitle>Edit Topic</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div>
-                        <Input
-                          placeholder="Topic Name"
-                          value={editingDoc.name}
-                          onChange={(e) => setEditingDoc(prev => ({ ...prev!, name: e.target.value }))}
-                          className="mb-2"
-                        />
-                        <Textarea
-                          placeholder="Brief description of your topic (shown in preview cards)"
-                          value={editingDoc.description}
-                          onChange={(e) => setEditingDoc(prev => ({ ...prev!, description: e.target.value }))}
-                          className="mb-2 h-20"
-                        />
-                      </div>
-                      <EditorWithPreview
-                        content={editingDoc.content}
-                        onChange={(value) => setEditingDoc(prev => ({ ...prev!, content: value }))}
-                        theme={theme}
-                      />
-                      <div className="flex gap-2">
-                        <Button 
-                          onClick={saveEditedDocument}
-                          disabled={!editingDoc.name || !editingDoc.content}
-                          className="bg-blue-400 hover:bg-blue-500 text-black"
-                        >
-                          Save Changes
-                        </Button>
-                        <Button 
-                          variant="outline"
-                          onClick={() => setEditingDoc(null)}
-                        >
-                          Cancel
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ) : (
-                <Card className="hover:shadow-md transition-shadow">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-lg font-semibold">{topic.name}</CardTitle>
-                    <div className="flex space-x-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setEditingDoc({
-                          id: topic.id,
-                          name: topic.name,
-                          content: topic.content,
-                          description: topic.description
-                        })}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteDocument(topic.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-sm text-slate-500 dark:text-slate-400">
-                      {topic.description || 'No description provided'}
-                    </div>
-                    <div className="mt-2 flex items-center space-x-4 text-sm text-slate-500 dark:text-slate-400">
-                      <div className="flex items-center">
-                        <Clock className="h-4 w-4 mr-1" />
-                        {new Date(topic.createdAt).toLocaleDateString()}
-                      </div>
-                      <div className="flex items-center">
-                        <TextQuote className="h-4 w-4 mr-1" />
-                        {getWordCount(topic.content)} words
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-            </React.Fragment>
-          ))}
-          {!sortedTopics.length && (
-            <div className="text-center py-8 text-slate-500 dark:text-slate-400">
-              No topics yet. Click "New Topic" to create one.
-            </div>
-          )}
-        </div>
-      </div>
-    );
+  }, [topics, sortBy]);
+
+  if (!mounted) return null;
+
+  if (loading) {
+    return <div className="text-lg">Loading topics...</div>;
   }
+
+  if (error) {
+    return <div className="text-lg text-red-500">Error: {error}</div>;
+  }
+
+  const getWordCount = (text: string): number => {
+    return text.trim().split(/\s+/).filter(word => word.length > 0).length;
+  };
+
+  const saveDocument = async () => {
+    if (newDocName && newDocContent) {
+      try {
+        await createTopic(newDocName, newDocContent, newDocDescription);
+        setNewDocName('');
+        setNewDocContent('');
+        setNewDocDescription('');
+        setShowNewDocForm(false);
+      } catch (error) {
+        console.error('Failed to create topic:', error);
+      }
+    }
+  };
+
+  const saveEditedDocument = async () => {
+    if (editingDoc && editingDoc.name && editingDoc.content) {
+      try {
+        await updateTopic(editingDoc.id, editingDoc.name, editingDoc.content, editingDoc.description);
+        setEditingDoc(null);
+      } catch (error) {
+        console.error('Failed to update topic:', error);
+      }
+    }
+  };
+
+  const handleDeleteDocument = async (docId: string) => {
+    try {
+      await deleteTopic(docId);
+      setSelectedDocs(prev => prev.filter(id => id !== docId));
+    } catch (error) {
+      console.error('Failed to delete topic:', error);
+    }
+  };
+
+  return (
+    <div>
+      {/* Header with sort controls */}
+      <div className="flex justify-between items-center mb-8">
+        <div className="flex items-center gap-4">
+          <h1 className="text-2xl font-semibold dark:text-white">Topics</h1>
+          <div className="relative">
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as SortOption)}
+              className="appearance-none bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md pl-9 pr-8 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
+            >
+              {sortOptions.map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            {React.createElement(
+              sortOptions.find(opt => opt.value === sortBy)?.icon || CalendarDays,
+              {
+                className: "h-4 w-4 absolute left-2 top-1/2 transform -translate-y-1/2 text-slate-500",
+              }
+            )}
+          </div>
+        </div>
+        <Button 
+          onClick={() => setShowNewDocForm(true)}
+          className="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          New Topic
+        </Button>
+      </div>
+
+      {/* New Topic Form */}
+      {showNewDocForm && (
+        <Card className="mb-8 border-2 border-yellow-400">
+          <CardHeader>
+            <CardTitle>Create New Topic</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <Input
+                  placeholder="Topic Name"
+                  value={newDocName}
+                  onChange={(e) => setNewDocName(e.target.value)}
+                  className="mb-2"
+                />
+                <Textarea
+                  placeholder="Brief description of your topic (shown in preview cards)"
+                  value={newDocDescription}
+                  onChange={(e) => setNewDocDescription(e.target.value)}
+                  className="mb-2 h-20"
+                />
+              </div>
+              <EditorWithPreview
+                content={newDocContent}
+                onChange={setNewDocContent}
+                theme={theme}
+              />
+              <div className="flex gap-2">
+                <Button 
+                  onClick={saveDocument}
+                  disabled={!newDocName || !newDocContent}
+                  className="bg-yellow-400 hover:bg-yellow-500 text-black"
+                >
+                  Save Topic
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => setShowNewDocForm(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Topics List */}
+      <div className="grid gap-4">
+        {sortedTopics.map((topic) => (
+          <React.Fragment key={topic.id}>
+            {editingDoc?.id === topic.id ? (
+              <Card className="border-2 border-blue-400">
+                <CardHeader>
+                  <CardTitle>Edit Topic</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div>
+                      <Input
+                        placeholder="Topic Name"
+                        value={editingDoc.name}
+                        onChange={(e) => setEditingDoc(prev => ({ ...prev!, name: e.target.value }))}
+                        className="mb-2"
+                      />
+                      <Textarea
+                        placeholder="Brief description of your topic (shown in preview cards)"
+                        value={editingDoc.description}
+                        onChange={(e) => setEditingDoc(prev => ({ ...prev!, description: e.target.value }))}
+                        className="mb-2 h-20"
+                      />
+                    </div>
+                    <EditorWithPreview
+                      content={editingDoc.content}
+                      onChange={(value) => setEditingDoc(prev => ({ ...prev!, content: value }))}
+                      theme={theme}
+                    />
+                    <div className="flex gap-2">
+                      <Button 
+                        onClick={saveEditedDocument}
+                        disabled={!editingDoc.name || !editingDoc.content}
+                        className="bg-blue-400 hover:bg-blue-500 text-black"
+                      >
+                        Save Changes
+                      </Button>
+                      <Button 
+                        variant="outline"
+                        onClick={() => setEditingDoc(null)}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="hover:shadow-md transition-shadow">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-lg font-semibold">{topic.name}</CardTitle>
+                  <div className="flex space-x-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setEditingDoc({
+                        id: topic.id,
+                        name: topic.name,
+                        content: topic.content,
+                        description: topic.description
+                      })}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeleteDocument(topic.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-sm text-slate-500 dark:text-slate-400">
+                    {topic.description || 'No description provided'}
+                  </div>
+                  <div className="mt-2 flex items-center space-x-4 text-sm text-slate-500 dark:text-slate-400">
+                    <div className="flex items-center">
+                      <Clock className="h-4 w-4 mr-1" />
+                      {new Date(topic.createdAt).toLocaleDateString()}
+                    </div>
+                    <div className="flex items-center">
+                      <TextQuote className="h-4 w-4 mr-1" />
+                      {getWordCount(topic.content)} words
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </React.Fragment>
+        ))}
+        {!sortedTopics.length && (
+          <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+            No topics yet. Click "New Topic" to create one.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}      
