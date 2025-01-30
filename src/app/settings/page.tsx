@@ -6,11 +6,9 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Upload, Eye, Globe, ExternalLink } from 'lucide-react';
-import { useHashnodeSettings } from '@/hooks/useHashnodeSettings';
-import { useDevToSettings } from '@/hooks/useDevToSettings';
 
+// Reuse types from Collections component
 interface Collection {
   id: number;
   name: string;
@@ -25,45 +23,20 @@ export default function Settings() {
   const [mounted, setMounted] = useState(false);
   const { theme } = useTheme();
   const [collections, setCollections] = useState<Collection[]>([]);
-  
-  // Hashnode state
-  const [hashnodeToken, setHashnodeToken] = useState('');
-  const [publicationId, setPublicationId] = useState('');
-  
-  // Dev.to state
-  const [devToToken, setDevToToken] = useState('');
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Load collections and settings on mount
+  // Load collections on mount
   useEffect(() => {
     if (mounted && typeof window !== 'undefined') {
       const savedCollections = localStorage.getItem('collections');
-      const savedHashnodeToken = localStorage.getItem('hashnodeToken');
-      const savedPubId = localStorage.getItem('hashnodePublicationId');
-      const savedDevToToken = localStorage.getItem('devToToken');
-      
       if (savedCollections) {
         setCollections(JSON.parse(savedCollections));
       }
-      if (savedHashnodeToken) setHashnodeToken(savedHashnodeToken);
-      if (savedPubId) setPublicationId(savedPubId);
-      if (savedDevToToken) setDevToToken(savedDevToToken);
     }
   }, [mounted]);
-
-  const saveHashnodeSettings = () => {
-    localStorage.setItem('hashnodeToken', hashnodeToken);
-    localStorage.setItem('hashnodePublicationId', publicationId);
-    alert('Hashnode settings saved successfully');
-  };
-
-  const saveDevToSettings = () => {
-    localStorage.setItem('devToToken', devToToken);
-    alert('Dev.to settings saved successfully');
-  };
 
   // Function to unpublish a collection
   const unpublishCollection = async (collection: Collection) => {
@@ -141,97 +114,6 @@ export default function Settings() {
         <h1 className="text-2xl font-semibold dark:text-white mb-8">Settings</h1>
         
         <div className="grid gap-6">
-          {/* Hashnode Settings */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Hashnode Integration</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <label className="block text-sm font-medium mb-2">
-                  Personal Access Token
-                </label>
-                <Input
-                  type="password"
-                  value={hashnodeToken}
-                  onChange={(e) => setHashnodeToken(e.target.value)}
-                  placeholder="Enter your Hashnode Personal Access Token"
-                />
-                <p className="text-sm text-slate-500">
-                  Get your token from{' '}
-                  <a 
-                    href="https://hashnode.com/settings/developer"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-500 hover:underline"
-                  >
-                    Hashnode Developer Settings
-                  </a>
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <label className="block text-sm font-medium mb-2">
-                  Publication ID
-                </label>
-                <Input
-                  type="text"
-                  value={publicationId}
-                  onChange={(e) => setPublicationId(e.target.value)}
-                  placeholder="Enter your Hashnode publication ID"
-                />
-                <p className="text-sm text-slate-500">
-                  Found in your Hashnode publication settings
-                </p>
-              </div>
-
-              <Button
-                onClick={saveHashnodeSettings}
-                className="bg-yellow-400 hover:bg-yellow-500 text-black"
-              >
-                Save Hashnode Settings
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Dev.to Settings */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Dev.to Integration</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <label className="block text-sm font-medium mb-2">
-                  API Key
-                </label>
-                <Input
-                  type="password"
-                  value={devToToken}
-                  onChange={(e) => setDevToToken(e.target.value)}
-                  placeholder="Enter your Dev.to API Key"
-                />
-                <p className="text-sm text-slate-500">
-                  Get your API key from{' '}
-                  <a 
-                    href="https://dev.to/settings/extensions"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-500 hover:underline"
-                  >
-                    Dev.to Settings
-                  </a>
-                </p>
-              </div>
-
-              <Button
-                onClick={saveDevToSettings}
-                className="bg-yellow-400 hover:bg-yellow-500 text-black"
-              >
-                Save Dev.to Settings
-              </Button>
-            </CardContent>
-          </Card>
-
           {/* Published Collections Section */}
           <Card>
             <CardHeader>
@@ -363,7 +245,7 @@ export default function Settings() {
             </CardHeader>
             <CardContent>
               <p className="text-slate-500 dark:text-slate-400">
-                Additional settings are in development.
+                Additional settings coming soon...
               </p>
             </CardContent>
           </Card>
