@@ -20,8 +20,8 @@ export default function Navigation({ pathname }: { pathname: string }) {
               Topics
             </Link>
             <Link 
-              href="/media" 
-              className={`${pathname === '/media' ? 'text-yellow-300' : 'hover:text-yellow-300'}`}
+              href="#" 
+              className="hover:text-yellow-300"
             >
               Media
             </Link>
