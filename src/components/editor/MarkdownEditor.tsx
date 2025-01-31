@@ -6,6 +6,8 @@ import CodeMirror from '@uiw/react-codemirror';
 import { markdown } from '@codemirror/lang-markdown';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { EditorView } from '@codemirror/view';
+import { urlTransformExtension } from './urlTransformExtension';
+import { processRichMediaMarkdown } from './RichMediaTransformer';
 import { 
   Eye,
   Bold,
@@ -13,7 +15,8 @@ import {
   Heading,
   List,
   Link as LinkIcon,
-  Code
+  Code,
+  Video
 } from 'lucide-react';
 import ImageUploader from '@/components/ImageUploader';
 import { cn } from '@/lib/utils';
@@ -137,6 +140,13 @@ const MarkdownEditor = ({
           cursorMove = 1;
         }
         break;
+
+      case 'embed':
+        const url = prompt('Enter URL to embed (YouTube, Twitter, or Spotify):');
+        if (url) {
+          insertText = url + '\n';
+        }
+        break;
     }
 
     insertTextAtCursor(insertText, cursorMove);
@@ -185,7 +195,12 @@ const MarkdownEditor = ({
   };
 
   const previewMarkdownToHtml = (markdown: string): string => {
-    return markdown
+    // First process rich media embeds
+    const withRichMedia = processRichMediaMarkdown(markdown);
+    
+    // Then process regular markdown
+    return withRichMedia
+      .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" class="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">$1</a>')
       .replace(/^# (.*$)/gm, '<h1 class="text-3xl font-bold mt-4 mb-2">$1</h1>')
       .replace(/^## (.*$)/gm, '<h2 class="text-2xl font-bold mt-4 mb-2">$1</h2>')
       .replace(/^### (.*$)/gm, '<h3 class="text-xl font-bold mt-3 mb-2">$1</h3>')
@@ -320,6 +335,16 @@ const MarkdownEditor = ({
               onChange(editorRef.current?.state.doc.toString() || '');
             }} 
           />
+          <div className="w-px h-8 bg-slate-200 dark:bg-slate-700 mx-1" />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleToolbarAction('embed')}
+            className="h-8 w-8 p-0"
+            title="Embed Media (YouTube, Twitter, Spotify)"
+          >
+            <Video className="h-4 w-4" />
+          </Button>
         </div>
         <Button
           variant="ghost"
@@ -338,7 +363,8 @@ const MarkdownEditor = ({
           height="400px"
           extensions={[
             markdown(),
-            EditorView.lineWrapping
+            EditorView.lineWrapping,
+            urlTransformExtension()
           ]}
           theme={theme === 'dark' ? oneDark : undefined}
           onChange={onChange}
