@@ -1,3 +1,4 @@
+// src/components/Layout.tsx
 import Link from 'next/link';
 
 interface LayoutProps {
@@ -30,6 +31,12 @@ export default function Layout({ children, pathname }: LayoutProps) {
                 className={`${pathname === '/topics' ? 'text-yellow-300' : 'hover:text-yellow-300'}`}
               >
                 Topics
+              </Link>
+              <Link 
+                href="/write" 
+                className={`${pathname === '/write' ? 'text-yellow-300' : 'hover:text-yellow-300'}`}
+              >
+                Write
               </Link>
               <Link 
                 href="/media" 
