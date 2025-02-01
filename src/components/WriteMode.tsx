@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useTheme } from "next-themes";
 import CodeMirror from '@uiw/react-codemirror';
 import { markdown } from '@codemirror/lang-markdown';
@@ -28,9 +28,11 @@ import {
   Save,
   Maximize,
   Minimize,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Video
 } from 'lucide-react';
 import ImageUploader from '@/components/ImageUploader';
+import { urlDetectorExtension, URLDetectorPopup, cardRegistry } from '@/components/editor/cards';
 
 const WriteMode = () => {
   const { createTopic } = useTopics();
@@ -44,6 +46,13 @@ const WriteMode = () => {
   
   const [topicName, setTopicName] = useState('');
   const [topicDescription, setTopicDescription] = useState('');
+  const [urlPopup, setUrlPopup] = useState<{
+    url: string;
+    position: { x: number; y: number };
+  } | null>(null);
+
+  const editorRef = useRef<{ view?: EditorView }>(null);
+  const editorContainerRef = useRef<HTMLDivElement>(null);
 
   // Auto-save functionality
   useEffect(() => {
@@ -87,9 +96,70 @@ const WriteMode = () => {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, []);
 
-  const editorRef = React.useRef<{
-    view?: EditorView;
-  }>(null);
+  const handleUrlFound = useCallback((url: string, pos: number) => {
+    if (!editorRef.current?.view || !editorContainerRef.current) return;
+
+    const cardType = cardRegistry.getCardForUrl(url);
+    if (!cardType) return;
+
+    // Get position information from CodeMirror
+    const coords = editorRef.current.view.coordsAtPos(pos);
+    if (!coords) return;
+
+    // Get editor container position
+    const editorRect = editorContainerRef.current.getBoundingClientRect();
+
+    // Set popup position
+    setUrlPopup({
+      url,
+      position: {
+        x: coords.left - editorRect.left,
+        y: coords.top - editorRect.top - 40 // Position above the URL
+      }
+    });
+  }, []);
+
+  const handleTransformToCard = async () => {
+    if (!urlPopup || !editorRef.current?.view) return;
+
+    const cardType = cardRegistry.getCardForUrl(urlPopup.url);
+    if (!cardType) return;
+
+    try {
+      // Extract metadata
+      const metadata = await cardType.extractMetadata(urlPopup.url);
+
+      // Create card data
+      const cardData = {
+        type: cardType.type,
+        url: urlPopup.url,
+        metadata
+      };
+
+      // Convert to markdown
+      const markdown = cardType.toMarkdown(cardData);
+
+      // Replace URL with card markdown
+      const doc = editorRef.current.view.state.doc.toString();
+      const urlIndex = doc.indexOf(urlPopup.url);
+      
+      if (urlIndex !== -1) {
+        const view = editorRef.current.view;
+        view.dispatch({
+          changes: {
+            from: urlIndex,
+            to: urlIndex + urlPopup.url.length,
+            insert: markdown
+          }
+        });
+      }
+
+      // Clear popup
+      setUrlPopup(null);
+    } catch (error) {
+      console.error('Failed to transform URL to card:', error);
+    }
+  };
   
   const handleToolbarAction = (action: string) => {
     if (!editorRef.current?.view) return;
@@ -129,9 +199,22 @@ const WriteMode = () => {
       case 'code':
         insertText = selection ? `\`${selection}\`` : '`code`';
         break;
+      case 'embed':
+        const url = prompt('Enter URL to embed (YouTube, Spotify):');
+        if (url) {
+          const cardType = cardRegistry.getCardForUrl(url);
+          if (cardType) {
+            handleUrlFound(url, view.state.selection.main.from);
+          } else {
+            insertText = url + '\n';
+          }
+        }
+        break;
     }
     
-    view.dispatch(view.state.replaceSelection(insertText));
+    if (insertText) {
+      view.dispatch(view.state.replaceSelection(insertText));
+    }
   };
 
   const handleSave = async () => {
@@ -163,7 +246,19 @@ const WriteMode = () => {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)] bg-slate-950">
+    <div 
+      className="flex flex-col h-[calc(100vh-8rem)] bg-slate-950"
+      ref={editorContainerRef}
+    >
+      {urlPopup && (
+        <URLDetectorPopup
+          cardType={cardRegistry.getCardForUrl(urlPopup.url)!}
+          url={urlPopup.url}
+          position={urlPopup.position}
+          onTransform={handleTransformToCard}
+        />
+      )}
+      
       {showToolbar && (
         <div className="bg-slate-900 border-b border-slate-800">
           <div className="flex items-center justify-between px-4 py-2">
@@ -248,6 +343,16 @@ const WriteMode = () => {
                   setContent(prev => prev + imageMarkdown);
                 }} 
               />
+              <div className="w-px h-8 bg-slate-800" />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleToolbarAction('embed')}
+                className="h-8 w-8 p-0"
+                title="Embed Media"
+              >
+                <Video className="h-4 w-4" />
+              </Button>
             </div>
             <div className="flex items-center space-x-2">
               <Button
@@ -299,7 +404,8 @@ const WriteMode = () => {
           autoFocus
           extensions={[
             markdown(),
-            EditorView.lineWrapping
+            EditorView.lineWrapping,
+            urlDetectorExtension(handleUrlFound)
           ]}
           theme={oneDark}
           onChange={setContent}
