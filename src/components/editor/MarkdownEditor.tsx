@@ -1,13 +1,11 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import CodeMirror from '@uiw/react-codemirror';
 import { markdown } from '@codemirror/lang-markdown';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { EditorView } from '@codemirror/view';
-import { urlTransformExtension } from './urlTransformExtension';
-import { processRichMediaMarkdown } from './RichMediaTransformer';
 import { 
   Eye,
   Bold,
@@ -20,6 +18,12 @@ import {
 } from 'lucide-react';
 import ImageUploader from '@/components/ImageUploader';
 import { cn } from '@/lib/utils';
+import {
+  urlDetectorExtension,
+  URLDetectorPopup,
+  cardRegistry,
+  processRichMediaMarkdown
+} from './cards';
 
 interface MarkdownEditorProps {
   content: string;
@@ -38,6 +42,78 @@ const MarkdownEditor = ({
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const editorRef = useRef<EditorView | null>(null);
+  const [urlPopup, setUrlPopup] = useState<{
+    url: string;
+    position: { x: number; y: number };
+  } | null>(null);
+
+  // Calculate editor rect for popup positioning
+  const editorContainerRef = useRef<HTMLDivElement>(null);
+
+  const handleUrlFound = useCallback((url: string, pos: number) => {
+    if (!editorRef.current || !editorContainerRef.current) return;
+
+    const cardType = cardRegistry.getCardForUrl(url);
+    if (!cardType) return;
+
+    // Get position information from CodeMirror
+    const coords = editorRef.current.coordsAtPos(pos);
+    if (!coords) return;
+
+    // Get editor container position
+    const editorRect = editorContainerRef.current.getBoundingClientRect();
+
+    // Set popup position
+    setUrlPopup({
+      url,
+      position: {
+        x: coords.left - editorRect.left,
+        y: coords.top - editorRect.top - 40 // Position above the URL
+      }
+    });
+  }, []);
+
+  const handleTransformToCard = async () => {
+    if (!urlPopup || !editorRef.current) return;
+
+    const cardType = cardRegistry.getCardForUrl(urlPopup.url);
+    if (!cardType) return;
+
+    try {
+      // Extract metadata
+      const metadata = await cardType.extractMetadata(urlPopup.url);
+
+      // Create card data
+      const cardData = {
+        type: cardType.type,
+        url: urlPopup.url,
+        metadata
+      };
+
+      // Convert to markdown
+      const markdown = cardType.toMarkdown(cardData);
+
+      // Replace URL with card markdown in editor
+      const doc = editorRef.current.state.doc.toString();
+      const urlIndex = doc.indexOf(urlPopup.url);
+      
+      if (urlIndex !== -1) {
+        const transaction = editorRef.current.state.update({
+          changes: {
+            from: urlIndex,
+            to: urlIndex + urlPopup.url.length,
+            insert: markdown
+          }
+        });
+        editorRef.current.dispatch(transaction);
+      }
+
+      // Clear popup
+      setUrlPopup(null);
+    } catch (error) {
+      console.error('Failed to transform URL to card:', error);
+    }
+  };
 
   const getEditorSelection = () => {
     if (!editorRef.current) return { text: '', from: 0, to: 0 };
@@ -68,7 +144,6 @@ const MarkdownEditor = ({
 
     editorRef.current.dispatch(transaction);
 
-    // Move cursor if specified
     if (movePositions !== 0) {
       const newPos = selection.from + movePositions;
       editorRef.current.dispatch({
@@ -78,7 +153,7 @@ const MarkdownEditor = ({
   };
 
   const handleToolbarAction = (action: string) => {
-    const { text: selectedText, from, to } = getEditorSelection();
+    const { text: selectedText } = getEditorSelection();
     
     let insertText = '';
     let cursorMove = 0;
@@ -144,13 +219,20 @@ const MarkdownEditor = ({
       case 'embed':
         const url = prompt('Enter URL to embed (YouTube, Twitter, or Spotify):');
         if (url) {
-          insertText = url + '\n';
+          const cardType = cardRegistry.getCardForUrl(url);
+          if (cardType) {
+            handleUrlFound(url, editorRef.current?.state.selection.main.from || 0);
+          } else {
+            insertText = url + '\n';
+          }
         }
         break;
     }
 
-    insertTextAtCursor(insertText, cursorMove);
-    onChange(editorRef.current?.state.doc.toString() || '');
+    if (insertText) {
+      insertTextAtCursor(insertText, cursorMove);
+      onChange(editorRef.current?.state.doc.toString() || '');
+    }
   };
 
   const handleDrop = async (e: React.DragEvent) => {
@@ -195,11 +277,11 @@ const MarkdownEditor = ({
   };
 
   const previewMarkdownToHtml = (markdown: string): string => {
-    // First process rich media embeds
-    const withRichMedia = processRichMediaMarkdown(markdown);
+    // Process cards first
+    let html = processRichMediaMarkdown(markdown);
     
     // Then process regular markdown
-    return withRichMedia
+    return html
       .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" class="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">$1</a>')
       .replace(/^# (.*$)/gm, '<h1 class="text-3xl font-bold mt-4 mb-2">$1</h1>')
       .replace(/^## (.*$)/gm, '<h2 class="text-2xl font-bold mt-4 mb-2">$1</h2>')
@@ -208,9 +290,14 @@ const MarkdownEditor = ({
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
       .replace(/!\[(.*?)\]\((.*?)\)/g, '<img src="$2" alt="$1" class="max-w-full h-auto rounded-lg my-4" loading="lazy">')
       .replace(/`(.*?)`/g, '<code class="bg-slate-100 dark:bg-slate-800 px-1 rounded">$1</code>')
-      .replace(/\n\n/g, '</p><p class="my-2">')
-      .replace(/\n/g, '<br>')
-      .replace(/^(.+)$/gm, '<p class="my-2">$1</p>');
+      .split(/\n\n/)
+      .map(block => block.trim())
+      .filter(block => block.length > 0)
+      .map(block => {
+        if (block.startsWith('<')) return block; // Don't wrap HTML in paragraphs
+        return `<p class="my-2">${block}</p>`;
+      })
+      .join('\n');
   };
 
   return (
@@ -220,6 +307,7 @@ const MarkdownEditor = ({
         isDragging && "ring-2 ring-yellow-400",
         isUploading && "opacity-50"
       )}
+      ref={editorContainerRef}
       onDrop={handleDrop}
       onDragOver={(e) => {
         e.preventDefault();
@@ -227,6 +315,16 @@ const MarkdownEditor = ({
       }}
       onDragLeave={() => setIsDragging(false)}
     >
+      {/* URL Detector Popup */}
+      {urlPopup && (
+        <URLDetectorPopup
+          cardType={cardRegistry.getCardForUrl(urlPopup.url)!}
+          url={urlPopup.url}
+          position={urlPopup.position}
+          onTransform={handleTransformToCard}
+        />
+      )}
+
       {isDragging && (
         <div className="absolute inset-0 bg-yellow-400/10 flex items-center justify-center pointer-events-none z-50">
           <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg px-4 py-2">
@@ -322,7 +420,7 @@ const MarkdownEditor = ({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => handleToolbarAction('code')}
+            onClick={() => handleToolbarAction('code')}  
             className="h-8 w-8 p-0"
             title="Insert Code"
           >
@@ -364,7 +462,7 @@ const MarkdownEditor = ({
           extensions={[
             markdown(),
             EditorView.lineWrapping,
-            urlTransformExtension()
+            urlDetectorExtension(handleUrlFound)
           ]}
           theme={theme === 'dark' ? oneDark : undefined}
           onChange={onChange}
