@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useTheme } from "next-themes";
 import CodeMirror from '@uiw/react-codemirror';
 import { markdown } from '@codemirror/lang-markdown';
@@ -28,9 +28,13 @@ import {
   Save,
   Maximize,
   Minimize,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Video
 } from 'lucide-react';
 import ImageUploader from '@/components/ImageUploader';
+import { urlDetectorExtension } from '@/components/editor/cards/';
+import { URLDetectorPopup } from '@/components/editor/cards';
+import { cardRegistry } from '@/components/editor/cards';
 
 const WriteMode = () => {
   const { createTopic } = useTopics();
@@ -87,12 +91,93 @@ const WriteMode = () => {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, []);
 
+  const [urlPopup, setUrlPopup] = useState<{
+    url: string;
+    position: { x: number; y: number };
+  } | null>(null);
+  const editorContainerRef = useRef<HTMLDivElement>(null);
+
+  // URL detection handler
+  const handleUrlFound = useCallback((url: string, pos: number) => {
+    if (!editorRef.current?.view || !editorContainerRef.current) return;
+
+    const cardType = cardRegistry.getCardForUrl(url);
+    if (!cardType) return;
+
+    // Get position information
+    const coords = editorRef.current.view.coordsAtPos(pos);
+    if (!coords) return;
+
+    // Get editor container position
+    const editorRect = editorContainerRef.current.getBoundingClientRect();
+
+    // Set popup position
+    setUrlPopup({
+      url,
+      position: {
+        x: coords.left - editorRect.left,
+        y: coords.top - editorRect.top - 40 // Position above URL
+      }
+    });
+  }, []);
+
+
+  // Handle card transformation
+  const handleTransformToCard = async () => {
+    if (!urlPopup || !editorRef.current?.view) return;
+
+    const cardType = cardRegistry.getCardForUrl(urlPopup.url);
+    if (!cardType) return;
+
+    try {
+      // Extract metadata
+      const metadata = await cardType.extractMetadata(urlPopup.url);
+
+      // Create card data
+      const cardData = {
+        type: cardType.type,
+        url: urlPopup.url,
+        metadata
+      };
+
+      // Convert to markdown
+      const markdown = cardType.toMarkdown(cardData);
+
+      // Replace URL with card markdown
+      const doc = editorRef.current.view.state.doc.toString();
+      const urlIndex = doc.indexOf(urlPopup.url);
+      
+      if (urlIndex !== -1) {
+        const view = editorRef.current.view;
+        view.dispatch({
+          changes: {
+            from: urlIndex,
+            to: urlIndex + urlPopup.url.length,
+            insert: markdown
+          }
+        });
+      }
+
+
+       // Clear popup
+       setUrlPopup(null);
+      
+      } catch (error) {
+        console.error('Failed to transform URL to card:', error);
+      }
+    };
+
+    
+
+
+
   const editorRef = React.useRef<{
     view?: EditorView;
   }>(null);
   
   const handleToolbarAction = (action: string) => {
     if (!editorRef.current?.view) return;
+    
     
     const view = editorRef.current.view;
     const selection = view.state.sliceDoc(
@@ -131,6 +216,24 @@ const WriteMode = () => {
         break;
     }
     
+    if (action === 'embed') {
+      const url = prompt('Enter URL to embed (YouTube, Spotify):');
+      if (url) {
+        const cardType = cardRegistry.getCardForUrl(url);
+        if (cardType) {
+          handleUrlFound(url, editorRef.current?.view?.state.selection.main.from || 0);
+        } else {
+          // If no card type matches, insert as regular link
+          const view = editorRef.current?.view;
+          if (view) {
+            view.dispatch(view.state.replaceSelection(url + '\n'));
+          }
+        }
+      }
+      return;
+    }
+
+
     view.dispatch(view.state.replaceSelection(insertText));
   };
 
@@ -196,6 +299,15 @@ const WriteMode = () => {
               >
                 <Heading className="h-4 w-4" />
               </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleToolbarAction('embed')}
+                className="h-8 w-8 p-0"
+                title="Embed Media"
+              >
+                <Video className="h-4 w-4" />
+              </Button>              
               <Button
                 variant="ghost"
                 size="sm"
@@ -291,7 +403,7 @@ const WriteMode = () => {
         </div>
       )}
 
-      <div className="flex-1 min-h-[600px] bg-slate-950">
+<div className="flex-1 min-h-[600px] bg-slate-950">
         <CodeMirror
           ref={editorRef as any}
           value={content}
@@ -299,7 +411,8 @@ const WriteMode = () => {
           autoFocus
           extensions={[
             markdown(),
-            EditorView.lineWrapping
+            EditorView.lineWrapping,
+            urlDetectorExtension(handleUrlFound)
           ]}
           theme={oneDark}
           onChange={setContent}
