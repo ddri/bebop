@@ -32,9 +32,7 @@ import {
   Video
 } from 'lucide-react';
 import ImageUploader from '@/components/ImageUploader';
-import { urlDetectorExtension } from '@/components/editor/cards/';
-import { URLDetectorPopup } from '@/components/editor/cards';
-import { cardRegistry } from '@/components/editor/cards';
+import { urlDetectorExtension, URLDetectorPopup, cardRegistry } from '@/components/editor/cards';
 
 const WriteMode = () => {
   const { createTopic } = useTopics();
@@ -48,6 +46,13 @@ const WriteMode = () => {
   
   const [topicName, setTopicName] = useState('');
   const [topicDescription, setTopicDescription] = useState('');
+  const [urlPopup, setUrlPopup] = useState<{
+    url: string;
+    position: { x: number; y: number };
+  } | null>(null);
+
+  const editorRef = useRef<{ view?: EditorView }>(null);
+  const editorContainerRef = useRef<HTMLDivElement>(null);
 
   // Auto-save functionality
   useEffect(() => {
@@ -91,20 +96,13 @@ const WriteMode = () => {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, []);
 
-  const [urlPopup, setUrlPopup] = useState<{
-    url: string;
-    position: { x: number; y: number };
-  } | null>(null);
-  const editorContainerRef = useRef<HTMLDivElement>(null);
-
-  // URL detection handler
   const handleUrlFound = useCallback((url: string, pos: number) => {
     if (!editorRef.current?.view || !editorContainerRef.current) return;
 
     const cardType = cardRegistry.getCardForUrl(url);
     if (!cardType) return;
 
-    // Get position information
+    // Get position information from CodeMirror
     const coords = editorRef.current.view.coordsAtPos(pos);
     if (!coords) return;
 
@@ -116,13 +114,11 @@ const WriteMode = () => {
       url,
       position: {
         x: coords.left - editorRect.left,
-        y: coords.top - editorRect.top - 40 // Position above URL
+        y: coords.top - editorRect.top - 40 // Position above the URL
       }
     });
   }, []);
 
-
-  // Handle card transformation
   const handleTransformToCard = async () => {
     if (!urlPopup || !editorRef.current?.view) return;
 
@@ -158,26 +154,15 @@ const WriteMode = () => {
         });
       }
 
-
-       // Clear popup
-       setUrlPopup(null);
-      
-      } catch (error) {
-        console.error('Failed to transform URL to card:', error);
-      }
-    };
-
-    
-
-
-
-  const editorRef = React.useRef<{
-    view?: EditorView;
-  }>(null);
+      // Clear popup
+      setUrlPopup(null);
+    } catch (error) {
+      console.error('Failed to transform URL to card:', error);
+    }
+  };
   
   const handleToolbarAction = (action: string) => {
     if (!editorRef.current?.view) return;
-    
     
     const view = editorRef.current.view;
     const selection = view.state.sliceDoc(
@@ -214,27 +199,22 @@ const WriteMode = () => {
       case 'code':
         insertText = selection ? `\`${selection}\`` : '`code`';
         break;
-    }
-    
-    if (action === 'embed') {
-      const url = prompt('Enter URL to embed (YouTube, Spotify):');
-      if (url) {
-        const cardType = cardRegistry.getCardForUrl(url);
-        if (cardType) {
-          handleUrlFound(url, editorRef.current?.view?.state.selection.main.from || 0);
-        } else {
-          // If no card type matches, insert as regular link
-          const view = editorRef.current?.view;
-          if (view) {
-            view.dispatch(view.state.replaceSelection(url + '\n'));
+      case 'embed':
+        const url = prompt('Enter URL to embed (YouTube, Spotify):');
+        if (url) {
+          const cardType = cardRegistry.getCardForUrl(url);
+          if (cardType) {
+            handleUrlFound(url, view.state.selection.main.from);
+          } else {
+            insertText = url + '\n';
           }
         }
-      }
-      return;
+        break;
     }
-
-
-    view.dispatch(view.state.replaceSelection(insertText));
+    
+    if (insertText) {
+      view.dispatch(view.state.replaceSelection(insertText));
+    }
   };
 
   const handleSave = async () => {
@@ -266,7 +246,19 @@ const WriteMode = () => {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)] bg-slate-950">
+    <div 
+      className="flex flex-col h-[calc(100vh-8rem)] bg-slate-950"
+      ref={editorContainerRef}
+    >
+      {urlPopup && (
+        <URLDetectorPopup
+          cardType={cardRegistry.getCardForUrl(urlPopup.url)!}
+          url={urlPopup.url}
+          position={urlPopup.position}
+          onTransform={handleTransformToCard}
+        />
+      )}
+      
       {showToolbar && (
         <div className="bg-slate-900 border-b border-slate-800">
           <div className="flex items-center justify-between px-4 py-2">
@@ -299,15 +291,6 @@ const WriteMode = () => {
               >
                 <Heading className="h-4 w-4" />
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleToolbarAction('embed')}
-                className="h-8 w-8 p-0"
-                title="Embed Media"
-              >
-                <Video className="h-4 w-4" />
-              </Button>              
               <Button
                 variant="ghost"
                 size="sm"
@@ -360,6 +343,16 @@ const WriteMode = () => {
                   setContent(prev => prev + imageMarkdown);
                 }} 
               />
+              <div className="w-px h-8 bg-slate-800" />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleToolbarAction('embed')}
+                className="h-8 w-8 p-0"
+                title="Embed Media"
+              >
+                <Video className="h-4 w-4" />
+              </Button>
             </div>
             <div className="flex items-center space-x-2">
               <Button
@@ -403,7 +396,7 @@ const WriteMode = () => {
         </div>
       )}
 
-<div className="flex-1 min-h-[600px] bg-slate-950">
+      <div className="flex-1 min-h-[600px] bg-slate-950">
         <CodeMirror
           ref={editorRef as any}
           value={content}
