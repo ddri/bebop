@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useTheme } from "next-themes";
 import CodeMirror from '@uiw/react-codemirror';
 import { markdown } from '@codemirror/lang-markdown';
@@ -29,21 +29,26 @@ import {
   Maximize,
   Minimize,
   Image as ImageIcon,
-  Video
+  Video,
+  Eye,
+  EyeOff,
+  Columns
 } from 'lucide-react';
 import ImageUploader from '@/components/ImageUploader';
-import { urlDetectorExtension, URLDetectorPopup, cardRegistry } from '@/components/editor/cards';
+import { cn } from '@/lib/utils';
+import { urlDetectorExtension, URLDetectorPopup, cardRegistry, processRichMediaMarkdown } from '@/components/editor/cards';
 
 const WriteMode = () => {
   const { createTopic } = useTopics();
   const [content, setContent] = useState('');
   const [showToolbar, setShowToolbar] = useState(true);
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewMode, setPreviewMode] = useState<'split' | 'full'>('split');
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
-  
   const [topicName, setTopicName] = useState('');
   const [topicDescription, setTopicDescription] = useState('');
   const [urlPopup, setUrlPopup] = useState<{
@@ -51,8 +56,11 @@ const WriteMode = () => {
     position: { x: number; y: number };
   } | null>(null);
 
-  const editorRef = useRef<{ view?: EditorView }>(null);
-  const editorContainerRef = useRef<HTMLDivElement>(null);
+  const editorRef = React.useRef<{
+    view?: EditorView;
+  }>(null);
+
+  const editorContainerRef = React.useRef<HTMLDivElement>(null);
 
   // Auto-save functionality
   useEffect(() => {
@@ -102,19 +110,16 @@ const WriteMode = () => {
     const cardType = cardRegistry.getCardForUrl(url);
     if (!cardType) return;
 
-    // Get position information from CodeMirror
     const coords = editorRef.current.view.coordsAtPos(pos);
     if (!coords) return;
 
-    // Get editor container position
     const editorRect = editorContainerRef.current.getBoundingClientRect();
 
-    // Set popup position
     setUrlPopup({
       url,
       position: {
         x: coords.left - editorRect.left,
-        y: coords.top - editorRect.top - 40 // Position above the URL
+        y: coords.top - editorRect.top - 40
       }
     });
   }, []);
@@ -126,20 +131,14 @@ const WriteMode = () => {
     if (!cardType) return;
 
     try {
-      // Extract metadata
       const metadata = await cardType.extractMetadata(urlPopup.url);
-
-      // Create card data
       const cardData = {
         type: cardType.type,
         url: urlPopup.url,
         metadata
       };
 
-      // Convert to markdown
       const markdown = cardType.toMarkdown(cardData);
-
-      // Replace URL with card markdown
       const doc = editorRef.current.view.state.doc.toString();
       const urlIndex = doc.indexOf(urlPopup.url);
       
@@ -154,7 +153,6 @@ const WriteMode = () => {
         });
       }
 
-      // Clear popup
       setUrlPopup(null);
     } catch (error) {
       console.error('Failed to transform URL to card:', error);
@@ -243,6 +241,28 @@ const WriteMode = () => {
 
   const getCharCount = (text: string): number => {
     return text.length;
+  };
+
+  const previewMarkdownToHtml = (markdown: string): string => {
+    let html = processRichMediaMarkdown(markdown);
+    
+    return html
+      .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" class="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">$1</a>')
+      .replace(/^# (.*$)/gm, '<h1 class="text-3xl font-bold mt-4 mb-2">$1</h1>')
+      .replace(/^## (.*$)/gm, '<h2 class="text-2xl font-bold mt-4 mb-2">$1</h2>')
+      .replace(/^### (.*$)/gm, '<h3 class="text-xl font-bold mt-3 mb-2">$1</h3>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/!\[(.*?)\]\((.*?)\)/g, '<img src="$2" alt="$1" class="max-w-full h-auto rounded-lg my-4" loading="lazy">')
+      .replace(/`(.*?)`/g, '<code class="bg-slate-100 dark:bg-slate-800 px-1 rounded">$1</code>')
+      .split(/\n\n/)
+      .map(block => block.trim())
+      .filter(block => block.length > 0)
+      .map(block => {
+        if (block.startsWith('<')) return block;
+        return `<p class="my-2">${block}</p>`;
+      })
+      .join('\n');
   };
 
   return (
@@ -353,6 +373,31 @@ const WriteMode = () => {
               >
                 <Video className="h-4 w-4" />
               </Button>
+              <div className="w-px h-8 bg-slate-800" />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowPreview(!showPreview)}
+                className="flex items-center"
+                title={showPreview ? 'Hide Preview' : 'Show Preview'}
+              >
+                {showPreview ? (
+                  <EyeOff className="h-4 w-4 mr-2" />
+                ) : (
+                  <Eye className="h-4 w-4 mr-2" />
+                )}
+                {showPreview ? 'Hide Preview' : 'Show Preview'}
+              </Button>
+              {showPreview && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setPreviewMode(prev => prev === 'split' ? 'full' : 'split')}
+                  title={previewMode === 'split' ? 'Full Preview' : 'Split View'}
+                >
+                  <Columns className="h-4 w-4" />
+                </Button>
+              )}
             </div>
             <div className="flex items-center space-x-2">
               <Button
@@ -363,6 +408,7 @@ const WriteMode = () => {
               >
                 Hide Toolbar
               </Button>
+
               <Button
                 variant="ghost"
                 size="sm"
@@ -396,27 +442,52 @@ const WriteMode = () => {
         </div>
       )}
 
-      <div className="flex-1 min-h-[600px] bg-slate-950">
-        <CodeMirror
-          ref={editorRef as any}
-          value={content}
-          height="600px"
-          autoFocus
-          extensions={[
-            markdown(),
-            EditorView.lineWrapping,
-            urlDetectorExtension(handleUrlFound)
-          ]}
-          theme={oneDark}
-          onChange={setContent}
-          className="text-base"
-          basicSetup={{
-            lineNumbers: true,
-            highlightActiveLine: true,
-            highlightActiveLineGutter: true,
-            foldGutter: true,
-          }}
-        />
+      <div className={cn(
+        "flex flex-1 min-h-[600px] bg-slate-950",
+        showPreview && "divide-x divide-slate-800"
+      )}>
+        <div className={cn(
+          "transition-all duration-200",
+          showPreview ? (
+            previewMode === 'split' ? "w-1/2" : "hidden"
+          ) : "w-full"
+        )}>
+          <CodeMirror
+            ref={editorRef as any}
+            value={content}
+            height="600px"
+            autoFocus
+            extensions={[
+              markdown(),
+              EditorView.lineWrapping,
+              urlDetectorExtension(handleUrlFound)
+            ]}
+            theme={oneDark}
+            onChange={setContent}
+            className="text-base"
+            basicSetup={{
+              lineNumbers: true,
+              highlightActiveLine: true,
+              highlightActiveLineGutter: true,
+              foldGutter: true,
+            }}
+          />
+        </div>
+
+        {showPreview && (
+          <div className={cn(
+            "bg-slate-950 transition-all duration-200",
+            previewMode === 'split' ? "w-1/2" : "w-full"
+          )}>
+            <div className="prose prose-invert max-w-none p-8 h-full overflow-auto">
+              <div 
+                dangerouslySetInnerHTML={{ 
+                  __html: previewMarkdownToHtml(content) 
+                }} 
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
