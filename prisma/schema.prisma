@@ -9,19 +9,16 @@ datasource db {
 }
 
 model Topic {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  name      String
-  content   String
-  description String   @default("")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  content       String
+  description   String   @default("")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
   collectionIds String[] @db.ObjectId
 
   @@map("topics")
 }
-
-// Note the collectionIds are for MongoDB, where I'm using an array of references instead of a direct relation
-
 
 model Collection {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
@@ -31,13 +28,24 @@ model Collection {
   publishedUrl String?
   hashnodeUrl  String?
   devToUrl     String?
+  mediumUrl    String?  // Added Medium URL field
   createdAt    DateTime @default(now())
   lastEdited   DateTime @updatedAt
-
 
   @@map("collections")
 }
 
+model Settings {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  hashnodeToken   String?
+  publicationId   String?
+  mediumToken     String?   // Added Medium token field
+  lastUpdated     DateTime  @updatedAt
+  
+  @@map("settings")
+}
+
+// Other models remain unchanged
 model PublishedContent {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   fileName  String
@@ -57,12 +65,4 @@ model MediaItem {
   updatedAt DateTime @updatedAt
 
   @@map("mediaItems")
-}
-model Settings {
-  id              String    @id @default(auto()) @map("_id") @db.ObjectId
-  hashnodeToken   String?
-  publicationId   String?
-  lastUpdated     DateTime  @updatedAt
-  
-  @@map("settings")
 }

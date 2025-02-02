@@ -1,38 +1,20 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useTheme } from "next-themes";
 import { usePathname } from 'next/navigation';
-import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Upload, Eye, Globe, ExternalLink } from 'lucide-react';
-import { useHashnodeSettings } from '@/hooks/useHashnodeSettings';
-import { useDevToSettings } from '@/hooks/useDevToSettings';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle, Upload } from 'lucide-react';
 import Layout from '@/components/Layout';
-
-interface Collection {
-  id: number;
-  name: string;
-  description?: string;
-  topicIds: number[];
-  lastEdited: number;
-  publishedUrl?: string;
-}
 
 export default function Settings() {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
-  const { theme } = useTheme();
-  const [collections, setCollections] = useState<Collection[]>([]);
-  
-  // Hashnode state
   const [hashnodeToken, setHashnodeToken] = useState('');
   const [publicationId, setPublicationId] = useState('');
-  
-  // Dev.to state
-  const [devToToken, setDevToToken] = useState('');
+  const [mediumToken, setMediumToken] = useState('');
 
   useEffect(() => {
     setMounted(true);
@@ -41,17 +23,13 @@ export default function Settings() {
   // Load collections and settings on mount
   useEffect(() => {
     if (mounted && typeof window !== 'undefined') {
-      const savedCollections = localStorage.getItem('collections');
-      const savedHashnodeToken = localStorage.getItem('hashnodeToken');
+      const savedToken = localStorage.getItem('hashnodeToken');
       const savedPubId = localStorage.getItem('hashnodePublicationId');
-      const savedDevToToken = localStorage.getItem('devToToken');
+      const savedMediumToken = localStorage.getItem('mediumToken');
       
-      if (savedCollections) {
-        setCollections(JSON.parse(savedCollections));
-      }
-      if (savedHashnodeToken) setHashnodeToken(savedHashnodeToken);
+      if (savedToken) setHashnodeToken(savedToken);
       if (savedPubId) setPublicationId(savedPubId);
-      if (savedDevToToken) setDevToToken(savedDevToToken);
+      if (savedMediumToken) setMediumToken(savedMediumToken);
     }
   }, [mounted]);
 
@@ -61,41 +39,9 @@ export default function Settings() {
     alert('Hashnode settings saved successfully');
   };
 
-  const saveDevToSettings = () => {
-    localStorage.setItem('devToToken', devToToken);
-    alert('Dev.to settings saved successfully');
-  };
-
-  // Function to unpublish a collection
-  const unpublishCollection = async (collection: Collection) => {
-    try {
-      const response = await fetch('/api/unpublish', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          fileName: collection.publishedUrl?.split('/').pop()
-        }),
-      });
-
-      if (!response.ok) throw new Error('Failed to unpublish');
-
-      // Update collection to remove publishedUrl
-      const updatedCollections = collections.map(c => 
-        c.id === collection.id 
-          ? { ...c, publishedUrl: undefined } 
-          : c
-      );
-      setCollections(updatedCollections);
-      localStorage.setItem('collections', JSON.stringify(updatedCollections));
-
-      return true;
-    } catch (error) {
-      console.error('Error unpublishing:', error);
-      alert('Failed to unpublish collection');
-      return false;
-    }
+  const saveMediumSettings = () => {
+    localStorage.setItem('mediumToken', mediumToken);
+    alert('Medium settings saved successfully');
   };
 
   if (!mounted) return null;
@@ -105,7 +51,7 @@ export default function Settings() {
       <h1 className="text-2xl font-semibold dark:text-white mb-8">Settings</h1>
       
       <div className="grid gap-6">
-        {/* Hashnode Settings */}
+        {/* Hashnode Integration */}
         <Card>
           <CardHeader>
             <CardTitle>Hashnode Integration</CardTitle>
@@ -158,106 +104,41 @@ export default function Settings() {
           </CardContent>
         </Card>
 
-        {/* Dev.to Settings */}
+        {/* Medium Integration */}
         <Card>
           <CardHeader>
-            <CardTitle>Dev.to Integration</CardTitle>
+            <CardTitle>Medium Integration</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <label className="block text-sm font-medium mb-2">
-                API Key
+                Integration Token
               </label>
               <Input
                 type="password"
-                value={devToToken}
-                onChange={(e) => setDevToToken(e.target.value)}
-                placeholder="Enter your Dev.to API Key"
+                value={mediumToken}
+                onChange={(e) => setMediumToken(e.target.value)}
+                placeholder="Enter your Medium Integration Token"
               />
               <p className="text-sm text-slate-500">
-                Get your API key from{' '}
+                Get your integration token from{' '}
                 <a 
-                  href="https://dev.to/settings/extensions"
+                  href="https://medium.com/me/settings"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-500 hover:underline"
                 >
-                  Dev.to Settings
+                  Medium Settings
                 </a>
               </p>
             </div>
 
             <Button
-              onClick={saveDevToSettings}
+              onClick={saveMediumSettings}
               className="bg-yellow-400 hover:bg-yellow-500 text-black"
             >
-              Save Dev.to Settings
+              Save Medium Settings
             </Button>
-          </CardContent>
-        </Card>
-
-        {/* Published Collections Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Published Collections</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {collections.filter(c => c.publishedUrl).map(collection => (
-                <div 
-                  key={collection.id}
-                  className="flex items-center justify-between p-4 border rounded-lg dark:border-slate-700 bg-white dark:bg-slate-800"
-                >
-                  <div>
-                    <h3 className="font-medium">{collection.name}</h3>
-                    <div className="text-sm space-y-1">
-                      <p className="text-slate-500">
-                        Published URL: <a 
-                          href={collection.publishedUrl} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-blue-500 hover:text-blue-600 inline-flex items-center gap-1"
-                        >
-                          View <ExternalLink className="h-3 w-3" />
-                        </a>
-                      </p>
-                      <p className="text-slate-500">
-                        Last updated: {new Date(collection.lastEdited).toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => window.open(collection.publishedUrl, '_blank')}
-                      className="text-slate-600 hover:text-blue-600"
-                    >
-                      <Eye className="h-4 w-4 mr-2" />
-                      View
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={async () => {
-                        if (await unpublishCollection(collection)) {
-                          alert('Collection unpublished successfully');
-                        }
-                      }}
-                      className="text-slate-600 hover:text-red-600"
-                    >
-                      <Globe className="h-4 w-4 mr-2" />
-                      Unpublish
-                    </Button>
-                  </div>
-                </div>
-              ))}
-              {!collections.some(c => c.publishedUrl) && (
-                <div className="text-center text-slate-500 py-8">
-                  No published collections yet
-                </div>
-              )}
-            </div>
           </CardContent>
         </Card>
 
