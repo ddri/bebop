@@ -32,9 +32,26 @@ export default function Home() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Link href="/topics">
+              <Link href="/write">
                 <Button className="w-full bg-yellow-400 hover:bg-yellow-500 text-black">
                   Start Writing
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <FileText className="h-8 w-8 mb-2 text-yellow-500" />
+              <CardTitle>Topics</CardTitle>
+              <CardDescription>
+                Manage and organize all your written content
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Link href="/topics">
+                <Button className="w-full">
+                  View Topics
                 </Button>
               </Link>
             </CardContent>
@@ -56,23 +73,6 @@ export default function Home() {
               </Link>
             </CardContent>
           </Card>
-
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <Image className="h-8 w-8 mb-2 text-yellow-500" />
-              <CardTitle>Media Library</CardTitle>
-              <CardDescription>
-                Upload and manage your images and media files
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Link href="/media">
-                <Button className="w-full">
-                  Upload Media
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
         </div>
 
         {/* Quick Tips */}
@@ -80,29 +80,39 @@ export default function Home() {
           <CardHeader>
             <CardTitle>Quick Tips</CardTitle>
             <CardDescription>
-              Here's how to get the most out of Bebop
+              Here's the basic idea of Bebop:
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <h3 className="font-semibold mb-2">1. Write Your Content</h3>
+              <h3 className="font-semibold mb-2">1. Write your content</h3>
               <p className="text-slate-600 dark:text-slate-400">
-                Use our Write Mode for a focused writing environment with markdown support, live preview, and media embedding.
+                Use the Write Mode for a focused writing environment with markdown support, live preview, and media embedding.
               </p>
             </div>
             <div>
-              <h3 className="font-semibold mb-2">2. Organize with Collections</h3>
+              <h3 className="font-semibold mb-2">2. Organize with collections</h3>
               <p className="text-slate-600 dark:text-slate-400">
-                Group related content into Collections. You can reorder them and publish the entire collection together.
+                Group related content into collections. You can reorder them and publish the entire collection together.
               </p>
             </div>
             <div>
-              <h3 className="font-semibold mb-2">3. Publish Anywhere</h3>
+              <h3 className="font-semibold mb-2">3. Publish anywhere</h3>
               <p className="text-slate-600 dark:text-slate-400">
-                Publish your collections directly to Dev.to, Hashnode, or as standalone web pages.
+                Publish your collections directly to blogs like Dev.to, Hashnode, or as standalone web pages.
               </p>
             </div>
           </CardContent>
+        </Card>
+
+        {/* Quick Tips */}
+        <Card>
+          <CardHeader>
+            <CardTitle>About Bebop</CardTitle>
+            <CardDescription>
+              Bebop is an open source publishing project by <a href="https://davidryan.tech">David Ryan</a>. This is the 0.2.0 release which adds basic cloud hosting, images, and publish modes to the previous version. See the <a href="https://github.com/ddri/bebop/releases">release notes</a> for more info and the <a href="https://github.com/ddri/bebop">repository</a> for the source.
+            </CardDescription>
+          </CardHeader>
         </Card>
       </div>
     </Layout>
