@@ -20,11 +20,11 @@ export default function Layout({ children, pathname }: LayoutProps) {
               Bebop
             </Link>
             <div className="flex space-x-6">
-              <Link 
-                href="/collections" 
-                className={`${pathname === '/collections' ? 'text-yellow-300' : 'hover:text-yellow-300'}`}
+            <Link 
+                href="/write" 
+                className={`${pathname === '/write' ? 'text-yellow-300' : 'hover:text-yellow-300'}`}
               >
-                Collections
+                Write
               </Link>
               <Link 
                 href="/topics" 
@@ -33,10 +33,10 @@ export default function Layout({ children, pathname }: LayoutProps) {
                 Topics
               </Link>
               <Link 
-                href="/write" 
-                className={`${pathname === '/write' ? 'text-yellow-300' : 'hover:text-yellow-300'}`}
+                href="/collections" 
+                className={`${pathname === '/collections' ? 'text-yellow-300' : 'hover:text-yellow-300'}`}
               >
-                Write
+                Collections
               </Link>
               <Link 
                 href="/media" 

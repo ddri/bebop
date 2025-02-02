@@ -50,6 +50,7 @@ interface Topic {
   collectionIds?: string[];
 }
 
+// Collection interface for media publishing
 interface Collection {
   id: string;
   name: string;
@@ -567,7 +568,7 @@ export default function Collections() {
             />
           </div>
         </div>
-      )}
+      )}    
 
       {/* Dev Publisher Modal */}
       {showDevToPublisher && publishingCollection && (
@@ -640,7 +641,6 @@ export default function Collections() {
                       </svg>
                       {collection.devToUrl ? 'Republish to Dev.to' : 'Publish to Dev.to'}
                     </DropdownMenuItem>
-
                     <DropdownMenuItem onClick={() => handleHashnodePublish(collection)}>
                       <svg 
                         className="h-4 w-4 mr-2" 

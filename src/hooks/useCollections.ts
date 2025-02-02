@@ -8,6 +8,7 @@ interface Collection {
   publishedUrl?: string;
   hashnodeUrl?: string | null; 
   devToUrl?: string | null;
+  mediumUrl?: string | null;
   lastEdited: string;
   createdAt: string;
 }
