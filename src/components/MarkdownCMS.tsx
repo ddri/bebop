@@ -243,6 +243,7 @@ export function MarkdownCMS({ pathname }: { pathname: string }) {
                       content={editingDoc.content}
                       onChange={(value) => setEditingDoc(prev => ({ ...prev!, content: value }))}
                       theme={theme}
+                      // testing a fix
                     />
                     <div className="flex gap-2">
                       <Button 
