@@ -1,6 +1,6 @@
 {
-  "name": "my-cms",
-  "version": "0.1.0",
+  "name": "BebopCMS",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
