@@ -33,7 +33,8 @@ import {
   Globe,
   GripVertical,
   X,
-  MinusCircle
+  MinusCircle,
+  Trash2 
 } from 'lucide-react';
 import Layout from '@/components/Layout';
 import { HashnodePublisher } from './HashnodePublisher';
@@ -233,6 +234,20 @@ export default function Collections() {
       </body>
       </html>
     `.trim();
+  };
+
+  // Delete function 
+  
+  const handleDelete = async (collection: Collection) => {
+    if (window.confirm('Are you sure you want to delete this collection?')) {
+      try {
+        await fetch(`/api/collections/${collection.id}`, { method: 'DELETE' });
+        refreshCollections();
+      } catch (error) {
+        console.error('Failed to delete collection:', error);
+        alert('Failed to delete collection');
+      }
+    }
   };
 
   const markdownToHtml = (markdown: string): string => {
@@ -674,6 +689,14 @@ export default function Collections() {
                     )}
                   </DropdownMenuContent>
                 </DropdownMenu>
+                <Button
+  variant="ghost"
+  size="sm"
+  onClick={() => handleDelete(collection)}
+  title="Delete"
+>
+  <Trash2 className="h-4 w-4 text-red-500" />
+</Button>
               </div>
             </CardHeader>
             <CardContent>
