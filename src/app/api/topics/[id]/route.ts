@@ -46,3 +46,19 @@ export async function PUT(request: Request, props: TopicParams) {
     );
   }
 }
+
+export async function DELETE(request: Request, props: TopicParams) {
+  const params = await props.params;
+  try {
+    await prisma.topic.delete({
+      where: { id: params.id }
+    });
+    return new NextResponse(null, { status: 204 });
+  } catch (error) {
+    console.error('Failed to delete topic:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete topic' },
+      { status: 500 }
+    );
+  }
+}
