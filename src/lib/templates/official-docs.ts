@@ -52,6 +52,8 @@ Organize your content with Topics:
 - Easy editing and updates
 - Flexible organization
 
+https://bebop-defaults.s3.us-east-1.amazonaws.com/images/test-image.png
+
 ### 📚 Collections
 Group related content with Collections:
 - Combine multiple topics
