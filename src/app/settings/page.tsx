@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, Upload, Eye, Globe, ExternalLink } from 'lucide-react';
 import Layout from '@/components/Layout';
 import { TemplateManager } from '@/components/templates/TemplateManager';
+import { SocialSettings } from '@/components/settings/SocialSettings';
 
 export default function Settings() {
   const pathname = usePathname();
@@ -85,6 +86,9 @@ export default function Settings() {
               </div>
             </CardContent>
           </Card>
+
+        {/* Social Settings */}
+        <SocialSettings />
 
           {/* Published Collections Section */}
           <Card>

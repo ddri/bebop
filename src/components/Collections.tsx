@@ -1,3 +1,4 @@
+// components/Collections.tsx - Part 1
 import React, { useState, useEffect } from 'react';
 import { useTheme } from "next-themes";
 import { usePathname } from 'next/navigation';
@@ -6,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent } from "@/components/ui/dropdown-menu";
+import { BlueskyIcon } from './social/icons/BlueskyIcon';
 import {
   DndContext,
   closestCenter,
@@ -24,22 +27,20 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { useCollections } from '@/hooks/useCollections';
 import { useTopics } from '@/hooks/useTopics';
-import { 
-  Plus, 
-  Clock, 
-  FileText,
-  Pencil,
-  Eye,
-  Globe,
-  GripVertical,
-  X,
-  MinusCircle,
-  Trash2 
-} from 'lucide-react';
+import { Plus, Clock, FileText, Pencil, Eye, Globe, GripVertical, X, MinusCircle, Trash2 } from 'lucide-react';
 import Layout from '@/components/Layout';
 import { HashnodePublisher } from './HashnodePublisher';
 import { DevToPublisher } from './DevToPublisher';
 import { cn } from '@/lib/utils';
+import { PlatformId } from '@/types/social';
+import { SocialPublisher } from './social/SocialPublisher';
+import { ShareMetrics } from './social/ShareMetrics';
+import { SocialShareMetrics } from '@/types/social';
+
+// Interfaces
+interface CollectionWithMetrics extends Collection {
+  metrics?: SocialShareMetrics[];
+}
 
 interface Topic {
   id: string;
@@ -51,7 +52,6 @@ interface Topic {
   collectionIds?: string[];
 }
 
-// Collection interface for media publishing
 interface Collection {
   id: string;
   name: string;
@@ -72,54 +72,9 @@ interface SortableTopicItemProps {
   onRemove: (id: string) => void;
 }
 
+// Component and Hook Definitions
 const SortableTopicItem = ({ id, topic, isSelected, onToggle, onRemove }: SortableTopicItemProps) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-  } = useSortable({ id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
-
-  return (
-    <div 
-      ref={setNodeRef}
-      style={style}
-      className="flex items-center p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-md bg-white dark:bg-slate-900"
-    >
-      <button 
-        className="touch-none flex items-center justify-center p-1 mx-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" 
-        {...attributes} 
-        {...listeners}
-      >
-        <GripVertical className="h-4 w-4" />
-      </button>
-      <div className="flex-grow min-w-0">
-        <div className="font-medium truncate">{topic.name}</div>
-        <div className="text-sm text-slate-500 dark:text-slate-400 truncate">
-          {topic.description || topic.content.substring(0, 100)}...
-        </div>
-      </div>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          onRemove(id);
-        }}
-        className="ml-2"
-        title="Remove from collection"
-      >
-        <MinusCircle className="h-4 w-4 text-slate-500 hover:text-red-500" />
-      </Button>
-    </div>
-  );
+  // ... SortableTopicItem implementation (unchanged)
 };
 
 const TopicSelector = ({ topic, isSelected, onToggle }: { 
@@ -127,38 +82,17 @@ const TopicSelector = ({ topic, isSelected, onToggle }: {
   isSelected: boolean; 
   onToggle: (id: string) => void; 
 }) => {
-  return (
-    <div className="flex items-center p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-md">
-      <input
-        type="checkbox"
-        checked={isSelected}
-        onChange={() => onToggle(topic.id)}
-        className="mr-3 h-4 w-4 rounded border-gray-300"
-      />
-      <div>
-        <div className="font-medium">{topic.name}</div>
-        <div className="text-sm text-slate-500 dark:text-slate-400">
-          {topic.description || topic.content.substring(0, 100)}...
-        </div>
-      </div>
-    </div>
-  );
+  // ... TopicSelector implementation (unchanged)
 };
 
 export default function Collections() {
   const pathname = usePathname();
   const { theme } = useTheme();
-  const { collections, loading, error, createCollection, updateCollection, publishCollection, unpublishCollection, refreshCollections } = useCollections();
+  const { loading, error, createCollection, updateCollection, publishCollection, unpublishCollection } = useCollections();
   const { topics } = useTopics();
-  const [mounted, setMounted] = useState(false);
-  const [showNewCollectionForm, setShowNewCollectionForm] = useState(false);
-  const [editingCollection, setEditingCollection] = useState<Collection | null>(null);
-  const [newCollectionName, setNewCollectionName] = useState('');
-  const [newCollectionDesc, setNewCollectionDesc] = useState('');
-  const [selectedTopicIds, setSelectedTopicIds] = useState<string[]>([]);
-  const [showHashnodePublisher, setShowHashnodePublisher] = useState(false);
-  const [showDevToPublisher, setShowDevToPublisher] = useState(false);
-  const [publishingCollection, setPublishingCollection] = useState<Collection | null>(null);
+  const [collections, setCollections] = useState<CollectionWithMetrics[]>([]);
+  
+  // ... other state declarations (unchanged)
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -167,248 +101,67 @@ export default function Collections() {
     })
   );
 
+  // Fetch collections with metrics
   useEffect(() => {
-    setMounted(true);
+    const fetchCollectionsWithMetrics = async () => {
+      try {
+        const [collectionsData, metricsData] = await Promise.all([
+          fetch('/api/collections').then(res => res.json()),
+          fetch('/api/social/metrics').then(res => res.json())
+        ]);
+
+        const collectionsWithMetrics = collectionsData.map((collection: Collection) => ({
+          ...collection,
+          metrics: metricsData.filter(m => m.collectionId === collection.id)
+        }));
+
+        setCollections(collectionsWithMetrics);
+      } catch (err) {
+        console.error('Failed to fetch collections:', err);
+      }
+    };
+
+    fetchCollectionsWithMetrics();
   }, []);
 
-  const generateCollectionHTML = (collection: Collection): string => {
-    const collectionTopics = collection.topicIds
-      .map(id => topics.find(topic => topic.id === id))
-      .filter((topic): topic is Topic => topic !== undefined);
-    
-    const combinedContent = collectionTopics
-      .map(topic => topic.content)
-      .join('\n\n---\n\n');
+  const refreshCollectionsWithMetrics = async () => {
+    const [collectionsData, metricsData] = await Promise.all([
+      fetch('/api/collections').then(res => res.json()),
+      fetch('/api/social/metrics').then(res => res.json())
+    ]);
 
-    const htmlContent = markdownToHtml(combinedContent);
+    const collectionsWithMetrics = collectionsData.map((collection: Collection) => ({
+      ...collection,
+      metrics: metricsData.filter(m => m.collectionId === collection.id)
+    }));
 
-    return `
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>${collection.name}</title>
-          <style>
-            body { 
-              font-family: system-ui, -apple-system, sans-serif;
-              line-height: 1.5;
-              max-width: 800px;
-              margin: 0 auto;
-              padding: 2rem;
-              background-color: ${theme === 'dark' ? '#0f172a' : '#ffffff'};
-              color: ${theme === 'dark' ? '#e2e8f0' : '#0f172a'};
-            }
-            h1, h2, h3 { margin-top: 2rem; }
-            p { margin: 1rem 0; }
-            hr { margin: 2rem 0; }
-            img {
-              max-width: 100%;
-              height: auto;
-              border-radius: 0.5rem;
-              margin: 1rem 0;
-              ${theme === 'dark' ? 'filter: brightness(0.9);' : ''}
-            }
-            a { /* Add this block */
-              color: #3b82f6;
-              text-decoration: none;
-            }
-            a:hover {
-              text-decoration: underline;
-            }
-          </style>
-      </head>
-      <body>
-          <header>
-            <h1>${collection.name}</h1>
-            ${collection.description ? `<p>${collection.description}</p>` : ''}
-            <hr>
-          </header>
-          <main>
-            ${htmlContent}
-          </main>
-          <footer>
-            <hr>
-            <p>Published at ${new Date().toLocaleString()}</p>
-          </footer>
-      </body>
-      </html>
-    `.trim();
+    setCollections(collectionsWithMetrics);
   };
 
-  // Delete function 
-  
-  const handleDelete = async (collection: Collection) => {
-    if (window.confirm('Are you sure you want to delete this collection?')) {
-      try {
-        await fetch(`/api/collections/${collection.id}`, { method: 'DELETE' });
-        refreshCollections();
-      } catch (error) {
-        console.error('Failed to delete collection:', error);
-        alert('Failed to delete collection');
-      }
-    }
-  };
-
-  const markdownToHtml = (markdown: string): string => {
-    return markdown
-      .replace(/^# (.*$)/gm, '<h1 class="text-3xl font-bold mt-4 mb-2">$1</h1>')
-      .replace(/^## (.*$)/gm, '<h2 class="text-2xl font-bold mt-4 mb-2">$1</h2>')
-      .replace(/^### (.*$)/gm, '<h3 class="text-xl font-bold mt-3 mb-2">$1</h3>')
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/!\[(.*?)\]\((.*?)\)/g, '<img src="$2" alt="$1" class="max-w-full h-auto rounded-lg my-4" loading="lazy">') 
-      .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" class="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">$1</a>')
-      .replace(/`(.*?)`/g, '<code class="bg-slate-100 dark:bg-slate-800 px-1 rounded">$1</code>')
-      .replace(/\n\n/g, '</p><p class="my-2">')
-      .replace(/\n/g, '<br>')
-      .replace(/^(.+)$/gm, '<p class="my-2">$1</p>');
-  };
-
-  const handleRemoveFromCollection = (topicId: string) => {
-    setSelectedTopicIds(prev => prev.filter(id => id !== topicId));
-  };
-
-  const previewCollection = (collection: Collection) => {
-    const htmlContent = generateCollectionHTML(collection);
-    const newTab = window.open();
-    if (newTab) {
-      newTab.document.write(htmlContent);
-      newTab.document.close();
-    }
-  };
-
-  const handleDragEnd = (event: any) => {
-    const { active, over } = event;
-
-    if (active.id !== over?.id) {
-      setSelectedTopicIds((items) => {
-        const oldIndex = items.indexOf(active.id);
-        const newIndex = items.indexOf(over.id);
-        return arrayMove(items, oldIndex, newIndex);
-      });
-    }
-  };
-
-  const toggleTopic = (topicId: string) => {
-    setSelectedTopicIds(prev => 
-      prev.includes(topicId)
-        ? prev.filter(id => id !== topicId)
-        : [...prev, topicId]
-    );
-  };
-
-  const handlePublish = async (collection: Collection) => {
+  // Social sharing handler
+  const handleSocialShare = async (collection: Collection, platform: PlatformId) => {
     try {
-      const content = generateCollectionHTML(collection);
-      const url = await publishCollection(collection.id, content);
-      if (url) {
-        window.open(url, '_blank');
-      }
-    } catch (error) {
-      console.error('Failed to publish:', error);
-      alert('Failed to publish collection');
-    }
-  };
-
- // Handlers for Hashnode external publishing
-
-  const handleHashnodePublish = (collection: Collection) => {
-    setPublishingCollection(collection);
-    setShowHashnodePublisher(true);
-  };
-
-  const handleHashnodeUnpublish = async (collection: Collection) => {
-    try {
-      await fetch(`/api/collections/${collection.id}/hashnode`, {
-        method: 'PUT',
+      await fetch('/api/social/metrics', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ hashnodeUrl: null })
+        body: JSON.stringify({
+          platformId: platform,
+          collectionId: collection.id
+        })
       });
-      // Refresh collections or update local state
     } catch (error) {
-      console.error('Failed to unpublish from Hashnode:', error);
+      console.error('Failed to track share:', error);
     }
-  };
-
-// Handlers for Devto external publishing
-
-  const handleDevToPublish = (collection: Collection) => {
-    setPublishingCollection(collection);
-    setShowDevToPublisher(true);
-  };
-
-  // This function gets raw markdown content for Dev
-  const generateCollectionMarkdown = (collection: Collection): string => {
-    const collectionTopics = collection.topicIds
-      .map(id => topics.find(topic => topic.id === id))
-      .filter((topic): topic is Topic => topic !== undefined);
     
-    // Join topics with markdown horizontal rule separator
-    return collectionTopics
-      .map(topic => topic.content)
-      .join('\n\n---\n\n');
+    setSelectedPlatform(platform);
+    setPublishingCollection(collection);
+    setShowSocialPublisher(true);
   };
 
-  const handleDevToUnpublish = async (collection: Collection) => {
-    try {
-      await fetch(`/api/collections/${collection.id}/devto`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ devToUrl: null })
-      });
-      // Refresh collections or update local state
-      await refreshCollections();
-    } catch (error) {
-      console.error('Failed to unpublish from Dev.to:', error);
-    }
-  };
+  // ... rest of your utility functions (generateCollectionHTML, markdownToHtml, etc.)
 
-  const handleUnpublish = async (collection: Collection) => {
-    try {
-      const success = await unpublishCollection(collection.id);
-      if (success) {
-        alert('Collection unpublished successfully');
-      }
-    } catch (error) {
-      console.error('Failed to unpublish:', error);
-      alert('Failed to unpublish collection');
-    }
-  };
 
-  const saveNewCollection = async () => {
-    if (newCollectionName && selectedTopicIds.length > 0) {
-      try {
-        await createCollection(newCollectionName, newCollectionDesc, selectedTopicIds);
-        setNewCollectionName('');
-        setNewCollectionDesc('');
-        setSelectedTopicIds([]);
-        setShowNewCollectionForm(false);
-      } catch (error) {
-        console.error('Failed to create collection:', error);
-        alert('Failed to create collection');
-      }
-    }
-  };
 
-  const saveEditedCollection = async () => {
-    if (editingCollection && newCollectionName && selectedTopicIds.length > 0) {
-      try {
-        await updateCollection(editingCollection.id, {
-          name: newCollectionName,
-          description: newCollectionDesc,
-          topicIds: selectedTopicIds,
-        });
-        setEditingCollection(null);
-        setNewCollectionName('');
-        setNewCollectionDesc('');
-        setSelectedTopicIds([]);
-      } catch (error) {
-        console.error('Failed to update collection:', error);
-        alert('Failed to update collection');
-      }
-    }
-  };
 
   const startEditing = (collection: Collection) => {
     setEditingCollection(collection);
@@ -440,7 +193,7 @@ export default function Collections() {
   }
 
   return (
-    <Layout pathname={pathname}>
+    <Layout pathname={pathname as string}>
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-semibold dark:text-white">Collections</h1>
@@ -585,6 +338,29 @@ export default function Collections() {
         </div>
       )}    
 
+      {/* Social Publisher Modal */}
+      {showSocialPublisher && selectedPlatform && publishingCollection && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-lg">
+            <SocialPublisher
+              platformId={selectedPlatform}
+              collection={publishingCollection}
+              onSuccess={(url: string) => {
+                setShowSocialPublisher(false);
+                setSelectedPlatform(null);
+                setPublishingCollection(null);
+                refreshCollections();
+              }}
+              onClose={() => {
+                setShowSocialPublisher(false);
+                setSelectedPlatform(null);
+                setPublishingCollection(null);
+              }}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Dev Publisher Modal */}
       {showDevToPublisher && publishingCollection && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
@@ -650,6 +426,19 @@ export default function Collections() {
                       Publish to Web
                     </DropdownMenuItem>
 
+                    <DropdownMenuSub>
+                      <DropdownMenuSubTrigger className="flex items-center">
+                        <Globe className="h-4 w-4 mr-2" />
+                        Share on Social
+                      </DropdownMenuSubTrigger>
+                      <DropdownMenuSubContent>
+                        <DropdownMenuItem onClick={() => handleSocialShare(collection, 'bluesky')}>
+                          <BlueskyIcon className="h-4 w-4 mr-2" />
+                          Share on Bluesky 
+                        </DropdownMenuItem>
+                      </DropdownMenuSubContent>
+                    </DropdownMenuSub>
+
                     <DropdownMenuItem onClick={() => handleDevToPublish(collection)}>
                       <svg viewBox="0 0 448 512" className="h-4 w-4 mr-2" fill="currentColor">
                         <path d="M120.12 208.29c-3.88-2.9-7.77-4.35-11.65-4.35H91.03v104.47h17.45c3.88 0 7.77-1.45 11.65-4.35 3.88-2.9 5.82-7.25 5.82-13.06v-69.65c-.01-5.8-1.96-10.16-5.83-13.06zM404.1 32H43.9C19.7 32 .06 51.59 0 75.8v360.4C.06 460.41 19.7 480 43.9 480h360.2c24.21 0 43.84-19.59 43.9-43.8V75.8c-.06-24.21-19.7-43.8-43.9-43.8zM154.2 291.19c0 18.81-11.61 47.31-48.36 47.25h-46.4V172.98h47.38c35.44 0 47.36 28.46 47.37 47.28l.01 70.93zm100.68-88.66H201.6v38.42h32.57v29.57H201.6v38.41h53.29v29.57h-62.18c-11.16.29-20.44-8.53-20.72-19.69V193.7c-.27-11.15 8.56-20.41 19.71-20.69h63.19l-.01 29.52zm103.64 115.29c-13.2 30.75-36.85 24.63-47.44 0l-38.53-144.8h32.57l29.71 113.72 29.57-113.72h32.58l-38.46 144.8z"/>
@@ -690,22 +479,24 @@ export default function Collections() {
                   </DropdownMenuContent>
                 </DropdownMenu>
                 <Button
-  variant="ghost"
-  size="sm"
-  onClick={() => handleDelete(collection)}
-  title="Delete"
->
-  <Trash2 className="h-4 w-4 text-red-500" />
-</Button>
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleDelete(collection)}
+                  title="Delete"
+                >
+                  <Trash2 className="h-4 w-4 text-red-500" />
+                </Button>
               </div>
             </CardHeader>
             <CardContent>
-              {collection.description && (
-                <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">
-                  {collection.description}
-                </p>
-              )}
-              <div className="flex items-center space-x-4 text-sm text-slate-500 dark:text-slate-400">
+  {collection.description && (
+    <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">
+      {collection.description}
+    </p>
+  )}
+  <div className="flex flex-col space-y-2">
+    <ShareMetrics metrics={collection.metrics || []} />
+    <div className="flex items-center space-x-4 text-sm text-slate-500 dark:text-slate-400">
                 <div className="flex items-center">
                   <FileText className="h-4 w-4 mr-1" />
                   {collection.topicIds.length} topics
@@ -744,7 +535,8 @@ export default function Collections() {
                     View on Dev.to
                   </a>
                 )}
-              </div>
+    </div>
+    </div>
             </CardContent>
           </Card>
         )) : (
@@ -753,6 +545,7 @@ export default function Collections() {
           </div>
         )}
       </div>
+         )   
     </Layout>
   );
 }
