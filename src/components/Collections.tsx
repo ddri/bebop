@@ -8,6 +8,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent } from "@/components/ui/dropdown-menu";
 import { BlueskyIcon } from './social/icons/BlueskyIcon';
+import { MastodonIcon } from './social/icons/MastodonIcon';
+import { ThreadsIcon } from './social/icons/ThreadsIcon';
 import {
   DndContext,
   closestCenter,
@@ -743,11 +745,19 @@ export default function Collections() {
                         Share on Social
                       </DropdownMenuSubTrigger>
                       <DropdownMenuSubContent>
-                        <DropdownMenuItem onClick={() => handleSocialShare(collection, 'bluesky')}>
+                      <DropdownMenuItem onClick={() => handleSocialShare(collection, 'bluesky')}>
                         <BlueskyIcon className="h-4 w-4 mr-2" />
-                          Share on Bluesky 
-                        </DropdownMenuItem>
-                      </DropdownMenuSubContent>
+                        Share on Bluesky 
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleSocialShare(collection, 'mastodon')}>
+                        <MastodonIcon className="h-4 w-4 mr-2" />
+                        Share on Mastodon
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleSocialShare(collection, 'threads')}>
+                        <ThreadsIcon className="h-4 w-4 mr-2" />
+                        Share on Threads
+                      </DropdownMenuItem>
+                    </DropdownMenuSubContent>
                     </DropdownMenuSub>
 
                     <DropdownMenuItem onClick={() => handleDevToPublish(collection)}>
