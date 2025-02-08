@@ -47,7 +47,10 @@ import { cn } from '@/lib/utils';
 import { PlatformId } from '@/types/social';
 import { SocialPublisher } from './social/SocialPublisher';
 import { ShareMetrics } from './social/ShareMetrics';
+import { ShareMetricsDisplay } from './social/ShareMetricsDisplay';
 import { SocialShareMetrics } from '@/types/social';
+import { PLATFORMS } from '@/lib/social/platforms';
+import { shareViaWebIntent } from '@/lib/social/webIntent';
 
 interface CollectionWithMetrics extends Collection {
   metrics?: SocialShareMetrics[];
@@ -423,6 +426,7 @@ export default function Collections() {
 
   const handleSocialShare = async (collection: Collection, platform: PlatformId) => {
     try {
+      // Track the share attempt first
       await fetch('/api/social/metrics', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -431,13 +435,23 @@ export default function Collections() {
           collectionId: collection.id
         })
       });
+  
+      // Handle web intent platforms differently
+      if (PLATFORMS[platform].webIntent) {
+        shareViaWebIntent(platform as 'threads', {
+          text: collection.name,
+          url: collection.publishedUrl
+        });
+        return;
+      }
+  
+      // Existing social client code for Bluesky and Mastodon
+      setSelectedPlatform(platform);
+      setPublishingCollection(collection);
+      setShowSocialPublisher(true);
     } catch (error) {
       console.error('Failed to track share:', error);
     }
-    
-    setSelectedPlatform(platform);
-    setPublishingCollection(collection);
-    setShowSocialPublisher(true);
   };
 
   const saveNewCollection = async () => {
@@ -815,6 +829,22 @@ export default function Collections() {
                   {collection.description}
                 </p>
               )}
+
+              {/* Add the metrics display */}
+              {collection.metrics && collection.metrics.length > 0 && (
+                <ShareMetricsDisplay metrics={collection.metrics} />
+              )}
+
+              <div className="flex items-center space-x-4 text-sm text-slate-500 dark:text-slate-400 mt-4">
+                <div className="flex items-center">
+                  <FileText className="h-4 w-4 mr-1" />
+                  {collection.topicIds.length} topics
+                </div>
+                <div className="flex items-center">
+                  <Clock className="h-4 w-4 mr-1" />
+                  {new Date(collection.lastEdited).toLocaleDateString()}
+                </div>
+                  </div>
               <div className="flex flex-col space-y-2">
                 <ShareMetrics metrics={collection.metrics || []} />
                 <div className="flex items-center space-x-4 text-sm text-slate-500 dark:text-slate-400">
