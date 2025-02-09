@@ -241,6 +241,16 @@ export default function Collections() {
       .replace(/^(.+)$/gm, '<p class="my-2">$1</p>');
   };
 
+  const generateCollectionMarkdown = (collection: Collection): string => {
+    const collectionTopics = collection.topicIds
+      .map(id => topics.find(topic => topic.id === id))
+      .filter((topic): topic is Topic => topic !== undefined);
+    
+    return collectionTopics
+      .map(topic => topic.content)
+      .join('\n\n---\n\n');
+  };
+
   const generateCollectionHTML = (collection: Collection): string => {
     const collectionTopics = collection.topicIds
       .map(id => topics.find(topic => topic.id === id))
@@ -617,9 +627,6 @@ export default function Collections() {
                       )} />
                     </Button>
                   </DropdownMenuTrigger>
-       
-       
-                  // Fix for the DropdownMenuContent in Collections.tsx
 <DropdownMenuContent align="end" className="w-40">
   <DropdownMenuItem onClick={() => handlePublish(collection)}>
     <Globe className="h-4 w-4 mr-2" />
@@ -784,6 +791,48 @@ export default function Collections() {
           </div>
         </div>
       )}
+      {/* Hashnode Publisher Modal */}
+{showHashnodePublisher && publishingCollection && (
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+    <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-lg">
+      <HashnodePublisher
+        collection={publishingCollection}
+        content={generateCollectionHTML(publishingCollection)}
+        onSuccess={(url: string) => {
+          setShowHashnodePublisher(false);
+          setPublishingCollection(null);
+          fetchCollectionsWithMetrics();
+        }}
+        onClose={() => {
+          setShowHashnodePublisher(false);
+          setPublishingCollection(null);
+        }}
+      />
+    </div>
+  </div>
+)}
+
+{/* Dev.to Publisher Modal */}
+{showDevToPublisher && publishingCollection && (
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+    <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-lg">
+      <DevToPublisher
+        collection={publishingCollection}
+        content={generateCollectionHTML(publishingCollection)}
+        rawMarkdown={generateCollectionMarkdown(publishingCollection)}
+        onSuccess={(url: string) => {
+          setShowDevToPublisher(false);
+          setPublishingCollection(null);
+          fetchCollectionsWithMetrics();
+        }}
+        onClose={() => {
+          setShowDevToPublisher(false);
+          setPublishingCollection(null);
+        }}
+      />
+    </div>
+  </div>
+)}
     </Layout>
   );
 }
