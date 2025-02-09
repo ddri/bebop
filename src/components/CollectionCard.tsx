@@ -37,7 +37,15 @@ const CollectionCard: React.FC<CollectionCardProps> = ({
   onDelete
 }) => {
   return (
-    <Card className="group relative hover:shadow-md transition-shadow bg-[#3d3d3a]">
+    <Card 
+      className="group relative bg-[#1c1c1e] hover:scale-[1.09] hover:border hover:border-[#E669E8] transition-all duration-200 border-0 cursor-pointer"
+      onClick={(e) => {
+        // Only trigger if we didn't click on a button or dropdown
+        if (!(e.target as HTMLElement).closest('button')) {
+          onEdit(collection);
+        }
+      }}
+    >
       {/* Status indicator */}
       <div className="absolute top-3 right-3 flex items-center gap-1.5">
         <div className={`h-2 w-2 rounded-full ${
@@ -58,35 +66,37 @@ const CollectionCard: React.FC<CollectionCardProps> = ({
               <Button 
                 variant="ghost" 
                 size="sm"
-                className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-[#E669E8] hover:text-white"
+                className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:text-[#E669E8] hover:bg-transparent"
               >
                 <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-40 bg-[#1c1c1e] border-[#2a2a2c] text-white">
+            <DropdownMenuContent align="end" className="w-40 bg-[#1c1c1e] border-slate-700 text-white">
               <DropdownMenuItem 
-                onClick={() => onEdit(collection)}
-                className="hover:bg-[#E669E8] hover:text-white focus:bg-[#E669E8] focus:text-white"
-              >
-                <Pencil className="h-4 w-4 mr-2" />
-                Edit
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={() => onPreview(collection)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onPreview(collection);
+                }}
                 className="hover:bg-[#E669E8] hover:text-white focus:bg-[#E669E8] focus:text-white"
               >
                 <Eye className="h-4 w-4 mr-2" />
                 Preview
               </DropdownMenuItem>
               <DropdownMenuItem 
-                onClick={() => onPublish(collection)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onPublish(collection);
+                }}
                 className="hover:bg-[#E669E8] hover:text-white focus:bg-[#E669E8] focus:text-white"
               >
                 <Globe className="h-4 w-4 mr-2" />
                 Publish
               </DropdownMenuItem>
               <DropdownMenuItem 
-                onClick={() => onDelete(collection)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(collection);
+                }}
                 className="text-red-400 hover:bg-red-500 hover:text-white focus:bg-red-500 focus:text-white"
               >
                 <Trash2 className="h-4 w-4 mr-2" />

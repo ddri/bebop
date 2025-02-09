@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTheme } from "next-themes";
 import CodeMirror from '@uiw/react-codemirror';
@@ -267,7 +269,7 @@ const WriteMode = () => {
 
   return (
     <div 
-      className="flex flex-col h-[calc(100vh-8rem)] bg-slate-950"
+      className="flex flex-col h-[calc(100vh-8rem)] bg-[#2f2f2d]"
       ref={editorContainerRef}
     >
       {urlPopup && (
@@ -280,14 +282,14 @@ const WriteMode = () => {
       )}
       
       {showToolbar && (
-        <div className="bg-slate-900 border-b border-slate-800">
+        <div className="bg-[#1c1c1e] border-b border-slate-800">
           <div className="flex items-center justify-between px-4 py-2">
             <div className="flex items-center space-x-2">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => handleToolbarAction('bold')}
-                className="h-8 w-8 p-0"
+                className="h-8 w-8 p-0 hover:text-[#E669E8]"
                 title="Bold (Ctrl+B)"
               >
                 <Bold className="h-4 w-4" />
@@ -296,7 +298,7 @@ const WriteMode = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => handleToolbarAction('italic')}
-                className="h-8 w-8 p-0"
+                className="h-8 w-8 p-0 hover:text-[#E669E8]"
                 title="Italic (Ctrl+I)"
               >
                 <Italic className="h-4 w-4" />
@@ -306,7 +308,7 @@ const WriteMode = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => handleToolbarAction('h1')}
-                className="h-8 w-8 p-0"
+                className="h-8 w-8 p-0 hover:text-[#E669E8]"
                 title="Heading 1"
               >
                 <Heading className="h-4 w-4" />
@@ -315,7 +317,7 @@ const WriteMode = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => handleToolbarAction('h2')}
-                className="h-8 px-2 text-xs font-bold"
+                className="h-8 px-2 text-xs font-bold hover:text-[#E669E8]"
                 title="Heading 2"
               >
                 H2
@@ -324,7 +326,7 @@ const WriteMode = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => handleToolbarAction('h3')}
-                className="h-8 px-2 text-xs font-bold"
+                className="h-8 px-2 text-xs font-bold hover:text-[#E669E8]"
                 title="Heading 3"
               >
                 H3
@@ -334,7 +336,7 @@ const WriteMode = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => handleToolbarAction('bulletList')}
-                className="h-8 w-8 p-0"
+                className="h-8 w-8 p-0 hover:text-[#E669E8]"
                 title="Bullet List"
               >
                 <List className="h-4 w-4" />
@@ -343,7 +345,7 @@ const WriteMode = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => handleToolbarAction('link')}
-                className="h-8 w-8 p-0"
+                className="h-8 w-8 p-0 hover:text-[#E669E8]"
                 title="Insert Link"
               >
                 <LinkIcon className="h-4 w-4" />
@@ -352,7 +354,7 @@ const WriteMode = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => handleToolbarAction('code')}
-                className="h-8 w-8 p-0"
+                className="h-8 w-8 p-0 hover:text-[#E669E8]"
                 title="Insert Code"
               >
                 <Code className="h-4 w-4" />
@@ -368,7 +370,7 @@ const WriteMode = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => handleToolbarAction('embed')}
-                className="h-8 w-8 p-0"
+                className="h-8 w-8 p-0 hover:text-[#E669E8]"
                 title="Embed Media"
               >
                 <Video className="h-4 w-4" />
@@ -378,7 +380,7 @@ const WriteMode = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowPreview(!showPreview)}
-                className="flex items-center"
+                className="flex items-center hover:text-[#E669E8]"
                 title={showPreview ? 'Hide Preview' : 'Show Preview'}
               >
                 {showPreview ? (
@@ -388,11 +390,14 @@ const WriteMode = () => {
                 )}
                 {showPreview ? 'Hide Preview' : 'Show Preview'}
               </Button>
+
+
               {showPreview && (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setPreviewMode(prev => prev === 'split' ? 'full' : 'split')}
+                  className="hover:text-[#E669E8]"
                   title={previewMode === 'split' ? 'Full Preview' : 'Split View'}
                 >
                   <Columns className="h-4 w-4" />
@@ -404,6 +409,7 @@ const WriteMode = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowToolbar(!showToolbar)}
+                className="hover:text-[#E669E8]"
                 title="Toggle Toolbar"
               >
                 Hide Toolbar
@@ -413,6 +419,7 @@ const WriteMode = () => {
                 variant="ghost"
                 size="sm"
                 onClick={toggleFullscreen}
+                className="hover:text-[#E669E8]"
                 title="Toggle Fullscreen"
               >
                 {isFullscreen ? (
@@ -423,7 +430,7 @@ const WriteMode = () => {
               </Button>
               <Button
                 onClick={() => setShowSaveDialog(true)}
-                className="bg-yellow-400 hover:bg-yellow-500 text-black"
+                className="bg-[#E669E8] hover:bg-[#d15dd3] text-white"
               >
                 <Save className="h-4 w-4 mr-2" />
                 Save
@@ -443,7 +450,7 @@ const WriteMode = () => {
       )}
 
       <div className={cn(
-        "flex flex-1 min-h-[600px] bg-slate-950",
+        "flex flex-1 min-h-[600px] bg-[#2f2f2d]",
         showPreview && "divide-x divide-slate-800"
       )}>
         <div className={cn(
@@ -476,7 +483,7 @@ const WriteMode = () => {
 
         {showPreview && (
           <div className={cn(
-            "bg-slate-950 transition-all duration-200",
+            "bg-[#2f2f2d] transition-all duration-200",
             previewMode === 'split' ? "w-1/2" : "w-full"
           )}>
             <div className="prose prose-invert max-w-none p-8 h-full overflow-auto">
@@ -491,7 +498,7 @@ const WriteMode = () => {
       </div>
 
       <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
-        <DialogContent>
+        <DialogContent className="bg-[#1c1c1e] border-0">
           <DialogHeader>
             <DialogTitle>Save as Topic</DialogTitle>
             <DialogDescription>
@@ -504,6 +511,7 @@ const WriteMode = () => {
                 placeholder="Topic Name"
                 value={topicName}
                 onChange={(e) => setTopicName(e.target.value)}
+                className="bg-[#2f2f2d] border-slate-700"
               />
             </div>
             <div className="space-y-2">
@@ -511,6 +519,7 @@ const WriteMode = () => {
                 placeholder="Topic Description (optional)"
                 value={topicDescription}
                 onChange={(e) => setTopicDescription(e.target.value)}
+                className="bg-[#2f2f2d] border-slate-700"
               />
             </div>
             {error && (
@@ -531,7 +540,7 @@ const WriteMode = () => {
             <Button
               onClick={handleSave}
               disabled={!topicName || !content || saving}
-              className="bg-yellow-400 hover:bg-yellow-500 text-black"
+              className="bg-[#E669E8] hover:bg-[#d15dd3] text-white"
             >
               {saving ? 'Saving...' : 'Save Topic'}
             </Button>
@@ -542,4 +551,4 @@ const WriteMode = () => {
   );
 };
 
-export default WriteMode;
+export default WriteMode;              
