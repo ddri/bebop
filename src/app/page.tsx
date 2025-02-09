@@ -10,38 +10,38 @@ export default function Home() {
 
   return (
     <Layout pathname={pathname}>
-      <div className="max-w-5xl mx-auto text-center py-12">
+      <div className="max-w-7xl mx-auto text-center py-12">
         <h1 className="text-4xl font-bold mb-4 text-white">Welcome to Bebop</h1>
         <p className="text-xl text-slate-300 mb-12">
           Your content management system for writing and publishing technical content.
         </p>
 
-        {/* Write Mode Card */}
-        <div className="bg-[#1c1c1e] rounded-lg p-6 mb-8 border-0">
-          <div className="flex items-center justify-center mb-4">
-            <Pencil className="h-8 w-8 text-[#E669E8]" />
+        {/* Three Column Grid */}
+        <div className="grid md:grid-cols-3 gap-6 mb-8">
+          {/* Write Mode Card */}
+          <div className="bg-[#1c1c1e] rounded-lg p-6 border-0 flex flex-col">
+            <div className="flex items-center justify-center mb-4">
+              <Pencil className="h-8 w-8 text-[#E669E8]" />
+            </div>
+            <h2 className="text-2xl font-semibold mb-2 text-white">Write Mode</h2>
+            <p className="text-slate-300 mb-6 flex-grow">
+              Our focused writing environment with live preview and rich media support
+            </p>
+            <Link
+              href="/write"
+              className="block w-full bg-[#E669E8] hover:bg-[#d15dd3] text-white py-3 px-4 rounded-md transition-colors"
+            >
+              Start Writing
+            </Link>
           </div>
-          <h2 className="text-2xl font-semibold mb-2 text-white">Write Mode</h2>
-          <p className="text-slate-300 mb-6">
-            Our focused writing environment with live preview and rich media support
-          </p>
-          <Link
-            href="/write"
-            className="block w-full bg-[#E669E8] hover:bg-[#d15dd3] text-white py-3 px-4 rounded-md transition-colors"
-          >
-            Start Writing
-          </Link>
-        </div>
 
-        {/* Topics and Collections Grid */}
-        <div className="grid md:grid-cols-2 gap-6 mb-8">
           {/* Topics Card */}
-          <div className="bg-[#1c1c1e] rounded-lg p-6 border-0">
+          <div className="bg-[#1c1c1e] rounded-lg p-6 border-0 flex flex-col">
             <div className="flex items-center justify-center mb-4">
               <FileText className="h-8 w-8 text-[#E669E8]" />
             </div>
             <h2 className="text-2xl font-semibold mb-2 text-white">Topics</h2>
-            <p className="text-slate-300 mb-6">
+            <p className="text-slate-300 mb-6 flex-grow">
               Manage and organize all your written content
             </p>
             <Link
@@ -53,12 +53,12 @@ export default function Home() {
           </div>
 
           {/* Collections Card */}
-          <div className="bg-[#1c1c1e] rounded-lg p-6 border-0">
+          <div className="bg-[#1c1c1e] rounded-lg p-6 border-0 flex flex-col">
             <div className="flex items-center justify-center mb-4">
               <Library className="h-8 w-8 text-[#E669E8]" />
             </div>
             <h2 className="text-2xl font-semibold mb-2 text-white">Collections</h2>
-            <p className="text-slate-300 mb-6">
+            <p className="text-slate-300 mb-6 flex-grow">
               Group topics together and publish them anywhere
             </p>
             <Link

@@ -87,7 +87,7 @@ export function MarkdownCMS({ pathname }: { pathname: string }) {
   if (!mounted) return null;
 
   if (loading) {
-    return <div className="text-lg">Loading topics...</div>;
+    return <div className="text-lg text-white">Loading topics...</div>;
   }
 
   if (error) {
@@ -124,11 +124,13 @@ export function MarkdownCMS({ pathname }: { pathname: string }) {
   };
 
   const handleDeleteDocument = async (docId: string) => {
-    try {
-      await deleteTopic(docId);
-      setSelectedDocs(prev => prev.filter(id => id !== docId));
-    } catch (error) {
-      console.error('Failed to delete topic:', error);
+    if (window.confirm('Are you sure you want to delete this topic?')) {
+      try {
+        await deleteTopic(docId);
+        setSelectedDocs(prev => prev.filter(id => id !== docId));
+      } catch (error) {
+        console.error('Failed to delete topic:', error);
+      }
     }
   };
 
@@ -137,12 +139,12 @@ export function MarkdownCMS({ pathname }: { pathname: string }) {
       {/* Header with sort controls */}
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-4">
-          <h1 className="text-2xl font-semibold dark:text-white">Topics</h1>
+          <h1 className="text-2xl font-semibold text-white">Topics</h1>
           <div className="relative">
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as SortOption)}
-              className="appearance-none bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md pl-9 pr-8 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
+              className="appearance-none bg-[#2f2f2d] border border-slate-700 rounded-md pl-9 pr-8 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#E669E8]"
             >
               {sortOptions.map(option => (
                 <option key={option.value} value={option.value}>
@@ -153,14 +155,14 @@ export function MarkdownCMS({ pathname }: { pathname: string }) {
             {React.createElement(
               sortOptions.find(opt => opt.value === sortBy)?.icon || CalendarDays,
               {
-                className: "h-4 w-4 absolute left-2 top-1/2 transform -translate-y-1/2 text-slate-500",
+                className: "h-4 w-4 absolute left-2 top-1/2 transform -translate-y-1/2 text-slate-400",
               }
             )}
           </div>
         </div>
         <Button 
           onClick={() => setShowNewDocForm(true)}
-          className="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold"
+          className="bg-[#E669E8] hover:bg-[#d15dd3] text-white"
         >
           <Plus className="w-4 h-4 mr-2" />
           New Topic
@@ -169,9 +171,9 @@ export function MarkdownCMS({ pathname }: { pathname: string }) {
 
       {/* New Topic Form */}
       {showNewDocForm && (
-        <Card className="border-2 border-yellow-400">
+        <Card className="bg-[#1c1c1e] border-0">
           <CardHeader>
-            <CardTitle>Create New Topic</CardTitle>
+            <CardTitle className="text-white">Create New Topic</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -180,13 +182,13 @@ export function MarkdownCMS({ pathname }: { pathname: string }) {
                   placeholder="Topic Name"
                   value={newDocName}
                   onChange={(e) => setNewDocName(e.target.value)}
-                  className="mb-2"
+                  className="mb-2 bg-[#2f2f2d] border-slate-700 text-white placeholder:text-slate-400"
                 />
                 <Textarea
                   placeholder="Brief description of your topic (shown in preview cards)"
                   value={newDocDescription}
                   onChange={(e) => setNewDocDescription(e.target.value)}
-                  className="mb-2 h-20"
+                  className="mb-2 h-20 bg-[#2f2f2d] border-slate-700 text-white placeholder:text-slate-400"
                 />
               </div>
               <MarkdownEditor
@@ -198,13 +200,14 @@ export function MarkdownCMS({ pathname }: { pathname: string }) {
                 <Button 
                   onClick={saveDocument}
                   disabled={!newDocName || !newDocContent}
-                  className="bg-yellow-400 hover:bg-yellow-500 text-black"
+                  className="bg-[#E669E8] hover:bg-[#d15dd3] text-white"
                 >
                   Save Topic
                 </Button>
                 <Button 
                   variant="outline"
                   onClick={() => setShowNewDocForm(false)}
+                  className="text-white border-slate-700 hover:bg-[#2f2f2d]"
                 >
                   Cancel
                 </Button>
@@ -219,9 +222,9 @@ export function MarkdownCMS({ pathname }: { pathname: string }) {
         {sortedTopics.map((topic) => (
           <React.Fragment key={topic.id}>
             {editingDoc?.id === topic.id ? (
-              <Card className="border-2 border-blue-400">
+              <Card className="bg-[#1c1c1e] border-0">
                 <CardHeader>
-                  <CardTitle>Edit Topic</CardTitle>
+                  <CardTitle className="text-white">Edit Topic</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
@@ -230,32 +233,32 @@ export function MarkdownCMS({ pathname }: { pathname: string }) {
                         placeholder="Topic Name"
                         value={editingDoc.name}
                         onChange={(e) => setEditingDoc(prev => ({ ...prev!, name: e.target.value }))}
-                        className="mb-2"
+                        className="mb-2 bg-[#2f2f2d] border-slate-700 text-white placeholder:text-slate-400"
                       />
                       <Textarea
                         placeholder="Brief description of your topic (shown in preview cards)"
                         value={editingDoc.description}
                         onChange={(e) => setEditingDoc(prev => ({ ...prev!, description: e.target.value }))}
-                        className="mb-2 h-20"
+                        className="mb-2 h-20 bg-[#2f2f2d] border-slate-700 text-white placeholder:text-slate-400"
                       />
                     </div>
                     <MarkdownEditor
                       content={editingDoc.content}
                       onChange={(value) => setEditingDoc(prev => ({ ...prev!, content: value }))}
                       theme={theme}
-                      // testing a fix
                     />
                     <div className="flex gap-2">
                       <Button 
                         onClick={saveEditedDocument}
                         disabled={!editingDoc.name || !editingDoc.content}
-                        className="bg-blue-400 hover:bg-blue-500 text-black"
+                        className="bg-[#E669E8] hover:bg-[#d15dd3] text-white"
                       >
                         Save Changes
                       </Button>
                       <Button 
                         variant="outline"
                         onClick={() => setEditingDoc(null)}
+                        className="text-white border-slate-700 hover:bg-[#2f2f2d]"
                       >
                         Cancel
                       </Button>
@@ -264,9 +267,9 @@ export function MarkdownCMS({ pathname }: { pathname: string }) {
                 </CardContent>
               </Card>
             ) : (
-              <Card className="hover:shadow-md transition-shadow">
+              <Card className="bg-[#1c1c1e] hover:bg-[#2f2f2d] transition-colors border-0">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-lg font-semibold">{topic.name}</CardTitle>
+                  <CardTitle className="text-lg font-semibold text-white">{topic.name}</CardTitle>
                   <div className="flex space-x-2">
                     <Button
                       variant="ghost"
@@ -277,6 +280,7 @@ export function MarkdownCMS({ pathname }: { pathname: string }) {
                         content: topic.content,
                         description: topic.description
                       })}
+                      className="hover:text-[#E669E8] hover:bg-transparent"
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
@@ -284,16 +288,17 @@ export function MarkdownCMS({ pathname }: { pathname: string }) {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleDeleteDocument(topic.id)}
+                      className="hover:text-red-500 hover:bg-transparent"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-sm text-slate-500 dark:text-slate-400">
+                  <div className="text-sm text-slate-300">
                     {topic.description || 'No description provided'}
                   </div>
-                  <div className="mt-2 flex items-center space-x-4 text-sm text-slate-500 dark:text-slate-400">
+                  <div className="mt-2 flex items-center space-x-4 text-sm text-slate-400">
                     <div className="flex items-center">
                       <Clock className="h-4 w-4 mr-1" />
                       {new Date(topic.createdAt).toLocaleDateString()}
@@ -309,7 +314,7 @@ export function MarkdownCMS({ pathname }: { pathname: string }) {
           </React.Fragment>
         ))}
         {!sortedTopics.length && (
-          <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+          <div className="text-center py-8 text-slate-300">
             No topics yet. Click "New Topic" to create one.
           </div>
         )}
