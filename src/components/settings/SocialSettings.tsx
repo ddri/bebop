@@ -7,14 +7,33 @@ import { Label } from '@/components/ui/label';
 import { useSocialSettings } from '@/hooks/useSocialSettings';
 import { PLATFORMS } from '@/lib/social/platforms';
 import { BlueskyIcon } from '../social/icons/BlueskyIcon';
+import { MastodonIcon } from '../social/icons/MastodonIcon';
+import { ThreadsIcon } from '../social/icons/ThreadsIcon';
 import { AlertCircle } from 'lucide-react';
-import { PlatformId } from '@/types/social';
+import { PlatformId, SocialCredentials } from '@/types/social';
+
+const PlatformIcon = ({ platform }: { platform: PlatformId }) => {
+  switch (platform) {
+    case 'bluesky':
+      return <BlueskyIcon className="h-5 w-5" />;
+    case 'mastodon':
+      return <MastodonIcon className="h-5 w-5" />;
+    case 'threads':
+      return <ThreadsIcon className="h-5 w-5" />;
+    default:
+      return null;
+  }
+};
 
 export function SocialSettings() {
   const { credentials, setCredentials, clearCredentials } = useSocialSettings();
 
-  const handleSave = (platform: PlatformId, values: Record<string, string>) => {
-    setCredentials(platform, values);
+  const handleSave = (platform: PlatformId, values: SocialCredentials) => {
+    // Convert any undefined values to empty strings
+    const cleanValues = Object.fromEntries(
+      Object.entries(values).map(([key, value]) => [key, value ?? ''])
+    );
+    setCredentials(platform, cleanValues);
   };
 
   const handleClear = (platform: PlatformId) => {
@@ -30,15 +49,15 @@ export function SocialSettings() {
         {Object.entries(PLATFORMS).map(([id, platform]) => (
           <div key={id} className="space-y-4 pb-4 border-b last:border-0">
             <div className="flex items-center gap-2">
-              {platform.id === 'bluesky' && <BlueskyIcon className="h-5 w-5" />}
+              <PlatformIcon platform={platform.id as PlatformId} />
               <h3 className="font-medium">{platform.name}</h3>
             </div>
             
             {platform.credentialFields.map(field => (
               <div key={field} className="space-y-2">
-                <Label>{field}</Label>
+                <Label>{field.charAt(0).toUpperCase() + field.slice(1)}</Label>
                 <Input
-                  type={field.includes('password') ? 'password' : 'text'}
+                  type={field.includes('password') || field.includes('token') ? 'password' : 'text'}
                   value={credentials[platform.id as PlatformId]?.[field] || ''}
                   onChange={(e) => {
                     const values = {
