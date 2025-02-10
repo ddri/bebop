@@ -7,33 +7,14 @@ import { Label } from '@/components/ui/label';
 import { useSocialSettings } from '@/hooks/useSocialSettings';
 import { PLATFORMS } from '@/lib/social/platforms';
 import { BlueskyIcon } from '../social/icons/BlueskyIcon';
-import { MastodonIcon } from '../social/icons/MastodonIcon';
-import { ThreadsIcon } from '../social/icons/ThreadsIcon';
 import { AlertCircle } from 'lucide-react';
 import { PlatformId, SocialCredentials } from '@/types/social';
-
-const PlatformIcon = ({ platform }: { platform: PlatformId }) => {
-  switch (platform) {
-    case 'bluesky':
-      return <BlueskyIcon className="h-5 w-5" />;
-    case 'mastodon':
-      return <MastodonIcon className="h-5 w-5" />;
-    case 'threads':
-      return <ThreadsIcon className="h-5 w-5" />;
-    default:
-      return null;
-  }
-};
 
 export function SocialSettings() {
   const { credentials, setCredentials, clearCredentials } = useSocialSettings();
 
   const handleSave = (platform: PlatformId, values: SocialCredentials) => {
-    // Convert any undefined values to empty strings
-    const cleanValues = Object.fromEntries(
-      Object.entries(values).map(([key, value]) => [key, value ?? ''])
-    );
-    setCredentials(platform, cleanValues);
+    setCredentials(platform, values);
   };
 
   const handleClear = (platform: PlatformId) => {
@@ -41,32 +22,33 @@ export function SocialSettings() {
   };
 
   return (
-    <Card>
+    <Card className="bg-[#1c1c1e] border-0">
       <CardHeader>
-        <CardTitle>Social Integration Settings</CardTitle>
+        <CardTitle className="text-white">Social Integration Settings</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         {Object.entries(PLATFORMS).map(([id, platform]) => (
-          <div key={id} className="space-y-4 pb-4 border-b last:border-0">
-            <div className="flex items-center gap-2">
-              <PlatformIcon platform={platform.id as PlatformId} />
+          <div key={id} className="space-y-4 pb-4 border-b border-slate-700 last:border-0">
+            <div className="flex items-center gap-2 text-white">
+              {platform.id === 'bluesky' && <BlueskyIcon className="h-5 w-5" />}
               <h3 className="font-medium">{platform.name}</h3>
             </div>
             
             {platform.credentialFields.map(field => (
               <div key={field} className="space-y-2">
-                <Label>{field.charAt(0).toUpperCase() + field.slice(1)}</Label>
+                <Label className="text-white">{field}</Label>
                 <Input
-                  type={field.includes('password') || field.includes('token') ? 'password' : 'text'}
+                  type={field.includes('password') ? 'password' : 'text'}
                   value={credentials[platform.id as PlatformId]?.[field] || ''}
                   onChange={(e) => {
                     const values = {
                       ...(credentials[platform.id as PlatformId] || {}),
                       [field]: e.target.value
                     };
-                    handleSave(platform.id as PlatformId, values);
+                    handleSave(platform.id as PlatformId, values as SocialCredentials);
                   }}
                   placeholder={`Enter your ${field}`}
+                  className="bg-[#2f2f2d] border-slate-600 text-white placeholder:text-slate-400 focus:border-[#E669E8] focus:ring-[#E669E8]"
                 />
               </div>
             ))}
@@ -75,21 +57,22 @@ export function SocialSettings() {
               <Button 
                 variant="outline" 
                 onClick={() => handleClear(platform.id as PlatformId)}
+                className="text-white border-slate-600 hover:bg-[#E669E8] hover:text-white"
               >
                 Clear Credentials
               </Button>
             </div>
 
             {platform.id === 'bluesky' && (
-              <div className="flex items-start gap-2 text-sm text-yellow-500 dark:text-yellow-400">
-                <AlertCircle className="h-4 w-4 mt-0.5" />
-                <p>
+              <div className="flex items-start gap-2 text-sm">
+                <AlertCircle className="h-4 w-4 mt-0.5 text-[#E669E8]" />
+                <p className="text-slate-300">
                   Create an app-specific password in your{' '}
                   <a 
                     href="https://bsky.app/settings/app-passwords"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="underline"
+                    className="text-[#E669E8] hover:text-[#d15dd3] underline"
                   >
                     Bluesky Settings
                   </a>
