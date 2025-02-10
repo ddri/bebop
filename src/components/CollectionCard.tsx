@@ -38,7 +38,7 @@ const CollectionCard: React.FC<CollectionCardProps> = ({
 }) => {
   return (
     <Card 
-      className="group relative bg-[#1c1c1e] hover:scale-[1.09] hover:border hover:border-[#E669E8] transition-all duration-200 border-0 cursor-pointer"
+      className="group relative bg-[#1c1c1e] hover:scale-[1.00] hover:border hover:border-[#E669E8] transition-all duration-200 border-0 cursor-pointer"
       onClick={(e) => {
         // Only trigger if we didn't click on a button or dropdown
         if (!(e.target as HTMLElement).closest('button')) {

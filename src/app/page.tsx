@@ -29,7 +29,7 @@ export default function Home() {
             </p>
             <Link
               href="/write"
-              className="block w-full bg-[#E669E8] hover:bg-[#d15dd3] text-white py-3 px-4 rounded-md transition-colors"
+              className="block w-full bg-[#2f2f2d] hover:bg-[#E669E8] text-white py-3 px-4 rounded-md transition-colors border border-slate-700"
             >
               Start Writing
             </Link>
