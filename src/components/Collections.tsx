@@ -394,11 +394,15 @@ export default function Collections() {
   const saveEditedCollection = async () => {
     if (editingCollection && newCollectionName && selectedTopicIds.length > 0) {
       try {
+        // Ensure description is within limits before saving
+        const truncatedDesc = newCollectionDesc.slice(0, 280);
+        
         await updateCollection(editingCollection.id, {
           name: newCollectionName,
-          description: newCollectionDesc,
+          description: truncatedDesc,
           topicIds: selectedTopicIds,
         });
+        
         setEditingCollection(null);
         setNewCollectionName('');
         setNewCollectionDesc('');
@@ -411,9 +415,14 @@ export default function Collections() {
   };
 
   const startEditing = (collection: Collection) => {
+    // Truncate description to 280 chars if it's longer
+    const truncatedDesc = collection.description 
+      ? collection.description.slice(0, 280) 
+      : '';
+      
     setEditingCollection(collection);
     setNewCollectionName(collection.name);
-    setNewCollectionDesc(collection.description || '');
+    setNewCollectionDesc(truncatedDesc);
     setSelectedTopicIds([...collection.topicIds]);
   };
 
@@ -461,26 +470,39 @@ export default function Collections() {
 
       {/* Collection Form */}
       {(showNewCollectionForm || editingCollection) && (
-        <Card className={`mb-8 border-2 ${editingCollection ? 'border-blue-400' : 'border-[#E669E8]'}`}>
+        <Card className="mb-8 border-2 border-[#E669E8]">
           <CardHeader>
             <CardTitle>{editingCollection ? 'Edit Collection' : 'Create New Collection'}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div>
-                <Input
-                  placeholder="Collection Name"
-                  value={newCollectionName}
-                  onChange={(e) => setNewCollectionName(e.target.value)}
-                  className="mb-2"
-                />
-                <Textarea
-                  placeholder="Collection Description (optional)"
-                  value={newCollectionDesc}
-                  onChange={(e) => setNewCollectionDesc(e.target.value)}
-                  className="mb-4"
-                />
+            <div>
+            <Input
+              placeholder="Collection Name"
+              value={newCollectionName}
+              onChange={(e) => setNewCollectionName(e.target.value)}
+              className="mb-2"
+            />
+            <div className="space-y-2">
+              <Textarea
+                placeholder="Collection Description (optional)"
+                value={newCollectionDesc}
+                onChange={(e) => {
+                  const input = e.target.value;
+                  if (input.length <= 280) {
+                    setNewCollectionDesc(input);
+                  }
+                }}
+                className="mb-1 resize-none"
+                rows={3}
+                maxLength={280}
+                aria-label="Collection description"
+              />
+              <div className="text-xs text-slate-400 text-right">
+                {newCollectionDesc.length}/280 characters
               </div>
+            </div>
+          </div>
 
               {topics.length > 0 ? (
                 <div className="border rounded-md">

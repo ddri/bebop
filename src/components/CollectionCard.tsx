@@ -109,9 +109,11 @@ const CollectionCard: React.FC<CollectionCardProps> = ({
       
       <CardContent>
         {collection.description && (
-          <p className="text-sm text-slate-300 line-clamp-2 mb-4">
-            {collection.description}
-          </p>
+          <div className="h-[60px] mb-4">
+            <p className="text-sm text-slate-300 line-clamp-3" title={collection.description}>
+              {collection.description}
+            </p>
+          </div>
         )}
         
         {/* Metrics row */}
