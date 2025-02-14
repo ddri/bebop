@@ -66,3 +66,36 @@ model Settings {
   
   @@map("settings")
 }
+
+// Add these models to your schema.prisma
+
+model Campaign {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String?
+  startDate   DateTime?
+  endDate     DateTime?
+  status      String    @default("draft") // draft, active, completed, archived
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  publishingPlans PublishingPlan[]
+
+  @@map("campaigns")
+}
+
+model PublishingPlan {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  campaignId  String    @db.ObjectId
+  topicId     String    @db.ObjectId
+  platform    String    // 'hashnode', 'devto', 'medium', etc.
+  status      String    @default("scheduled") // scheduled, published, failed
+  scheduledFor DateTime?
+  publishedAt DateTime?
+  publishedUrl String?
+  campaign    Campaign  @relation(fields: [campaignId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([campaignId, topicId, platform])
+  @@map("publishingPlans")
+}
