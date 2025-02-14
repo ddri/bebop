@@ -99,7 +99,7 @@ const SortableTopicItem = ({ id, topic, isSelected, onToggle, onRemove }: Sortab
     <div 
       ref={setNodeRef}
       style={style}
-      className="flex items-center p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-md bg-white dark:bg-slate-900"
+      className="flex items-center p-2 hover:bg-[#2f2f2d] rounded-md bg-[#1c1c1e] border border-slate-700"
     >
       <button 
         className="touch-none flex items-center justify-center p-1 mx-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" 
@@ -137,7 +137,7 @@ const TopicSelector = ({ topic, isSelected, onToggle }: {
   onToggle: (id: string) => void; 
 }) => {
   return (
-    <div className="flex items-center p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-md">
+    <div className="flex items-center p-2 hover:bg-[#2f2f2d] rounded-md">
       <input
         type="checkbox"
         checked={isSelected}
