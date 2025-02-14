@@ -7,7 +7,7 @@ export async function GET() {
     await prisma.topic.deleteMany({});
     
     // Delete all existing collections
-    await prisma.collection.deleteMany({});
+    await prisma.collections.deleteMany({});
     
     return NextResponse.json({ message: 'Database cleaned successfully' });
   } catch (error) {

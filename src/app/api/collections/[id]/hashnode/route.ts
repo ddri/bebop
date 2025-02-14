@@ -12,7 +12,7 @@ export async function PUT(request: Request, props: RouteParams) {
   try {
     const { hashnodeUrl } = await request.json();
     
-    const collection = await prisma.collection.update({
+    const collection = await prisma.collections.update({
       where: { id: params.id },
       data: {
         hashnodeUrl,

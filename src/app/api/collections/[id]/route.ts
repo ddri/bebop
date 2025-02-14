@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import prisma from '@/lib/prisma';  // Changed to default import
 
 
 
@@ -8,7 +8,7 @@ export async function GET(request: Request, props: { params: Promise<{ id: strin
   const params = await props.params;
   try {
     // Access params.id without any type assertions
-    const collection = await prisma.collection.findUnique({
+    const collection = await prisma.collections.findUnique({
       where: { id: params.id } 
     });    
     if (!collection) {
@@ -32,7 +32,7 @@ export async function PUT(request: Request, props: { params: Promise<{ id: strin
   const params = await props.params;
   try {
     const { name, description, topicIds, publishedUrl } = await request.json();
-    const collection = await prisma.collection.update({
+    const collection = await prisma.collections.update({
       where: { id: params.id },
       data: {
         ...(name && { name }),
@@ -51,7 +51,7 @@ export async function PUT(request: Request, props: { params: Promise<{ id: strin
 export async function DELETE(request: Request, props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   try {
-    await prisma.collection.delete({
+    await prisma.collections.delete({
       where: { id: params.id }
     });
     return new NextResponse(null, { status: 204 });
