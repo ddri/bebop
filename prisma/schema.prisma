@@ -58,27 +58,11 @@ model MediaItem {
 
   @@map("mediaItems")
 }
-
 model Settings {
   id              String    @id @default(auto()) @map("_id") @db.ObjectId
   hashnodeToken   String?
   publicationId   String?
-  socialSettings  Json?
   lastUpdated     DateTime  @updatedAt
   
   @@map("settings")
-}
-
-model SocialMetrics {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  platformId    String
-  collectionId  String   @db.ObjectId
-  shareCount    Int      @default(0)
-  successCount  Int      @default(0)
-  failureCount  Int      @default(0)
-  lastShared    DateTime @updatedAt
-  createdAt     DateTime @default(now())
-
-  @@unique([platformId, collectionId])
-  @@map("socialMetrics")
 }
