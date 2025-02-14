@@ -5,7 +5,7 @@ import { PlatformId } from '@/types/social';
 
 export async function GET() {
   try {
-    const metrics = await prisma.socialMetrics.findMany();
+    const metrics = await prisma.SocialMetrics.findMany();
     return NextResponse.json(metrics);
   } catch (error) {
     console.error('Failed to fetch social metrics:', error);
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     const { platformId, collectionId } = await request.json();
 
     // Upsert the social metrics record
-    const metrics = await prisma.socialMetrics.upsert({
+    const metrics = await prisma.SocialMetrics.upsert({
       where: {
         platformId_collectionId: {
           platformId,
