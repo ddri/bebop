@@ -452,7 +452,7 @@ export default function Collections() {
             setNewCollectionDesc('');
             setSelectedTopicIds([]);
           }}
-          className="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold"
+          className="bg-[#E669E8] hover:bg-[#d15dd3] text-white font-semibold"
         >
           <Plus className="w-4 h-4 mr-2" />
           New Collection
@@ -461,7 +461,7 @@ export default function Collections() {
 
       {/* Collection Form */}
       {(showNewCollectionForm || editingCollection) && (
-        <Card className={`mb-8 border-2 ${editingCollection ? 'border-blue-400' : 'border-yellow-400'}`}>
+        <Card className={`mb-8 border-2 ${editingCollection ? 'border-blue-400' : 'border-[#E669E8]'}`}>
           <CardHeader>
             <CardTitle>{editingCollection ? 'Edit Collection' : 'Create New Collection'}</CardTitle>
           </CardHeader>
@@ -543,7 +543,7 @@ export default function Collections() {
                 <Button 
                   onClick={editingCollection ? saveEditedCollection : saveNewCollection}
                   disabled={!newCollectionName || selectedTopicIds.length === 0}
-                  className={`${editingCollection ? 'bg-blue-400 hover:bg-blue-500' : 'bg-yellow-400 hover:bg-yellow-500'} text-black`}
+                  className={`${editingCollection ? 'bg-blue-400 hover:bg-blue-500' : 'bg-[#E669E8] hover:bg-[#d15dd3]'} text-white`}
                 >
                   {editingCollection ? 'Save Changes' : 'Create Collection'}
                 </Button>
