@@ -37,40 +37,39 @@ const CollectionCard: React.FC<CollectionCardProps> = ({
   onDelete
 }) => {
   return (
-    <Card 
-      className="group relative bg-[#1c1c1e] hover:scale-[1.00] hover:border hover:border-[#E669E8] transition-all duration-200 border-0 cursor-pointer"
-      onClick={(e) => {
-        // Only trigger if we didn't click on a button or dropdown
-        if (!(e.target as HTMLElement).closest('button')) {
-          onEdit(collection);
-        }
-      }}
-    >
+<Card 
+  className="group relative bg-[#1c1c1e] hover:scale-[1.00] hover:border hover:border-[#E669E8] transition-all duration-200 border-0 cursor-pointer h-[180px]"
+  onClick={(e) => {
+    if (!(e.target as HTMLElement).closest('button')) {
+      onEdit(collection);
+    }
+  }}
+>
       {/* Status indicator */}
       <div className="absolute top-3 right-3 flex items-center gap-1.5">
-        <div className={`h-2 w-2 rounded-full ${
-          collection.publishedUrl ? 'bg-green-500' : 'bg-yellow-500'
-        }`} 
-        title={collection.publishedUrl ? 'Published' : 'Draft'} 
-        />
-      </div>
+    <div className={`h-2 w-2 rounded-full ${
+      collection.publishedUrl ? 'bg-green-500' : 'bg-yellow-500'
+    }`} 
+    title={collection.publishedUrl ? 'Published' : 'Draft'} 
+    />
+  </div>
       
       {/* Main content */}
-      <CardHeader className="pb-2">
-        <div className="flex items-start justify-between gap-4">
-          <h3 className="font-semibold text-lg truncate pr-8 text-white">
-            {collection.name}
-          </h3>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="sm"
-                className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:text-[#E669E8] hover:bg-transparent"
-              >
-                <MoreVertical className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
+      <CardHeader className="pb-2 space-y-0">
+    <div className="flex items-start justify-between gap-4">
+      <h3 className="font-semibold text-lg truncate pr-8 text-white max-w-[80%]">
+        {collection.name}
+      </h3>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button 
+            variant="ghost" 
+            size="sm"
+            className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:text-[#E669E8] hover:bg-transparent"
+          >
+            <MoreVertical className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-40 bg-[#1c1c1e] border-slate-700 text-white">
               <DropdownMenuItem 
                 onClick={(e) => {
@@ -107,17 +106,20 @@ const CollectionCard: React.FC<CollectionCardProps> = ({
         </div>
       </CardHeader>
       
-      <CardContent>
-        {collection.description && (
-          <div className="h-[60px] mb-4">
+      <CardContent className="flex flex-col justify-between h-[100px]">
+        {/* Description section with fixed height */}
+        <div className="h-[60px] overflow-hidden">
+          {collection.description ? (
             <p className="text-sm text-slate-300 line-clamp-3" title={collection.description}>
               {collection.description}
             </p>
-          </div>
-        )}
+          ) : (
+            <p className="text-sm text-slate-500 italic">No description</p>
+          )}
+        </div>
         
         {/* Metrics row */}
-        <div className="flex items-center justify-between text-sm text-slate-300">
+        <div className="flex items-center justify-between text-sm text-slate-300 mt-auto">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-1.5">
               <FileText className="h-4 w-4" />
@@ -129,22 +131,22 @@ const CollectionCard: React.FC<CollectionCardProps> = ({
             </div>
           </div>
           
-          {/* Social metrics */}
-          {metrics.length > 0 && (
-            <div className="flex items-center gap-2">
-              {metrics.map((metric) => (
-                <div 
-                  key={metric.platformId}
-                  className="flex items-center gap-1 text-xs"
-                  title={`${metric.successCount} successful shares on ${metric.platformId}`}
-                >
-                  <div className={`h-2 w-2 rounded-full ${
-                    metric.platformId === 'bluesky' ? 'bg-blue-500' : 
-                    metric.platformId === 'mastodon' ? 'bg-purple-500' :
-                    'bg-slate-500'
-                  }`} />
-                  {metric.shareCount}
-                </div>
+        {/* Social metrics */}
+        {metrics && metrics.length > 0 && (
+          <div className="flex items-center gap-2">
+            {metrics.map((metric) => (
+              <div 
+                key={metric.platformId}
+                className="flex items-center gap-1 text-xs"
+                title={`${metric.successCount} successful shares on ${metric.platformId}`}
+              >
+                <div className={`h-2 w-2 rounded-full ${
+                  metric.platformId === 'bluesky' ? 'bg-blue-500' : 
+                  metric.platformId === 'mastodon' ? 'bg-purple-500' :
+                  'bg-slate-500'
+                }`} />
+                {metric.shareCount}
+              </div>
               ))}
             </div>
           )}
