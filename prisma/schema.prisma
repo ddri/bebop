@@ -34,7 +34,6 @@ model Collections {
   createdAt    DateTime @default(now())
   lastEdited   DateTime @updatedAt
 
-
   @@map("collections")
 }
 
