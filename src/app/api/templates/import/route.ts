@@ -40,7 +40,7 @@ export async function POST(request: Request) {
     );
 
     // Create the collection
-    const collection = await prisma.collection.create({
+    const collection = await prisma.collections.create({
       data: {
         name: template.collections[0].name,
         description: template.collections[0].description,

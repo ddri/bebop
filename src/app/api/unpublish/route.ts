@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     }
 
     await prisma.$transaction(async (tx) => {
-      await tx.collection.update({
+      await tx.collections.update({
         where: { id: collectionId },
         data: { publishedUrl: null }
       });
