@@ -7,7 +7,7 @@ export async function PUT(request: Request, props: { params: Promise<{ id: strin
   try {
     const { devToUrl } = await request.json();
     
-    const updatedCollection = await prisma.collection.update({
+    const updatedCollection = await prisma.collections.update({
       where: { id: params.id },
       data: {
         devToUrl,
