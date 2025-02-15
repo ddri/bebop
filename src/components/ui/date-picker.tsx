@@ -33,8 +33,8 @@ export function DatePicker({ date, onChange }: DatePickerProps) {
       <PopoverContent className="w-auto p-0 bg-[#1c1c1e] border-slate-700">
         <Calendar
           mode="single"
-          selected={date || undefined}
-          onSelect={onChange}
+          selected={date ?? undefined}
+          onSelect={(date: Date | undefined) => onChange(date ?? null)}
           initialFocus
           className="bg-[#1c1c1e] text-white"
         />

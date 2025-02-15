@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useTheme } from "next-themes";
+import { useRouter } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -49,6 +50,7 @@ interface Campaign {
 
 export default function Campaigns({ pathname }: { pathname: string }) {
   const { theme } = useTheme();
+  const router = useRouter();
   const { campaigns, loading, error, createCampaign, updateCampaign, deleteCampaign } = useCampaigns();
   const { topics } = useTopics();
   
@@ -248,7 +250,9 @@ export default function Campaigns({ pathname }: { pathname: string }) {
           campaigns.map((campaign) => (
             <Card 
               key={campaign.id}
-              className="group relative bg-[#1c1c1e] hover:scale-[1.00] hover:border hover:border-[#E669E8] transition-all duration-200 border-0"
+              className="group relative bg-[#1c1c1e] hover:scale-[1.00] hover:border hover:border-[#E669E8] transition-all duration-200 border-0 cursor-pointer"
+              onClick={() => router.push(`/campaigns/${campaign.id}`)}
+
             >
               {/* Status indicator */}
               <div className="absolute top-3 right-3 flex items-center gap-1.5">
