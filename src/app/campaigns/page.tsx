@@ -1,10 +1,13 @@
+// src/app/campaigns/page.tsx
 'use client';
 
-import { usePathname } from 'next/navigation';
+import Layout from '@/components/Layout';
 import Campaigns from '@/components/Campaigns';
 
 export default function CampaignsPage() {
-  const pathname = usePathname();
-  
-  return <Campaigns pathname={pathname} />;
+  return (
+    <Layout>
+      <Campaigns />
+    </Layout>
+  );
 }

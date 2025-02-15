@@ -1,8 +1,9 @@
+// src/components/Layout.tsx
 import Link from 'next/link';
 
 interface LayoutProps {
   children: React.ReactNode;
-  pathname: string;
+  pathname?: string;
 }
 
 export default function Layout({ children, pathname }: LayoutProps) {

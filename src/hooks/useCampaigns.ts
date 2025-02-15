@@ -1,23 +1,6 @@
+// hooks/useCampaigns.ts
 import useSWR from 'swr';
-
-interface Campaign {
-  id: string;
-  name: string;
-  description?: string;
-  startDate?: Date;
-  endDate?: Date;
-  status: 'draft' | 'active' | 'completed' | 'archived';
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface CreateCampaignInput {
-  name: string;
-  description?: string;
-  startDate?: Date | null;
-  endDate?: Date | null;
-  status: Campaign['status'];
-}
+import { Campaign, CreateCampaignInput } from '@/types/campaigns';
 
 const fetcher = async (url: string) => {
   const response = await fetch(url);
@@ -101,7 +84,6 @@ export function useCampaigns() {
       await mutate();
       return true;
     } catch (err) {
-      // Revalidate on error
       await mutate();
       throw err;
     }
