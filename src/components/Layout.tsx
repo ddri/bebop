@@ -1,4 +1,3 @@
-// src/components/Layout.tsx
 import Link from 'next/link';
 
 interface LayoutProps {
@@ -37,6 +36,12 @@ export default function Layout({ children, pathname }: LayoutProps) {
                 className={`${pathname === '/collections' ? 'text-[#E669E8] font-semibold' : 'hover:text-[#E669E8]'} transition-colors`}
               >
                 Collections
+              </Link>
+              <Link 
+                href="/campaigns" 
+                className={`${pathname === '/campaigns' ? 'text-[#E669E8] font-semibold' : 'hover:text-[#E669E8]'} transition-colors`}
+              >
+                Campaigns
               </Link>
               <Link 
                 href="/media" 

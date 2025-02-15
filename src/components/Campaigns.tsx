@@ -35,6 +35,7 @@ import Layout from '@/components/Layout';
 import { useCampaigns } from '@/hooks/useCampaigns';
 import { useTopics } from '@/hooks/useTopics';
 
+// TODO: Move to types/campaigns.ts
 interface Campaign {
   id: string;
   name: string;

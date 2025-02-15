@@ -116,3 +116,4 @@ export function useCampaigns() {
     deleteCampaign,
     refreshCampaigns: () => mutate()
   };
+}
