@@ -2,14 +2,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+type RouteParams = {
+  params: {
+    id: string;
+  };
+};
+
 export async function DELETE(
   request: NextRequest,
-  context: { params: { id: string } }
+  { params }: RouteParams
 ) {
   try {
     await prisma.publishingPlan.delete({
       where: {
-        id: context.params.id
+        id: params.id
       }
     });
     return NextResponse.json({ success: true });
@@ -24,13 +30,13 @@ export async function DELETE(
 
 export async function PATCH(
   request: NextRequest,
-  context: { params: { id: string } }
+  { params }: RouteParams
 ) {
   try {
     const body = await request.json();
     const publishingPlan = await prisma.publishingPlan.update({
       where: {
-        id: context.params.id
+        id: params.id
       },
       data: {
         status: body.status,
