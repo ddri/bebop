@@ -47,21 +47,6 @@ export default function Campaigns() {
     }
   };
 
-  const getStatusColor = (status: CampaignStatus) => {
-    switch (status) {
-      case 'active':
-        return 'bg-green-500';
-      case 'paused':
-        return 'bg-yellow-500';
-      case 'completed':
-        return 'bg-blue-500';
-      case 'archived':
-        return 'bg-gray-500';
-      default:
-        return 'bg-slate-500';
-    }
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -101,14 +86,6 @@ export default function Campaigns() {
               className="group relative bg-[#1c1c1e] hover:scale-[1.02] hover:border hover:border-[#E669E8] transition-all duration-200 border-0 cursor-pointer"
               onClick={() => router.push(`/campaigns/${campaign.id}`)}
             >
-              {/* Status indicator */}
-              <div className="absolute top-3 right-3 flex items-center gap-1.5">
-                <div 
-                  className={`h-2 w-2 rounded-full ${getStatusColor(campaign.status)}`}
-                  title={campaign.status.charAt(0).toUpperCase() + campaign.status.slice(1)}
-                />
-              </div>
-
               <CardHeader className="pb-2">
                 <h3 className="font-semibold text-lg text-white">{campaign.name}</h3>
               </CardHeader>
