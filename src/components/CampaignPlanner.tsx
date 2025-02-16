@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useTopics } from '@/hooks/useTopics';
 import { useCampaigns } from '@/hooks/useCampaigns';
 import { 
@@ -25,30 +26,42 @@ import {
   Trash2
 } from 'lucide-react';
 import Layout from '@/components/Layout';
+import CampaignDetails from '@/components/CampaignDetails';
+import CampaignMetrics from '@/components/CampaignMetrics';
 import { 
   Campaign, 
-  CampaignStatus, 
-  NewPublicationSlot, 
-  PublishingSlot,
-  PLATFORMS 
+  CampaignStatus,
+  NewPublicationSlot,
+  PLATFORMS
 } from '@/types/campaigns';
 
-export default function CampaignPlanner({ campaignId, pathname }: { campaignId: string; pathname: string }) {
+interface CampaignPlannerProps {
+  campaignId: string;
+  pathname: string;
+}
+
+const CampaignPlanner = ({ campaignId, pathname }: CampaignPlannerProps) => {
   const router = useRouter();
   const { topics } = useTopics();
-  const { campaigns, updateCampaign } = useCampaigns();
+  const { 
+    campaigns, 
+    updateCampaign, 
+    createPublishingPlan,
+    deletePublishingPlan,
+    updatePublishingPlan
+  } = useCampaigns();
   
-  // State for the new publication form
+  // State
   const [newSlot, setNewSlot] = useState<NewPublicationSlot>({});
-  const [confirmedPublications, setConfirmedPublications] = useState<PublishingSlot[]>([]);
-  const [showTopicSelector, setShowTopicSelector] = useState(false);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   const campaign = campaigns?.find(c => c.id === campaignId);
 
   const handleDateSelect = (date: Date | null) => {
     setNewSlot(prev => ({
       ...prev,
-      scheduledDate: date ?? undefined
+      scheduledDate: date || undefined
     }));
   };
 
@@ -63,33 +76,77 @@ export default function CampaignPlanner({ campaignId, pathname }: { campaignId: 
     return newSlot.topicId && newSlot.platform && newSlot.scheduledDate;
   };
 
-  const handleConfirmSlot = () => {
-    if (!isSlotComplete()) return;
+  const handleConfirmSlot = async () => {
+    if (!isSlotComplete() || !campaign) return;
+    setError(null);
 
-    const newPublication: PublishingSlot = {
-      id: Date.now().toString(), // temporary ID
-      topicId: newSlot.topicId!,
-      platform: newSlot.platform!,
-      scheduledDate: newSlot.scheduledDate!,
-      status: 'scheduled'
-    };
+    try {
+      await createPublishingPlan({
+        campaignId: campaign.id,
+        topicId: newSlot.topicId!,
+        platform: newSlot.platform!,
+        scheduledFor: newSlot.scheduledDate
+      });
+      
+      setNewSlot({}); // Reset form
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create publishing plan');
+    }
+  };
 
-    setConfirmedPublications(prev => [...prev, newPublication]);
-    setNewSlot({}); // Reset the form
+  const handleDeletePublication = async (planId: string) => {
+    if (!campaign) return;
+    setError(null);
+
+    try {
+      await deletePublishingPlan(planId, campaign.id);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete publishing plan');
+    }
+  };
+
+  const handleRetryPublication = async (planId: string) => {
+    if (!campaign) return;
+    setError(null);
+
+    try {
+      await updatePublishingPlan(planId, campaign.id, {
+        status: 'scheduled',
+        publishedAt: undefined,
+        publishedUrl: undefined
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to retry publication');
+    }
   };
 
   const handleCampaignStatusChange = async (newStatus: CampaignStatus) => {
     if (!campaign) return;
+    setIsUpdatingStatus(true);
+    setError(null);
+
     try {
       await updateCampaign(campaign.id, { status: newStatus });
-    } catch (error) {
-      console.error('Failed to update campaign status:', error);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update campaign status');
+    } finally {
+      setIsUpdatingStatus(false);
     }
   };
 
+  if (!campaign) {
+    return (
+      <Layout pathname={pathname}>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-lg text-slate-400">Campaign not found</div>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout pathname={pathname}>
-      {/* Header with back button and campaign controls */}
+      {/* Header Section */}
       <div className="flex justify-between items-center mb-8">
         <div className="flex items-center gap-4">
           <Button
@@ -100,39 +157,56 @@ export default function CampaignPlanner({ campaignId, pathname }: { campaignId: 
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Campaigns
           </Button>
-          {campaign && (
-            <h1 className="text-2xl font-semibold text-white">
-              {campaign.name}
-            </h1>
-          )}
+          <h1 className="text-2xl font-semibold text-white">
+            {campaign.name}
+          </h1>
         </div>
         
         {/* Campaign Status Controls */}
         <div className="flex items-center gap-2">
           <span className="text-sm text-slate-400">Campaign Status:</span>
-          {campaign?.status === 'active' ? (
-            <Button
-              size="sm"
-              onClick={() => handleCampaignStatusChange('paused')}
-              className="bg-yellow-500 hover:bg-yellow-600 text-white"
-            >
-              <Pause className="w-4 h-4 mr-2" />
-              Pause Campaign
-            </Button>
-          ) : (
-            <Button
-              size="sm"
-              onClick={() => handleCampaignStatusChange('active')}
-              className="bg-green-500 hover:bg-green-600 text-white"
-            >
-              <Play className="w-4 h-4 mr-2" />
-              Activate Campaign
-            </Button>
-          )}
+          <Button
+            size="sm"
+            onClick={() => handleCampaignStatusChange(
+              campaign.status === 'active' ? 'paused' : 'active'
+            )}
+            disabled={isUpdatingStatus}
+            className={`${
+              campaign.status === 'active' 
+                ? 'bg-yellow-500 hover:bg-yellow-600' 
+                : 'bg-green-500 hover:bg-green-600'
+            } text-white`}
+          >
+            {campaign.status === 'active' ? (
+              <>
+                <Pause className="w-4 h-4 mr-2" />
+                Pause Campaign
+              </>
+            ) : (
+              <>
+                <Play className="w-4 h-4 mr-2" />
+                Activate Campaign
+              </>
+            )}
+          </Button>
         </div>
       </div>
 
-      {/* New Publication Form */}
+      {/* Campaign Details Section */}
+      <CampaignDetails campaign={campaign} />
+
+      {/* Campaign Metrics Section */}
+      <CampaignMetrics campaign={campaign} />
+
+      {/* Error Alert */}
+      {error && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      {/* Publication Scheduler Section */}
       <Card className="mb-8 bg-[#1c1c1e] border-0">
         <CardHeader>
           <CardTitle className="text-white">Add New Publication</CardTitle>
@@ -224,9 +298,14 @@ export default function CampaignPlanner({ campaignId, pathname }: { campaignId: 
         {/* Scheduled Publications */}
         <div className="space-y-4">
           <h2 className="text-xl font-semibold text-white mb-4">Scheduled Publications</h2>
-          {confirmedPublications.filter(pub => pub.status === 'scheduled').length > 0 ? (
-            confirmedPublications
+          {campaign.publishingPlans.filter(pub => pub.status === 'scheduled').length > 0 ? (
+            campaign.publishingPlans
               .filter(pub => pub.status === 'scheduled')
+              .sort((a, b) => {
+                const dateA = a.scheduledFor ? new Date(a.scheduledFor).getTime() : 0;
+                const dateB = b.scheduledFor ? new Date(b.scheduledFor).getTime() : 0;
+                return dateA - dateB;
+              })
               .map((pub) => (
                 <Card 
                   key={pub.id}
@@ -250,18 +329,14 @@ export default function CampaignPlanner({ campaignId, pathname }: { campaignId: 
                         <div className="flex items-center gap-2">
                           <Clock className="w-4 h-4 text-slate-400" />
                           <span className="text-white">
-                            {pub.scheduledDate.toLocaleDateString()}
+                            {pub.scheduledFor ? new Date(pub.scheduledFor).toLocaleDateString() : 'Not scheduled'}
                           </span>
                         </div>
                       </div>
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => {
-                          setConfirmedPublications(prev => 
-                            prev.filter(p => p.id !== pub.id)
-                          );
-                        }}
+                        onClick={() => handleDeletePublication(pub.id)}
                         className="hover:text-red-500"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -280,9 +355,14 @@ export default function CampaignPlanner({ campaignId, pathname }: { campaignId: 
         {/* Published History */}
         <div className="space-y-4">
           <h2 className="text-xl font-semibold text-white mb-4">Publication History</h2>
-          {confirmedPublications.filter(pub => pub.status === 'published').length > 0 ? (
-            confirmedPublications
+          {campaign.publishingPlans.filter(pub => pub.status === 'published').length > 0 ? (
+            campaign.publishingPlans
               .filter(pub => pub.status === 'published')
+              .sort((a, b) => {
+                const dateA = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
+                const dateB = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;
+                return dateB - dateA; // Most recent first
+              })
               .map((pub) => (
                 <Card 
                   key={pub.id}
@@ -306,18 +386,20 @@ export default function CampaignPlanner({ campaignId, pathname }: { campaignId: 
                         <div className="flex items-center gap-2">
                           <Clock className="w-4 h-4 text-green-400" />
                           <span className="text-white">
-                            Published on {pub.scheduledDate.toLocaleDateString()}
+                            Published on {pub.publishedAt ? new Date(pub.publishedAt).toLocaleDateString() : 'Unknown'}
                           </span>
                         </div>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => window.open('#', '_blank')} // TODO: Add actual published URL
-                        className="hover:text-[#E669E8]"
-                      >
-                        <Globe className="w-4 h-4" />
-                      </Button>
+                      {pub.publishedUrl && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => window.open(pub.publishedUrl, '_blank')}
+                          className="hover:text-[#E669E8]"
+                        >
+                          <Globe className="w-4 h-4" />
+                        </Button>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -330,11 +412,16 @@ export default function CampaignPlanner({ campaignId, pathname }: { campaignId: 
         </div>
 
         {/* Failed Publications */}
-        {confirmedPublications.filter(pub => pub.status === 'failed').length > 0 && (
+        {campaign.publishingPlans.filter(pub => pub.status === 'failed').length > 0 && (
           <div className="space-y-4">
             <h2 className="text-xl font-semibold text-red-500 mb-4">Failed Publications</h2>
-            {confirmedPublications
+            {campaign.publishingPlans
               .filter(pub => pub.status === 'failed')
+              .sort((a, b) => {
+                const dateA = a.scheduledFor ? new Date(a.scheduledFor).getTime() : 0;
+                const dateB = b.scheduledFor ? new Date(b.scheduledFor).getTime() : 0;
+                return dateB - dateA; // Most recent first
+              })
               .map((pub) => (
                 <Card 
                   key={pub.id}
@@ -358,17 +445,14 @@ export default function CampaignPlanner({ campaignId, pathname }: { campaignId: 
                         <div className="flex items-center gap-2">
                           <AlertCircle className="w-4 h-4 text-red-400" />
                           <span className="text-red-400">
-                            Failed to publish on {pub.scheduledDate.toLocaleDateString()}
+                            Failed to publish on {pub.scheduledFor ? new Date(pub.scheduledFor).toLocaleDateString() : 'Unknown date'}
                           </span>
                         </div>
                       </div>
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => {
-                          // TODO: Add retry logic
-                          console.log('Retry publication:', pub.id);
-                        }}
+                        onClick={() => handleRetryPublication(pub.id)}
                         className="hover:text-green-500"
                       >
                         <div className="flex items-center gap-2">
@@ -379,11 +463,12 @@ export default function CampaignPlanner({ campaignId, pathname }: { campaignId: 
                     </div>
                   </CardContent>
                 </Card>
-              ))
-            }
-            </div>
+              ))}
+          </div>
         )}
       </div>
     </Layout>
   );
-}
+};
+
+export default CampaignPlanner;

@@ -1,101 +1,190 @@
 // hooks/useCampaigns.ts
-import useSWR from 'swr';
+import { useState, useCallback, useEffect } from 'react';
 import { Campaign, CreateCampaignInput } from '@/types/campaigns';
 
-const fetcher = async (url: string) => {
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error('Failed to fetch campaigns');
-  }
-  return response.json();
-};
+export const useCampaigns = () => {
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<any>(null);
 
-export function useCampaigns() {
-  const { data: campaigns = [], error, mutate } = useSWR<Campaign[]>('/api/campaigns', fetcher);
+  // Fetch campaigns on mount
+  useEffect(() => {
+    const fetchCampaigns = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch('/api/campaigns');
+        if (!response.ok) throw new Error('Failed to fetch campaigns');
+        const data = await response.json();
+        setCampaigns(data);
+      } catch (err) {
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const createCampaign = async (input: CreateCampaignInput) => {
+    fetchCampaigns();
+  }, []);
+
+  const createCampaign = useCallback(async (input: CreateCampaignInput) => {
     try {
       const response = await fetch('/api/campaigns', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(input)
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(input),
       });
-      
+
       if (!response.ok) throw new Error('Failed to create campaign');
+
       const newCampaign = await response.json();
-      
-      // Optimistic update
-      mutate(current => [newCampaign, ...(current || [])], false);
-      
-      // Revalidate
-      await mutate();
+      setCampaigns(prev => [...prev, newCampaign]);
       return newCampaign;
     } catch (err) {
-      await mutate();
+      setError(err);
       throw err;
     }
-  };
+  }, []);
 
-  const updateCampaign = async (id: string, data: Partial<Campaign>) => {
+  const updateCampaign = useCallback(async (id: string, data: Partial<Campaign>) => {
     try {
-      // Optimistic update
-      mutate(
-        campaigns?.map(campaign =>
-          campaign.id === id
-            ? { ...campaign, ...data, updatedAt: new Date().toISOString() }
-            : campaign
-        ),
-        false
-      );
-
       const response = await fetch(`/api/campaigns/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
       });
 
       if (!response.ok) throw new Error('Failed to update campaign');
-      
-      // Revalidate
-      await mutate();
-      return response.json();
+
+      const updatedCampaign = await response.json();
+      setCampaigns(prev => 
+        prev.map(campaign => 
+          campaign.id === id ? updatedCampaign : campaign
+        )
+      );
+      return updatedCampaign;
     } catch (err) {
-      // Revalidate on error
-      await mutate();
+      setError(err);
       throw err;
     }
-  };
+  }, []);
 
-  const deleteCampaign = async (id: string) => {
+  const createPublishingPlan = useCallback(async (data: {
+    campaignId: string;
+    topicId: string;
+    platform: string;
+    scheduledFor?: Date;
+  }) => {
     try {
-      // Optimistic update
-      mutate(
-        campaigns?.filter(campaign => campaign.id !== id),
-        false
-      );
-
-      const response = await fetch(`/api/campaigns/${id}`, {
-        method: 'DELETE'
+      const response = await fetch('/api/publishing-plans', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
       });
 
-      if (!response.ok) throw new Error('Failed to delete campaign');
-      
-      // Revalidate
-      await mutate();
-      return true;
+      if (!response.ok) throw new Error('Failed to create publishing plan');
+
+      const newPlan = await response.json();
+
+      // Update the local campaigns state
+      setCampaigns(prev => prev.map(campaign => {
+        if (campaign.id === data.campaignId) {
+          return {
+            ...campaign,
+            publishingPlans: [...campaign.publishingPlans, newPlan]
+          };
+        }
+        return campaign;
+      }));
+
+      return newPlan;
     } catch (err) {
-      await mutate();
+      setError(err);
       throw err;
     }
-  };
+  }, []);
+
+  const deletePublishingPlan = useCallback(async (planId: string, campaignId: string) => {
+    try {
+      const response = await fetch(`/api/publishing-plans/${planId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) throw new Error('Failed to delete publishing plan');
+
+      // Update the local campaigns state
+      setCampaigns(prev => prev.map(campaign => {
+        if (campaign.id === campaignId) {
+          return {
+            ...campaign,
+            publishingPlans: campaign.publishingPlans.filter(plan => plan.id !== planId)
+          };
+        }
+        return campaign;
+      }));
+    } catch (err) {
+      setError(err);
+      throw err;
+    }
+  }, []);
+
+  const updatePublishingPlan = useCallback(async (
+    planId: string,
+    campaignId: string,
+    data: {
+      status: 'scheduled' | 'published' | 'failed';
+      publishedAt?: Date;
+      publishedUrl?: string;
+    }
+  ) => {
+    try {
+      const response = await fetch(`/api/publishing-plans/${planId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) throw new Error('Failed to update publishing plan');
+
+      const updatedPlan = await response.json();
+
+      // Update the local campaigns state
+      setCampaigns(prev => prev.map(campaign => {
+        if (campaign.id === campaignId) {
+          return {
+            ...campaign,
+            publishingPlans: campaign.publishingPlans.map(plan => 
+              plan.id === planId ? updatedPlan : plan
+            )
+          };
+        }
+        return campaign;
+      }));
+
+      return updatedPlan;
+    } catch (err) {
+      setError(err);
+      throw err;
+    }
+  }, []);
 
   return {
     campaigns,
-    loading: !error && !campaigns,
-    error: error?.message,
+    loading,
+    error,
     createCampaign,
     updateCampaign,
-    deleteCampaign,
-    refreshCampaigns: () => mutate()
+    createPublishingPlan,
+    deletePublishingPlan,
+    updatePublishingPlan
   };
-}
+};
+
+export default useCampaigns;
