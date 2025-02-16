@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { DatePicker } from '@/components/ui/date-picker';
 import {
   Select,
   SelectContent,
@@ -15,14 +14,12 @@ import { useTopics } from '@/hooks/useTopics';
 import { useCampaigns } from '@/hooks/useCampaigns';
 import { 
   ArrowLeft,
-  Calendar,
   Globe,
   FileText,
   Play,
-  Pause,
   Clock,
-  CheckCircle,
   AlertCircle,
+  Plus,
   Trash2
 } from 'lucide-react';
 import Layout from '@/components/Layout';
@@ -30,7 +27,6 @@ import CampaignDetails from '@/components/CampaignDetails';
 import CampaignMetrics from '@/components/CampaignMetrics';
 import { 
   Campaign, 
-  CampaignStatus,
   NewPublicationSlot,
   PLATFORMS
 } from '@/types/campaigns';
@@ -45,7 +41,6 @@ const CampaignPlanner = ({ campaignId, pathname }: CampaignPlannerProps) => {
   const { topics } = useTopics();
   const { 
     campaigns, 
-    updateCampaign, 
     createPublishingPlan,
     deletePublishingPlan,
     updatePublishingPlan
@@ -53,30 +48,15 @@ const CampaignPlanner = ({ campaignId, pathname }: CampaignPlannerProps) => {
   
   // State
   const [newSlot, setNewSlot] = useState<NewPublicationSlot>({});
-  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
   const campaign = campaigns?.find(c => c.id === campaignId);
 
-  const handleDateSelect = (date: Date | null) => {
-    setNewSlot(prev => ({
-      ...prev,
-      scheduledDate: date || undefined
-    }));
-  };
-
-  const handlePublishNow = () => {
-    setNewSlot(prev => ({
-      ...prev,
-      scheduledDate: new Date()
-    }));
-  };
-
   const isSlotComplete = () => {
-    return newSlot.topicId && newSlot.platform && newSlot.scheduledDate;
+    return newSlot.topicId && newSlot.platform;
   };
 
-  const handleConfirmSlot = async () => {
+  const handleAddToQueue = async () => {
     if (!isSlotComplete() || !campaign) return;
     setError(null);
 
@@ -84,24 +64,41 @@ const CampaignPlanner = ({ campaignId, pathname }: CampaignPlannerProps) => {
       await createPublishingPlan({
         campaignId: campaign.id,
         topicId: newSlot.topicId!,
-        platform: newSlot.platform!,
-        scheduledFor: newSlot.scheduledDate
+        platform: newSlot.platform!
       });
       
       setNewSlot({}); // Reset form
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create publishing plan');
+      setError(err instanceof Error ? err.message : 'Failed to add to queue');
     }
   };
 
-  const handleDeletePublication = async (planId: string) => {
+  const handlePublishPlan = async (planId: string) => {
+    if (!campaign) return;
+    setError(null);
+
+    try {
+      const plan = campaign.publishingPlans.find(p => p.id === planId);
+      if (!plan) throw new Error('Publication not found');
+
+      // Update status to published
+      await updatePublishingPlan(planId, campaign.id, {
+        status: 'published',
+        publishedAt: new Date(),
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to publish');
+    }
+  };
+
+  const handleRemoveFromQueue = async (planId: string) => {
     if (!campaign) return;
     setError(null);
 
     try {
       await deletePublishingPlan(planId, campaign.id);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete publishing plan');
+      setError(err instanceof Error ? err.message : 'Failed to remove from queue');
     }
   };
 
@@ -119,21 +116,6 @@ const CampaignPlanner = ({ campaignId, pathname }: CampaignPlannerProps) => {
       setError(err instanceof Error ? err.message : 'Failed to retry publication');
     }
   };
-
-  const handleCampaignStatusChange = async (newStatus: CampaignStatus) => {
-    if (!campaign) return;
-    setIsUpdatingStatus(true);
-    setError(null);
-
-    try {
-      await updateCampaign(campaign.id, { status: newStatus });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update campaign status');
-    } finally {
-      setIsUpdatingStatus(false);
-    }
-  };
-
   if (!campaign) {
     return (
       <Layout pathname={pathname}>
@@ -161,35 +143,6 @@ const CampaignPlanner = ({ campaignId, pathname }: CampaignPlannerProps) => {
             {campaign.name}
           </h1>
         </div>
-        
-        {/* Campaign Status Controls */}
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-slate-400">Campaign Status:</span>
-          <Button
-            size="sm"
-            onClick={() => handleCampaignStatusChange(
-              campaign.status === 'active' ? 'paused' : 'active'
-            )}
-            disabled={isUpdatingStatus}
-            className={`${
-              campaign.status === 'active' 
-                ? 'bg-yellow-500 hover:bg-yellow-600' 
-                : 'bg-green-500 hover:bg-green-600'
-            } text-white`}
-          >
-            {campaign.status === 'active' ? (
-              <>
-                <Pause className="w-4 h-4 mr-2" />
-                Pause Campaign
-              </>
-            ) : (
-              <>
-                <Play className="w-4 h-4 mr-2" />
-                Activate Campaign
-              </>
-            )}
-          </Button>
-        </div>
       </div>
 
       {/* Campaign Details Section */}
@@ -212,7 +165,14 @@ const CampaignPlanner = ({ campaignId, pathname }: CampaignPlannerProps) => {
           <CardTitle className="text-white">Add New Publication</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="mb-4 p-2 bg-[#2f2f2d] rounded-md border border-yellow-500/20">
+            <div className="flex items-center gap-2 text-yellow-500">
+              <Clock className="h-4 w-4" />
+              <p className="text-sm">Scheduled publishing coming soon! For now, add items to your queue and publish them when ready.</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
             {/* Topic Selection */}
             <div className="col-span-1">
               <Select
@@ -260,34 +220,17 @@ const CampaignPlanner = ({ campaignId, pathname }: CampaignPlannerProps) => {
                 </SelectContent>
               </Select>
             </div>
-
-            {/* Date Selection */}
-            <div className="col-span-1 space-y-2">
-              <div className="flex gap-2">
-                <DatePicker
-                  date={newSlot.scheduledDate}
-                  onChange={handleDateSelect}
-                />
-                <Button
-                  variant="outline"
-                  onClick={handlePublishNow}
-                  className="border-slate-700 text-white hover:bg-[#2f2f2d]"
-                >
-                  Now
-                </Button>
-              </div>
-            </div>
           </div>
 
-          {/* Confirm Button */}
+          {/* Add to Queue Button */}
           <div className="mt-4 flex justify-end">
             <Button
-              onClick={handleConfirmSlot}
+              onClick={handleAddToQueue}
               disabled={!isSlotComplete()}
               className="bg-[#E669E8] hover:bg-[#d15dd3] text-white"
             >
-              <CheckCircle className="w-4 h-4 mr-2" />
-              Confirm Publication
+              <Plus className="w-4 h-4 mr-2" />
+              Add to Queue
             </Button>
           </div>
         </CardContent>
@@ -297,15 +240,10 @@ const CampaignPlanner = ({ campaignId, pathname }: CampaignPlannerProps) => {
       <div className="space-y-8">
         {/* Scheduled Publications */}
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold text-white mb-4">Scheduled Publications</h2>
+          <h2 className="text-xl font-semibold text-white mb-4">Publication Queue</h2>
           {campaign.publishingPlans.filter(pub => pub.status === 'scheduled').length > 0 ? (
             campaign.publishingPlans
               .filter(pub => pub.status === 'scheduled')
-              .sort((a, b) => {
-                const dateA = a.scheduledFor ? new Date(a.scheduledFor).getTime() : 0;
-                const dateB = b.scheduledFor ? new Date(b.scheduledFor).getTime() : 0;
-                return dateA - dateB;
-              })
               .map((pub) => (
                 <Card 
                   key={pub.id}
@@ -326,28 +264,32 @@ const CampaignPlanner = ({ campaignId, pathname }: CampaignPlannerProps) => {
                             {PLATFORMS.find(p => p.id === pub.platform)?.name}
                           </span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Clock className="w-4 h-4 text-slate-400" />
-                          <span className="text-white">
-                            {pub.scheduledFor ? new Date(pub.scheduledFor).toLocaleDateString() : 'Not scheduled'}
-                          </span>
-                        </div>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeletePublication(pub.id)}
-                        className="hover:text-red-500"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          onClick={() => handlePublishPlan(pub.id)}
+                          className="bg-green-600 hover:bg-green-700 text-white"
+                          size="sm"
+                        >
+                          <Globe className="w-4 h-4 mr-2" />
+                          Publish
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRemoveFromQueue(pub.id)}
+                          className="hover:text-red-500"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
               ))
           ) : (
             <div className="text-center py-8 text-slate-500">
-              No scheduled publications.
+              No publications queued. Add some content to get started.
             </div>
           )}
         </div>
