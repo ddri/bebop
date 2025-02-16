@@ -1,20 +1,12 @@
-// src/components/CampaignDetails.tsx
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { DatePicker } from '@/components/ui/date-picker';
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { AlertCircle, Save, Pencil, Calendar } from 'lucide-react';
+import { AlertCircle, Save, Pencil } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Campaign, CampaignStatus } from '@/types/campaigns';
 import { useCampaigns } from '@/hooks/useCampaigns';
+
 
 interface CampaignDetailsProps {
   campaign: Campaign;
@@ -22,8 +14,6 @@ interface CampaignDetailsProps {
 
 interface EditDataState {
   description: string;
-  startDate?: Date;
-  endDate?: Date;
   status: CampaignStatus;
 }
 
@@ -35,8 +25,6 @@ const CampaignDetails = ({ campaign }: CampaignDetailsProps) => {
   
   const [editData, setEditData] = useState<EditDataState>({
     description: campaign.description || '',
-    startDate: campaign.startDate ? new Date(campaign.startDate) : undefined,
-    endDate: campaign.endDate ? new Date(campaign.endDate) : undefined,
     status: campaign.status
   });
 
@@ -46,8 +34,6 @@ const CampaignDetails = ({ campaign }: CampaignDetailsProps) => {
     try {
       await updateCampaign(campaign.id, {
         description: editData.description,
-        startDate: editData.startDate,
-        endDate: editData.endDate,
         status: editData.status
       });
       setIsEditing(false);
@@ -56,41 +42,6 @@ const CampaignDetails = ({ campaign }: CampaignDetailsProps) => {
     } finally {
       setIsSaving(false);
     }
-  };
-
-  const getStatusColor = (status: CampaignStatus) => {
-    switch (status) {
-      case 'active':
-        return 'text-green-500';
-      case 'paused':
-        return 'text-yellow-500';
-      case 'completed':
-        return 'text-blue-500';
-      case 'archived':
-        return 'text-gray-500';
-      default:
-        return 'text-slate-500';
-    }
-  };
-
-  const formatDate = (date: Date | undefined) => {
-    if (!date) return 'Not set';
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
-
-  const handleCancel = () => {
-    setIsEditing(false);
-    setEditData({
-      description: campaign.description || '',
-      startDate: campaign.startDate ? new Date(campaign.startDate) : undefined,
-      endDate: campaign.endDate ? new Date(campaign.endDate) : undefined,
-      status: campaign.status
-    });
-    setError(null);
   };
 
   return (
@@ -129,69 +80,6 @@ const CampaignDetails = ({ campaign }: CampaignDetailsProps) => {
             )}
           </div>
 
-          {/* Date Range Section */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm text-slate-400">Start Date</label>
-              {isEditing ? (
-                <DatePicker
-                  date={editData.startDate}
-                  onChange={(date) => setEditData(prev => ({ ...prev, startDate: date || undefined }))}
-                />
-              ) : (
-                <div className="flex items-center gap-2 text-slate-300">
-                  <Calendar className="h-4 w-4" />
-                  {formatDate(editData.startDate)}
-                </div>
-              )}
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-sm text-slate-400">End Date</label>
-              {isEditing ? (
-                <DatePicker
-                  date={editData.endDate}
-                  onChange={(date) => setEditData(prev => ({ ...prev, endDate: date || undefined }))}
-                />
-              ) : (
-                <div className="flex items-center gap-2 text-slate-300">
-                  <Calendar className="h-4 w-4" />
-                  {formatDate(editData.endDate)}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Status Section */}
-          <div className="space-y-2">
-            <label className="text-sm text-slate-400">Campaign Status</label>
-            {isEditing ? (
-              <Select
-                value={editData.status}
-                onValueChange={(value: CampaignStatus) => 
-                  setEditData(prev => ({ ...prev, status: value }))
-                }
-              >
-                <SelectTrigger className="bg-[#2f2f2d] border-slate-700 text-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-[#1c1c1e] border-slate-700">
-                  <SelectItem value="draft" className="text-white hover:bg-[#2f2f2d]">Draft</SelectItem>
-                  <SelectItem value="active" className="text-white hover:bg-[#2f2f2d]">Active</SelectItem>
-                  <SelectItem value="paused" className="text-white hover:bg-[#2f2f2d]">Paused</SelectItem>
-                  <SelectItem value="completed" className="text-white hover:bg-[#2f2f2d]">Completed</SelectItem>
-                  <SelectItem value="archived" className="text-white hover:bg-[#2f2f2d]">Archived</SelectItem>
-                </SelectContent>
-              </Select>
-            ) : (
-              <div className="flex items-center gap-2">
-                <div className={`capitalize ${getStatusColor(editData.status)}`}>
-                  {editData.status}
-                </div>
-              </div>
-            )}
-          </div>
-
           {/* Error Message */}
           {error && (
             <Alert variant="destructive">
@@ -219,7 +107,14 @@ const CampaignDetails = ({ campaign }: CampaignDetailsProps) => {
               </Button>
               <Button
                 variant="outline"
-                onClick={handleCancel}
+                onClick={() => {
+                  setIsEditing(false);
+                  setEditData({
+                    description: campaign.description || '',
+                    status: campaign.status
+                  });
+                  setError(null);
+                }}
                 disabled={isSaving}
                 className="border-slate-700 text-white hover:bg-[#2f2f2d]"
               >

@@ -34,33 +34,34 @@ const CampaignMetrics = ({ campaign }: CampaignMetricsProps) => {
   const totalPublished = campaign.publishingPlans.filter(pub => pub.status === 'published').length;
   const totalFailed = campaign.publishingPlans.filter(pub => pub.status === 'failed').length;
   
+  
   // Calculate the next scheduled publication
-  const nextPublication = campaign.publishingPlans
-    .filter(pub => pub.status === 'scheduled')
-    .sort((a, b) => {
-      const dateA = a.scheduledFor ? new Date(a.scheduledFor).getTime() : Infinity;
-      const dateB = b.scheduledFor ? new Date(b.scheduledFor).getTime() : Infinity;
-      return dateA - dateB;
-    })[0];
+  // const nextPublication = campaign.publishingPlans
+  //   .filter(pub => pub.status === 'scheduled')
+  //   .sort((a, b) => {
+  //     const dateA = a.scheduledFor ? new Date(a.scheduledFor).getTime() : Infinity;
+  //     const dateB = b.scheduledFor ? new Date(b.scheduledFor).getTime() : Infinity;
+  //     return dateA - dateB;
+  //   })[0];
 
   // Calculate campaign duration
-  const getDurationText = () => {
-    if (!campaign.startDate) return 'Not set';
-    const start = new Date(campaign.startDate);
-    const end = campaign.endDate ? new Date(campaign.endDate) : new Date();
-    const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-    return `${days} days`;
-  };
+  // const getDurationText = () => {
+  //   if (!campaign.startDate) return 'Not set';
+  //   const start = new Date(campaign.startDate);
+  //   const end = campaign.endDate ? new Date(campaign.endDate) : new Date();
+  //   const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+  //   return `${days} days`;
+  // };
 
-  const getDurationSubtext = () => {
-    if (!campaign.startDate) return '';
-    const start = new Date(campaign.startDate).toLocaleDateString();
-    const end = campaign.endDate ? new Date(campaign.endDate).toLocaleDateString() : 'Ongoing';
-    return `${start} - ${end}`;
-  };
+  // const getDurationSubtext = () => {
+  //   if (!campaign.startDate) return '';
+  //   const start = new Date(campaign.startDate).toLocaleDateString();
+  //   const end = campaign.endDate ? new Date(campaign.endDate).toLocaleDateString() : 'Ongoing';
+  //   return `${start} - ${end}`;
+  // };
 
-  // Calculate completion rate
-  const getCompletionRate = () => {
+   // Calculate completion rate
+   const getCompletionRate = () => {
     const total = totalPublished + totalScheduled;
     if (total === 0) return '0.0';
     return ((totalPublished / total) * 100).toFixed(1);
@@ -69,23 +70,12 @@ const CampaignMetrics = ({ campaign }: CampaignMetricsProps) => {
   return (
     <Card className="mb-8 bg-[#1c1c1e] border-0">
       <CardContent className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <MetricCard
-            icon={Calendar}
-            label="Campaign Duration"
-            value={getDurationText()}
-            subtext={getDurationSubtext()}
-          />
-          
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <MetricCard
             icon={Clock}
-            label="Next Publication"
-            value={nextPublication ? 
-              (nextPublication.scheduledFor ? 
-                new Date(nextPublication.scheduledFor).toLocaleDateString() 
-                : 'Date not set')
-              : 'None'}
-            subtext={nextPublication ? `${totalScheduled} more scheduled` : 'No scheduled publications'}
+            label="Queued Publications"
+            value={totalScheduled}
+            subtext={`${totalScheduled} items in queue`}
           />
           
           <MetricCard

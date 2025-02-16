@@ -1,5 +1,4 @@
 // types/campaigns.ts
-
 export type CampaignStatus = 'draft' | 'active' | 'paused' | 'completed' | 'archived';
 
 export interface PublishingPlan {
@@ -8,27 +7,16 @@ export interface PublishingPlan {
   topicId: string;
   platform: string;
   status: 'scheduled' | 'published' | 'failed';
-  scheduledFor?: Date;
   publishedAt?: Date;
   publishedUrl?: string;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface PublishingSlot {
-  id: string;
-  topicId: string;
-  platform: string;
-  scheduledDate: Date;
-  status: 'scheduled' | 'published' | 'failed';
-}
-
 export interface Campaign {
   id: string;
   name: string;
   description?: string;
-  startDate?: Date;
-  endDate?: Date;
   status: CampaignStatus;
   createdAt: string;
   updatedAt: string;
@@ -38,15 +26,12 @@ export interface Campaign {
 export interface CreateCampaignInput {
   name: string;
   description?: string;
-  startDate?: Date | null;
-  endDate?: Date | null;
   status: CampaignStatus;
 }
 
 export interface NewPublicationSlot {
   topicId?: string;
   platform?: string;
-  scheduledDate?: Date;
 }
 
 export interface Platform {

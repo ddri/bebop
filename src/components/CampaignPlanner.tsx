@@ -116,6 +116,7 @@ const CampaignPlanner = ({ campaignId, pathname }: CampaignPlannerProps) => {
       setError(err instanceof Error ? err.message : 'Failed to retry publication');
     }
   };
+
   if (!campaign) {
     return (
       <Layout pathname={pathname}>
@@ -359,11 +360,6 @@ const CampaignPlanner = ({ campaignId, pathname }: CampaignPlannerProps) => {
             <h2 className="text-xl font-semibold text-red-500 mb-4">Failed Publications</h2>
             {campaign.publishingPlans
               .filter(pub => pub.status === 'failed')
-              .sort((a, b) => {
-                const dateA = a.scheduledFor ? new Date(a.scheduledFor).getTime() : 0;
-                const dateB = b.scheduledFor ? new Date(b.scheduledFor).getTime() : 0;
-                return dateB - dateA; // Most recent first
-              })
               .map((pub) => (
                 <Card 
                   key={pub.id}
@@ -387,7 +383,7 @@ const CampaignPlanner = ({ campaignId, pathname }: CampaignPlannerProps) => {
                         <div className="flex items-center gap-2">
                           <AlertCircle className="w-4 h-4 text-red-400" />
                           <span className="text-red-400">
-                            Failed to publish on {pub.scheduledFor ? new Date(pub.scheduledFor).toLocaleDateString() : 'Unknown date'}
+                            Publication Failed
                           </span>
                         </div>
                       </div>
