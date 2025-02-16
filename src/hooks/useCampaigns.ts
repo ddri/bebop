@@ -36,7 +36,10 @@ export const useCampaigns = () => {
         body: JSON.stringify(input),
       });
 
-      if (!response.ok) throw new Error('Failed to create campaign');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create campaign');
+      }
 
       const newCampaign = await response.json();
       setCampaigns(prev => [...prev, newCampaign]);
@@ -50,14 +53,17 @@ export const useCampaigns = () => {
   const updateCampaign = useCallback(async (id: string, data: Partial<Campaign>) => {
     try {
       const response = await fetch(`/api/campaigns/${id}`, {
-        method: 'PATCH',
+        method: 'PUT', // Changed from PATCH to PUT
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
       });
 
-      if (!response.ok) throw new Error('Failed to update campaign');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update campaign');
+      }
 
       const updatedCampaign = await response.json();
       setCampaigns(prev => 
@@ -87,11 +93,12 @@ export const useCampaigns = () => {
         body: JSON.stringify(data),
       });
 
-      if (!response.ok) throw new Error('Failed to create publishing plan');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create publishing plan');
+      }
 
       const newPlan = await response.json();
-
-      // Update the local campaigns state
       setCampaigns(prev => prev.map(campaign => {
         if (campaign.id === data.campaignId) {
           return {
@@ -115,9 +122,11 @@ export const useCampaigns = () => {
         method: 'DELETE',
       });
 
-      if (!response.ok) throw new Error('Failed to delete publishing plan');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete publishing plan');
+      }
 
-      // Update the local campaigns state
       setCampaigns(prev => prev.map(campaign => {
         if (campaign.id === campaignId) {
           return {
@@ -144,18 +153,19 @@ export const useCampaigns = () => {
   ) => {
     try {
       const response = await fetch(`/api/publishing-plans/${planId}`, {
-        method: 'PATCH',
+        method: 'PUT', // Changed from PATCH to PUT
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
       });
 
-      if (!response.ok) throw new Error('Failed to update publishing plan');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update publishing plan');
+      }
 
       const updatedPlan = await response.json();
-
-      // Update the local campaigns state
       setCampaigns(prev => prev.map(campaign => {
         if (campaign.id === campaignId) {
           return {

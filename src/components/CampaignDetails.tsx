@@ -4,9 +4,8 @@ import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { AlertCircle, Save, Pencil } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Campaign, CampaignStatus } from '@/types/campaigns';
+import { Campaign } from '@/types/campaigns';
 import { useCampaigns } from '@/hooks/useCampaigns';
-
 
 interface CampaignDetailsProps {
   campaign: Campaign;
@@ -14,7 +13,6 @@ interface CampaignDetailsProps {
 
 interface EditDataState {
   description: string;
-  status: CampaignStatus;
 }
 
 const CampaignDetails = ({ campaign }: CampaignDetailsProps) => {
@@ -24,24 +22,47 @@ const CampaignDetails = ({ campaign }: CampaignDetailsProps) => {
   const [error, setError] = useState<string | null>(null);
   
   const [editData, setEditData] = useState<EditDataState>({
-    description: campaign.description || '',
-    status: campaign.status
+    description: campaign.description || ''
   });
 
   const handleSave = async () => {
+    if (!editData.description.trim()) {
+      setError('Description cannot be empty');
+      return;
+    }
+
     setIsSaving(true);
     setError(null);
+
     try {
-      await updateCampaign(campaign.id, {
-        description: editData.description,
-        status: editData.status
+      // Only send the description field in the update
+      const updatedCampaign = await updateCampaign(campaign.id, {
+        description: editData.description.trim()
       });
-      setIsEditing(false);
+
+      if (updatedCampaign) {
+        setIsEditing(false);
+      } else {
+        throw new Error('Failed to update campaign - no response received');
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save changes');
+      console.error('Campaign update error:', err);
+      setError(
+        err instanceof Error 
+          ? `Failed to save changes: ${err.message}` 
+          : 'Failed to save changes. Please try again.'
+      );
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    setEditData({
+      description: campaign.description || ''
+    });
+    setError(null);
   };
 
   return (
@@ -69,13 +90,16 @@ const CampaignDetails = ({ campaign }: CampaignDetailsProps) => {
             {isEditing ? (
               <Textarea
                 value={editData.description}
-                onChange={(e) => setEditData(prev => ({ ...prev, description: e.target.value }))}
+                onChange={(e) => {
+                  setEditData(prev => ({ ...prev, description: e.target.value }));
+                  setError(null); // Clear error when user starts typing
+                }}
                 placeholder="Enter campaign description..."
                 className="min-h-[100px] bg-[#2f2f2d] border-slate-700 text-white resize-none"
               />
             ) : (
               <p className="text-slate-300">
-                {editData.description || 'No description provided'}
+                {campaign.description || 'No description provided'}
               </p>
             )}
           </div>
@@ -93,7 +117,7 @@ const CampaignDetails = ({ campaign }: CampaignDetailsProps) => {
             <div className="flex gap-2">
               <Button
                 onClick={handleSave}
-                disabled={isSaving}
+                disabled={isSaving || !editData.description.trim()}
                 className="bg-[#E669E8] hover:bg-[#d15dd3] text-white"
               >
                 {isSaving ? (
@@ -107,14 +131,7 @@ const CampaignDetails = ({ campaign }: CampaignDetailsProps) => {
               </Button>
               <Button
                 variant="outline"
-                onClick={() => {
-                  setIsEditing(false);
-                  setEditData({
-                    description: campaign.description || '',
-                    status: campaign.status
-                  });
-                  setError(null);
-                }}
+                onClick={handleCancel}
                 disabled={isSaving}
                 className="border-slate-700 text-white hover:bg-[#2f2f2d]"
               >
