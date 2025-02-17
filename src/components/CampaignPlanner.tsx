@@ -94,7 +94,9 @@ const CampaignPlanner = ({ campaignId, pathname }: CampaignPlannerProps) => {
   const handleRemoveFromQueue = async (planId: string) => {
     if (!campaign) return;
     setError(null);
-
+  
+    console.log('Attempting to delete plan with ID:', planId);
+  
     try {
       await deletePublishingPlan(planId, campaign.id);
     } catch (err) {
