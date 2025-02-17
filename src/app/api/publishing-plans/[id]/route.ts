@@ -2,18 +2,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-interface Props {
-  params: { id: string }
-}
-
 export async function DELETE(
   request: NextRequest,
-  context: Props
+  { params }: { params: { id: string } }
 ) {
   try {
     await prisma.publishingPlan.delete({
       where: {
-        id: context.params.id
+        id: params.id
       }
     });
     return NextResponse.json({ success: true });
@@ -28,13 +24,13 @@ export async function DELETE(
 
 export async function PATCH(
   request: NextRequest,
-  context: Props
+  { params }: { params: { id: string } }
 ) {
   try {
     const body = await request.json();
     const publishingPlan = await prisma.publishingPlan.update({
       where: {
-        id: context.params.id
+        id: params.id
       },
       data: {
         status: body.status,
