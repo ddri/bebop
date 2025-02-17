@@ -3,12 +3,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 type RouteParams = {
-  params: {
-    id: string;
-  };
+  params: Promise<{ id: string }> | { id: string };
 };
 
-export async function DELETE(request: NextRequest, { params }: RouteParams) {
+export async function DELETE(request: NextRequest, props: RouteParams) {
+  const params = 'then' in props.params ? await props.params : props.params;
   try {
     await prisma.publishingPlan.delete({
       where: {
@@ -25,7 +24,8 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
   }
 }
 
-export async function PATCH(request: NextRequest, { params }: RouteParams) {
+export async function PATCH(request: NextRequest, props: RouteParams) {
+  const params = 'then' in props.params ? await props.params : props.params;
   try {
     const body = await request.json();
     const publishingPlan = await prisma.publishingPlan.update({
