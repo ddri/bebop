@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 interface LayoutProps {
   children: React.ReactNode;
-  pathname: string;
+  pathname?: string;
 }
 
 export default function Layout({ children, pathname }: LayoutProps) {
@@ -37,6 +37,12 @@ export default function Layout({ children, pathname }: LayoutProps) {
                 className={`${pathname === '/collections' ? 'text-[#E669E8] font-semibold' : 'hover:text-[#E669E8]'} transition-colors`}
               >
                 Collections
+              </Link>
+              <Link 
+                href="/campaigns" 
+                className={`${pathname === '/campaigns' ? 'text-[#E669E8] font-semibold' : 'hover:text-[#E669E8]'} transition-colors`}
+              >
+                Campaigns
               </Link>
               <Link 
                 href="/media" 
