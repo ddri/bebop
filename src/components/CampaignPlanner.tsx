@@ -12,6 +12,8 @@ import {
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useTopics } from '@/hooks/useTopics';
 import { useCampaigns } from '@/hooks/useCampaigns';
+import { HashnodePublisher } from '@/components/HashnodePublisher';
+import { DevToPublisher } from '@/components/DevToPublisher';
 import { 
   ArrowLeft,
   Globe,
@@ -49,11 +51,20 @@ const CampaignPlanner = ({ campaignId, pathname }: CampaignPlannerProps) => {
   // State
   const [newSlot, setNewSlot] = useState<NewPublicationSlot>({});
   const [error, setError] = useState<string | null>(null);
+  const [showHashnodePublisher, setShowHashnodePublisher] = useState(false);
+  const [showDevToPublisher, setShowDevToPublisher] = useState(false);
+  const [publishingPlan, setPublishingPlan] = useState<any>(null);
   
   const campaign = campaigns?.find(c => c.id === campaignId);
 
   const isSlotComplete = () => {
     return newSlot.topicId && newSlot.platform;
+  };
+
+  const generateTopicContent = (topicId: string) => {
+    const topic = topics.find(t => t.id === topicId);
+    if (!topic) return '';
+    return topic.content;
   };
 
   const handleAddToQueue = async () => {
@@ -81,13 +92,22 @@ const CampaignPlanner = ({ campaignId, pathname }: CampaignPlannerProps) => {
       const plan = campaign.publishingPlans.find(p => p.id === planId);
       if (!plan) throw new Error('Publication not found');
 
-      // Update status to published
-      await updatePublishingPlan(planId, campaign.id, {
-        status: 'published',
-        publishedAt: new Date(),
-      });
+      setPublishingPlan(plan);
+
+      if (plan.platform === 'hashnode') {
+        setShowHashnodePublisher(true);
+      } else if (plan.platform === 'devto') {
+        setShowDevToPublisher(true);
+      } else {
+        throw new Error('Unsupported platform');
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to publish');
+      
+      // Update status to failed
+      await updatePublishingPlan(planId, campaign.id, {
+        status: 'failed'
+      });
     }
   };
 
@@ -118,7 +138,6 @@ const CampaignPlanner = ({ campaignId, pathname }: CampaignPlannerProps) => {
       setError(err instanceof Error ? err.message : 'Failed to retry publication');
     }
   };
-
   if (!campaign) {
     return (
       <Layout pathname={pathname}>
@@ -407,6 +426,77 @@ const CampaignPlanner = ({ campaignId, pathname }: CampaignPlannerProps) => {
           </div>
         )}
       </div>
+
+{/* Hashnode Publisher Modal */}
+{showHashnodePublisher && publishingPlan && (
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+    <div className="max-w-md w-full bg-[#1c1c1e] rounded-lg shadow-xl">
+      <HashnodePublisher
+        type="publishingPlan"
+        itemId={publishingPlan.id}
+        name={topics.find(t => t.id === publishingPlan.topicId)?.name || ''}
+        description={topics.find(t => t.id === publishingPlan.topicId)?.description || ''}
+        content={generateTopicContent(publishingPlan.topicId)}
+        onSuccess={async (url: string) => {
+          try {
+            // Simple status update only
+            await updatePublishingPlan(publishingPlan.id, campaign.id, {
+              status: 'published',
+              publishedAt: new Date(),
+              publishedUrl: url
+            });
+          } catch (err) {
+            console.error('Failed to update status:', err);
+            setError('Post published but failed to update status');
+          } finally {
+            setShowHashnodePublisher(false);
+            setPublishingPlan(null);
+          }
+        }}
+        onClose={() => {
+          setShowHashnodePublisher(false);
+          setPublishingPlan(null);
+        }}
+      />
+    </div>
+  </div>
+)}
+
+{/* Dev.to Publisher Modal */}
+{showDevToPublisher && publishingPlan && (
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+    <div className="max-w-md w-full bg-[#1c1c1e] rounded-lg shadow-xl">
+      <DevToPublisher
+        type="publishingPlan"
+        itemId={publishingPlan.id}
+        name={topics.find(t => t.id === publishingPlan.topicId)?.name || ''}
+        description={topics.find(t => t.id === publishingPlan.topicId)?.description || ''}
+        content={generateTopicContent(publishingPlan.topicId)}
+        rawMarkdown={generateTopicContent(publishingPlan.topicId)}
+        onSuccess={async (url: string) => {
+          try {
+            // Simple status update only
+            await updatePublishingPlan(publishingPlan.id, campaign.id, {
+              status: 'published',
+              publishedAt: new Date(),
+              publishedUrl: url
+            });
+          } catch (err) {
+            console.error('Failed to update status:', err);
+            setError('Post published but failed to update status');
+          } finally {
+            setShowDevToPublisher(false);
+            setPublishingPlan(null);
+          }
+        }}
+        onClose={() => {
+          setShowDevToPublisher(false);
+          setPublishingPlan(null);
+        }}
+      />
+    </div>
+  </div>
+)}
     </Layout>
   );
 };

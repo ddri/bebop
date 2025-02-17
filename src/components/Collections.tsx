@@ -61,7 +61,6 @@ interface Topic {
   collectionIds?: string[];
 }
 
-
 interface Collection {
   id: string;
   name: string;
@@ -81,6 +80,7 @@ interface SortableTopicItemProps {
   onToggle: (id: string) => void;
   onRemove: (id: string) => void;
 }
+
 const SortableTopicItem = ({ id, topic, isSelected, onToggle, onRemove }: SortableTopicItemProps) => {
   const {
     attributes,
@@ -177,7 +177,6 @@ export default function Collections() {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
-
   // Fetch collections with metrics
   useEffect(() => {
     fetchCollections();
@@ -188,9 +187,8 @@ export default function Collections() {
   }, []);
 
   const fetchCollections = () => {
-    return refreshCollections();  // Use the refreshCollections function from useCollections hook
+    return refreshCollections();
   };
-
 
   const markdownToHtml = (markdown: string): string => {
     return markdown
@@ -343,7 +341,6 @@ export default function Collections() {
 
   const handleSocialShare = async (collection: Collection, platform: PlatformId) => {
     try {
-      // Track the social share attempt first
       await fetch('/api/social/metrics', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -353,7 +350,6 @@ export default function Collections() {
         })
       });
   
-      // Handle web intent platforms differently
       if (PLATFORMS[platform].webIntent) {
         shareViaWebIntent(platform as 'threads', {
           text: collection.name,
@@ -362,7 +358,6 @@ export default function Collections() {
         return;
       }
   
-      // Social client code for Bluesky and Mastodon
       setSelectedPlatform(platform);
       setPublishingCollection(collection);
       setShowSocialPublisher(true);
@@ -490,7 +485,6 @@ export default function Collections() {
       </Layout>
     );
   }
-
   return (
     <Layout pathname={pathname}>
       {/* Header */}
@@ -679,7 +673,10 @@ export default function Collections() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="max-w-md w-full bg-[#1c1c1e] rounded-lg shadow-xl">
             <HashnodePublisher
-              collection={publishingCollection}
+              type="collection"
+              itemId={publishingCollection.id}
+              name={publishingCollection.name}
+              description={publishingCollection.description}
               content={generateCollectionHTML(publishingCollection)}
               onSuccess={(url: string) => {
                 setShowHashnodePublisher(false);
@@ -700,7 +697,10 @@ export default function Collections() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="max-w-md w-full bg-[#1c1c1e] rounded-lg shadow-xl">
             <DevToPublisher
-              collection={publishingCollection}
+              type="collection"
+              itemId={publishingCollection.id}
+              name={publishingCollection.name}
+              description={publishingCollection.description}
               content={generateCollectionHTML(publishingCollection)}
               rawMarkdown={generateCollectionMarkdown(publishingCollection)}
               onSuccess={(url: string) => {

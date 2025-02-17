@@ -9,13 +9,10 @@ import { AlertCircle } from 'lucide-react';
 import { useDevToSettings } from '@/hooks/useDevToSettings';
 
 interface DevToPublisherProps {
-  collection: {
-    id: string;
-    name: string;
-    description?: string;
-    topicIds: string[];
-  };
-  // We'll now get both HTML and Markdown content
+  type: 'collection' | 'publishingPlan';
+  itemId: string;
+  name: string;
+  description?: string;
   content: string;
   rawMarkdown: string;
   onSuccess: (url: string) => void;
@@ -23,7 +20,10 @@ interface DevToPublisherProps {
 }
 
 export function DevToPublisher({
-  collection,
+  type,
+  itemId,
+  name,
+  description,
   content,
   rawMarkdown,
   onSuccess,
@@ -31,7 +31,6 @@ export function DevToPublisher({
 }: DevToPublisherProps) {
   const { getSettings } = useDevToSettings();
   const savedSettings = getSettings();
-  const [apiKey, setApiKey] = useState(savedSettings.token);
   const [published, setPublished] = useState(false);
   const [tags, setTags] = useState('bebop');
   const [status, setStatus] = useState<{ type: 'error' | 'success' | ''; message: string }>({
@@ -47,9 +46,9 @@ export function DevToPublisher({
     try {
       const article = {
         article: {
-          title: collection.name,
-          body_markdown: rawMarkdown, // Use the raw Markdown content instead of HTML
-          description: collection.description,
+          title: name,
+          body_markdown: rawMarkdown,
+          description: description,
           published,
           tags: tags.split(',').map(tag => tag.trim()),
           series: 'Bebop CMS'
@@ -68,8 +67,10 @@ export function DevToPublisher({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          type,
+          itemId,
           article,
-          apiKey
+          apiKey: savedSettings.token
         })
       });
 
@@ -87,13 +88,6 @@ export function DevToPublisher({
       setStatus({
         type: 'success',
         message: 'Successfully published to Dev.to!'
-      });
-
-      // Update collection with Dev.to URL
-      await fetch(`/api/collections/${collection.id}/devto`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ devToUrl: data.url })
       });
 
       onSuccess(data.url);
