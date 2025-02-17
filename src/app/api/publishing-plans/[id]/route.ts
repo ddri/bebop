@@ -21,13 +21,15 @@ export async function DELETE(
   }
 }
 
-export async function PATCH(
+export async function PUT(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params;
   try {
     const body = await request.json();
+    console.log('Updating publishing plan:', { id, body });  // Add debug log
+    
     const publishingPlan = await prisma.publishingPlan.update({
       where: { id },
       data: {
@@ -40,7 +42,7 @@ export async function PATCH(
   } catch (error) {
     console.error('Error updating publishing plan:', error);
     return NextResponse.json(
-      { error: 'Internal error' }, 
+      { error: error instanceof Error ? error.message : 'Internal error' }, 
       { status: 500 }
     );
   }

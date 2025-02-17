@@ -8,12 +8,10 @@ import { AlertCircle } from 'lucide-react';
 import { useHashnodeSettings } from '@/hooks/useHashnodeSettings';
 
 interface HashnodePublisherProps {
-  collection: {
-    id: string;
-    name: string;
-    description?: string;
-    topicIds: string[];
-  };
+  type: 'collection' | 'publishingPlan';
+  itemId: string;
+  name: string;
+  description?: string;
   content: string;
   onSuccess: (url: string) => void;
   onClose: () => void;
@@ -25,7 +23,10 @@ interface HashnodeTag {
 }
 
 export function HashnodePublisher({
-  collection,
+  type,
+  itemId,
+  name,
+  description,
   content,
   onSuccess,
   onClose
@@ -44,7 +45,7 @@ export function HashnodePublisher({
     setIsLoading(true);
     setStatus({ type: '', message: '' });
     console.log('Starting publish to Hashnode...', {
-      title: collection.name,
+      title: name,
       contentLength: content.length,
       publicationId
     });
@@ -79,7 +80,7 @@ export function HashnodePublisher({
           }
         `,
         variables: {
-          title: collection.name,
+          title: name,
           contentMarkdown: content,
           publicationId,
           tags
@@ -107,6 +108,26 @@ export function HashnodePublisher({
       const url = data.data?.publishPost?.post?.url;
       if (!url) {
         throw new Error('No URL returned from Hashnode');
+      }
+
+      // Update database based on type
+      if (type === 'collection') {
+        await fetch(`/api/collections/${itemId}/hashnode`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ hashnodeUrl: url })
+        });
+      } else if (type === 'publishingPlan') {
+        await fetch(`/api/publishing-plans/${itemId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            hashnodeUrl: url,
+            publishedUrl: url,
+            status: 'published',
+            publishedAt: new Date()
+          })
+        });
       }
 
       setStatus({
@@ -142,46 +163,65 @@ export function HashnodePublisher({
       </CardHeader>
 
       <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="apiKey">Personal Access Token</Label>
-          <Input
-            id="apiKey"
-            type="password"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-            placeholder="Enter your Hashnode Personal Access Token"
-          />
-          <p className="text-sm text-slate-500">
-            Get your token from{' '}
-            <a 
-              href="https://hashnode.com/settings/developer"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-500 hover:underline"
-            >
-              Hashnode Developer Settings
-            </a>
-          </p>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="publicationId">Publication ID</Label>
-          <Input
-            id="publicationId"
-            value={publicationId}
-            onChange={(e) => setPublicationId(e.target.value)}
-            placeholder="Enter your Hashnode publication ID"
-          />
-          <p className="text-sm text-slate-500">
-            Found in your Hashnode publication settings
-          </p>
-        </div>
-
-        {status.message && (
-          <Alert variant={status.type === 'error' ? 'destructive' : 'default'}>
+        {!savedSettings.token || !savedSettings.publicationId ? (
+          <Alert>
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{status.message}</AlertDescription>
+            <AlertDescription>
+              Hashnode credentials not found. Please add them in the{' '}
+              <a 
+                href="/settings" 
+                className="text-blue-500 hover:underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Settings page
+              </a>
+            </AlertDescription>
           </Alert>
+        ) : (
+          <>
+            <div className="space-y-2">
+              <Label htmlFor="apiKey">Personal Access Token</Label>
+              <Input
+                id="apiKey"
+                type="password"
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                placeholder="Enter your Hashnode Personal Access Token"
+              />
+              <p className="text-sm text-slate-500">
+                Get your token from{' '}
+                <a 
+                  href="https://hashnode.com/settings/developer"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 hover:underline"
+                >
+                  Hashnode Developer Settings
+                </a>
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="publicationId">Publication ID</Label>
+              <Input
+                id="publicationId"
+                value={publicationId}
+                onChange={(e) => setPublicationId(e.target.value)}
+                placeholder="Enter your Hashnode publication ID"
+              />
+              <p className="text-sm text-slate-500">
+                Found in your Hashnode publication settings
+              </p>
+            </div>
+
+            {status.message && (
+              <Alert variant={status.type === 'error' ? 'destructive' : 'default'}>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{status.message}</AlertDescription>
+              </Alert>
+            )}
+          </>
         )}
       </CardContent>
 
