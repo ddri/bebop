@@ -14,6 +14,7 @@ import { useTopics } from '@/hooks/useTopics';
 import { useCampaigns } from '@/hooks/useCampaigns';
 import { HashnodePublisher } from '@/components/HashnodePublisher';
 import { DevToPublisher } from '@/components/DevToPublisher';
+import { CampaignSocialPublisher } from '@/components/CampaignSocialPublisher';
 import { 
   ArrowLeft,
   Globe,
@@ -27,11 +28,20 @@ import {
 import Layout from '@/components/Layout';
 import CampaignDetails from '@/components/CampaignDetails';
 import CampaignMetrics from '@/components/CampaignMetrics';
-import { 
-  Campaign, 
-  NewPublicationSlot,
-  PLATFORMS
-} from '@/types/campaigns';
+import { PlatformId } from '@/types/social';
+
+// Define available platforms including social media
+const PLATFORMS = [
+  { id: 'hashnode', name: 'Hashnode' },
+  { id: 'devto', name: 'Dev.to' },
+  { id: 'bluesky', name: 'Bluesky' },
+  { id: 'mastodon', name: 'Mastodon' }
+] as const;
+
+interface NewPublicationSlot {
+  topicId?: string;
+  platform?: PlatformId;
+}
 
 interface CampaignPlannerProps {
   campaignId: string;
@@ -53,6 +63,8 @@ const CampaignPlanner = ({ campaignId, pathname }: CampaignPlannerProps) => {
   const [error, setError] = useState<string | null>(null);
   const [showHashnodePublisher, setShowHashnodePublisher] = useState(false);
   const [showDevToPublisher, setShowDevToPublisher] = useState(false);
+  const [showSocialPublisher, setShowSocialPublisher] = useState(false);
+  const [selectedPlatform, setSelectedPlatform] = useState<PlatformId | null>(null);
   const [publishingPlan, setPublishingPlan] = useState<any>(null);
   
   const campaign = campaigns?.find(c => c.id === campaignId);
@@ -94,12 +106,20 @@ const CampaignPlanner = ({ campaignId, pathname }: CampaignPlannerProps) => {
 
       setPublishingPlan(plan);
 
-      if (plan.platform === 'hashnode') {
-        setShowHashnodePublisher(true);
-      } else if (plan.platform === 'devto') {
-        setShowDevToPublisher(true);
-      } else {
-        throw new Error('Unsupported platform');
+      switch (plan.platform) {
+        case 'hashnode':
+          setShowHashnodePublisher(true);
+          break;
+        case 'devto':
+          setShowDevToPublisher(true);
+          break;
+        case 'bluesky':
+        case 'mastodon':
+          setSelectedPlatform(plan.platform);
+          setShowSocialPublisher(true);
+          break;
+        default:
+          throw new Error('Unsupported platform');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to publish');
@@ -114,8 +134,6 @@ const CampaignPlanner = ({ campaignId, pathname }: CampaignPlannerProps) => {
   const handleRemoveFromQueue = async (planId: string) => {
     if (!campaign) return;
     setError(null);
-  
-    console.log('Attempting to delete plan with ID:', planId);
   
     try {
       await deletePublishingPlan(planId, campaign.id);
@@ -167,10 +185,8 @@ const CampaignPlanner = ({ campaignId, pathname }: CampaignPlannerProps) => {
         </div>
       </div>
 
-      {/* Campaign Details Section */}
+      {/* Campaign Details & Metrics */}
       <CampaignDetails campaign={campaign} />
-
-      {/* Campaign Metrics Section */}
       <CampaignMetrics campaign={campaign} />
 
       {/* Error Alert */}
@@ -223,7 +239,7 @@ const CampaignPlanner = ({ campaignId, pathname }: CampaignPlannerProps) => {
             <div className="col-span-1">
               <Select
                 value={newSlot.platform}
-                onValueChange={(value) => setNewSlot(prev => ({ ...prev, platform: value }))}
+                onValueChange={(value) => setNewSlot(prev => ({ ...prev, platform: value as PlatformId }))}
               >
                 <SelectTrigger className="bg-[#2f2f2d] border-slate-700 text-white">
                   <Globe className="w-4 h-4 mr-2 text-slate-400" />
@@ -293,7 +309,7 @@ const CampaignPlanner = ({ campaignId, pathname }: CampaignPlannerProps) => {
                           className="bg-green-600 hover:bg-green-700 text-white"
                           size="sm"
                         >
-                          <Globe className="w-4 h-4 mr-2" />
+                          <Play className="w-4 h-4 mr-2" />
                           Publish
                         </Button>
                         <Button
@@ -427,76 +443,107 @@ const CampaignPlanner = ({ campaignId, pathname }: CampaignPlannerProps) => {
         )}
       </div>
 
-{/* Hashnode Publisher Modal */}
-{showHashnodePublisher && publishingPlan && (
-  <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-    <div className="max-w-md w-full bg-[#1c1c1e] rounded-lg shadow-xl">
-      <HashnodePublisher
-        type="publishingPlan"
-        itemId={publishingPlan.id}
-        name={topics.find(t => t.id === publishingPlan.topicId)?.name || ''}
-        description={topics.find(t => t.id === publishingPlan.topicId)?.description || ''}
-        content={generateTopicContent(publishingPlan.topicId)}
-        onSuccess={async (url: string) => {
-          try {
-            // Simple status update only
-            await updatePublishingPlan(publishingPlan.id, campaign.id, {
-              status: 'published',
-              publishedAt: new Date(),
-              publishedUrl: url
-            });
-          } catch (err) {
-            console.error('Failed to update status:', err);
-            setError('Post published but failed to update status');
-          } finally {
-            setShowHashnodePublisher(false);
-            setPublishingPlan(null);
-          }
-        }}
-        onClose={() => {
-          setShowHashnodePublisher(false);
-          setPublishingPlan(null);
-        }}
-      />
-    </div>
-  </div>
-)}
+      {/* Publisher Modals */}
+      {showHashnodePublisher && publishingPlan && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="max-w-md w-full bg-[#1c1c1e] rounded-lg shadow-xl">
+            <HashnodePublisher
+              type="publishingPlan"
+              itemId={publishingPlan.id}
+              name={topics.find(t => t.id === publishingPlan.topicId)?.name || ''}
+              description={topics.find(t => t.id === publishingPlan.topicId)?.description || ''}
+              content={generateTopicContent(publishingPlan.topicId)}
+              onSuccess={async (url: string) => {
+                try {
+                  await updatePublishingPlan(publishingPlan.id, campaign.id, {
+                    status: 'published',
+                    publishedAt: new Date(),
+                    publishedUrl: url
+                  });
+                } catch (err) {
+                  console.error('Failed to update status:', err);
+                  setError('Post published but failed to update status');
+                } finally {
+                  setShowHashnodePublisher(false);
+                  setPublishingPlan(null);
+                }
+              }}
+              onClose={() => {
+                setShowHashnodePublisher(false);
+                setPublishingPlan(null);
+              }}
+            />
+          </div>
+        </div>
+      )}
 
-{/* Dev.to Publisher Modal */}
-{showDevToPublisher && publishingPlan && (
-  <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-    <div className="max-w-md w-full bg-[#1c1c1e] rounded-lg shadow-xl">
-      <DevToPublisher
-        type="publishingPlan"
-        itemId={publishingPlan.id}
-        name={topics.find(t => t.id === publishingPlan.topicId)?.name || ''}
-        description={topics.find(t => t.id === publishingPlan.topicId)?.description || ''}
-        content={generateTopicContent(publishingPlan.topicId)}
-        rawMarkdown={generateTopicContent(publishingPlan.topicId)}
-        onSuccess={async (url: string) => {
-          try {
-            // Simple status update only
-            await updatePublishingPlan(publishingPlan.id, campaign.id, {
-              status: 'published',
-              publishedAt: new Date(),
-              publishedUrl: url
-            });
-          } catch (err) {
-            console.error('Failed to update status:', err);
-            setError('Post published but failed to update status');
-          } finally {
-            setShowDevToPublisher(false);
-            setPublishingPlan(null);
-          }
-        }}
-        onClose={() => {
-          setShowDevToPublisher(false);
-          setPublishingPlan(null);
-        }}
-      />
-    </div>
-  </div>
-)}
+      {showDevToPublisher && publishingPlan && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="max-w-md w-full bg-[#1c1c1e] rounded-lg shadow-xl">
+            <DevToPublisher
+              type="publishingPlan"
+              itemId={publishingPlan.id}
+              name={topics.find(t => t.id === publishingPlan.topicId)?.name || ''}
+              description={topics.find(t => t.id === publishingPlan.topicId)?.description || ''}
+              content={generateTopicContent(publishingPlan.topicId)}
+              rawMarkdown={generateTopicContent(publishingPlan.topicId)}
+              onSuccess={async (url: string) => {
+                try {
+                  await updatePublishingPlan(publishingPlan.id, campaign.id, {
+                    status: 'published',
+                    publishedAt: new Date(),
+                    publishedUrl: url
+                  });
+                } catch (err) {
+                  console.error('Failed to update status:', err);
+                  setError('Post published but failed to update status');
+                } finally {
+                  setShowDevToPublisher(false);
+                  setPublishingPlan(null);
+                }
+              }}
+              onClose={() => {
+                setShowDevToPublisher(false);
+                setPublishingPlan(null);
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {showSocialPublisher && selectedPlatform && publishingPlan && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="max-w-md w-full bg-[#1c1c1e] rounded-lg shadow-xl">
+            <CampaignSocialPublisher
+              platformId={selectedPlatform}
+              publishingPlan={publishingPlan}
+              content={generateTopicContent(publishingPlan.topicId)}
+              campaignId={campaign.id}
+              onSuccess={async (url: string) => {
+                try {
+                  await updatePublishingPlan(publishingPlan.id, campaign.id, {
+                    status: 'published',
+                    publishedAt: new Date(),
+                    publishedUrl: url
+                  });
+                } catch (err) {
+                  console.error('Failed to update status:', err);
+                  setError('Post published but failed to update status');
+                } finally {
+                  setShowSocialPublisher(false);
+                  setSelectedPlatform(null);
+                  setPublishingPlan(null);
+                }
+              }}
+              onClose={() => {
+                setShowSocialPublisher(false);
+                setSelectedPlatform(null);
+                setPublishingPlan(null);
+              }}
+            />
+          </div>
+        </div>
+      )}
     </Layout>
   );
 };
