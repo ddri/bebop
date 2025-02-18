@@ -1,21 +1,26 @@
 // app/api/github/route.ts
 import { NextResponse } from 'next/server';
-import { clerkClient, auth } from '@clerk/nextjs';
+import { clerkClient, currentUser } from '@clerk/nextjs/server';
 import { Octokit } from '@octokit/rest';
 
 // Helper function to get GitHub token from Clerk
-async function getGitHubToken(userId: string) {
+async function getGitHubToken() {
   try {
-    const oauthAccessToken = await clerkClient.users.getUserOauthAccessToken(
-      userId,
+    const user = await currentUser();
+    if (!user) {
+      throw new Error('No user found');
+    }
+
+    const tokens = await clerkClient.users.getUserOauthAccessToken(
+      user.id,
       'oauth_github'
     );
     
-    if (!oauthAccessToken?.[0]?.token) {
+    if (!tokens || tokens.length === 0 || !tokens[0].token) {
       throw new Error('No GitHub token found');
     }
 
-    return oauthAccessToken[0].token;
+    return tokens[0].token;
   } catch (error) {
     console.error('Error getting GitHub token:', error);
     throw new Error('Failed to get GitHub token');
@@ -31,16 +36,16 @@ function createGitHubClient(token: string) {
 
 export async function GET() {
   try {
-    const { userId } = auth();
+    const user = await currentUser();
     
-    if (!userId) {
+    if (!user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    const token = await getGitHubToken(userId);
+    const token = await getGitHubToken();
     const github = createGitHubClient(token);
 
     // Get user's repositories
@@ -61,9 +66,9 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const { userId } = auth();
+    const user = await currentUser();
     
-    if (!userId) {
+    if (!user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -80,7 +85,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const token = await getGitHubToken(userId);
+    const token = await getGitHubToken();
     const github = createGitHubClient(token);
 
     // Get repository details
@@ -94,8 +99,8 @@ export async function POST(request: Request) {
       message: message || `Update ${path}`,
       content: Buffer.from(content).toString('base64'),
       committer: {
-        name: 'Bebop CMS',
-        email: 'noreply@bebop.dev'
+        name: user.firstName ?? 'Bebop User',
+        email: user.emailAddresses[0]?.emailAddress ?? 'noreply@github.com'
       }
     });
 
