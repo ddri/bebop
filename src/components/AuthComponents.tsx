@@ -1,3 +1,5 @@
+'use client';
+
 import { SignInButton, SignOutButton, UserButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Github } from "lucide-react";
