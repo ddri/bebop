@@ -1,4 +1,4 @@
-// src/app/api/github/route.ts
+// src/app/api/github/repositories/route.ts
 import { NextResponse } from 'next/server';
 import { clerkClient, currentUser } from '@clerk/nextjs/server';
 import { Octokit } from '@octokit/rest';
@@ -28,31 +28,41 @@ async function getGitHubToken() {
   }
 }
 
-// Initialize Octokit with a token
 function createGitHubClient(token: string) {
   return new Octokit({
     auth: token
   });
 }
 
-// GET /api/github - Check connection and get user info
+// GET /api/github/repositories - List user's repositories
 export async function GET() {
   try {
     const token = await getGitHubToken();
     const github = createGitHubClient(token);
 
-    // Get authenticated user
-    const { data: user } = await github.users.getAuthenticated();
-
-    return NextResponse.json({
-      connected: true,
-      username: user.login,
-      avatarUrl: user.avatar_url
+    // Get user's repositories
+    const { data: repos } = await github.repos.listForAuthenticatedUser({
+      sort: 'updated',
+      direction: 'desc',
+      per_page: 100,
+      visibility: 'all'
     });
+
+    // Format the response to include only needed fields
+    const formattedRepos = repos.map(repo => ({
+      id: repo.id,
+      name: repo.name,
+      full_name: repo.full_name,
+      private: repo.private,
+      default_branch: repo.default_branch,
+      updated_at: repo.updated_at
+    }));
+
+    return NextResponse.json(formattedRepos);
   } catch (error) {
     console.error('GitHub API error:', error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to check GitHub connection' },
+      { error: error instanceof Error ? error.message : 'Failed to fetch repositories' },
       { status: 500 }
     );
   }

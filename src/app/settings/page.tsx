@@ -11,6 +11,7 @@ import { AlertCircle, Upload, Eye, Globe, ExternalLink } from 'lucide-react';
 import Layout from '@/components/Layout';
 import { TemplateManager } from '@/components/templates/TemplateManager';
 import { SocialSettings } from '@/components/settings/SocialSettings';
+import { GitHubSettings } from '@/components/settings/GitHubSettings';
 
 export default function Settings() {
   const pathname = usePathname();
@@ -24,6 +25,19 @@ export default function Settings() {
         <div className="space-y-6">
           {/* Template Manager */}
           <TemplateManager />
+
+          {/* GitHub Integration */}
+          <Card className="bg-[#1c1c1e] border-0">
+            <CardHeader>
+              <CardTitle className="text-white text-2xl">GitHub Integration</CardTitle>
+              <CardDescription className="text-slate-300">
+                Connect with GitHub for backups and content management
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <GitHubSettings />
+            </CardContent>
+          </Card>
 
           {/* Import Content Section */}
           <Card className="bg-[#1c1c1e] border-0">
