@@ -12,12 +12,14 @@ async function getGitHubToken() {
     }
 
     const clerk = await clerkClient();
-    const tokens = await clerk.users.getUserOauthAccessToken(
+    const tokenResponse = await clerk.users.getUserOauthAccessToken(
       user.id,
       'oauth_github'
     );
     
-    if (!tokens || tokens.length === 0 || !tokens[0].token) {
+    // Access the data array from the paginated response
+    const tokens = tokenResponse.data;
+    if (!tokens || tokens.length === 0 || !tokens[0]?.token) {
       throw new Error('No GitHub token found');
     }
 
@@ -40,6 +42,13 @@ interface BackupFile {
   message?: string;
 }
 
+interface BackupResult {
+  path: string;
+  success: boolean;
+  url?: string;
+  error?: string;
+}
+
 // POST /api/github/backup - Create or update backup files
 export async function POST(request: Request) {
   try {
@@ -57,7 +66,7 @@ export async function POST(request: Request) {
     }
 
     const [owner, repo] = repository.split('/');
-    const results = [];
+    const results: BackupResult[] = [];
 
     // Get the default branch
     const { data: repoData } = await github.repos.get({ owner, repo });

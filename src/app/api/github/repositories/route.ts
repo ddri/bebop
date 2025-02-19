@@ -12,12 +12,14 @@ async function getGitHubToken() {
     }
 
     const clerk = await clerkClient();
-    const tokens = await clerk.users.getUserOauthAccessToken(
+    const tokenResponse = await clerk.users.getUserOauthAccessToken(
       user.id,
       'oauth_github'
     );
     
-    if (!tokens || tokens.length === 0 || !tokens[0].token) {
+    // Access the data array from the paginated response
+    const tokens = tokenResponse.data;
+    if (!tokens || tokens.length === 0 || !tokens[0]?.token) {
       throw new Error('No GitHub token found');
     }
 
@@ -32,6 +34,15 @@ function createGitHubClient(token: string) {
   return new Octokit({
     auth: token
   });
+}
+
+interface Repository {
+  id: number;
+  name: string;
+  full_name: string;
+  private: boolean;
+  default_branch: string;
+  updated_at: string | null;
 }
 
 // GET /api/github/repositories - List user's repositories
@@ -49,13 +60,13 @@ export async function GET() {
     });
 
     // Format the response to include only needed fields
-    const formattedRepos = repos.map(repo => ({
+    const formattedRepos: Repository[] = repos.map(repo => ({
       id: repo.id,
       name: repo.name,
       full_name: repo.full_name,
       private: repo.private,
       default_branch: repo.default_branch,
-      updated_at: repo.updated_at
+      updated_at: repo.updated_at ?? null
     }));
 
     return NextResponse.json(formattedRepos);

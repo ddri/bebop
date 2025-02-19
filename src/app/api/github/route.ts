@@ -12,12 +12,14 @@ async function getGitHubToken() {
     }
 
     const clerk = await clerkClient();
-    const tokens = await clerk.users.getUserOauthAccessToken(
+    const tokenResponse = await clerk.users.getUserOauthAccessToken(
       user.id,
       'oauth_github'
     );
     
-    if (!tokens || tokens.length === 0 || !tokens[0].token) {
+    // Access the data array from the paginated response
+    const tokens = tokenResponse.data;
+    if (!tokens || tokens.length === 0 || !tokens[0]?.token) {
       throw new Error('No GitHub token found');
     }
 
