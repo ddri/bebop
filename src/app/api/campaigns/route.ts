@@ -1,7 +1,14 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { authenticateRequest } from '@/lib/auth';
 
 export async function GET() {
+  // Check authentication
+  const authResult = await authenticateRequest();
+  if (authResult.error) {
+    return authResult.error;
+  }
+
   try {
     const campaigns = await prisma.campaign.findMany({
       orderBy: {
@@ -23,9 +30,23 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  // Check authentication
+  const authResult = await authenticateRequest();
+  if (authResult.error) {
+    return authResult.error;
+  }
+
   try {
     const body = await request.json();
     const { name, description, startDate, endDate, status } = body;
+
+    // Basic input validation
+    if (!name) {
+      return NextResponse.json(
+        { error: 'Campaign name is required' },
+        { status: 400 }
+      );
+    }
 
     const campaign = await prisma.campaign.create({
       data: {

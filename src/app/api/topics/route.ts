@@ -1,7 +1,14 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { authenticateRequest } from '@/lib/auth';
 
 export async function GET() {
+  // Check authentication
+  const authResult = await authenticateRequest();
+  if (authResult.error) {
+    return authResult.error;
+  }
+
   try {
     const topics = await prisma.topic.findMany({
       orderBy: {
@@ -19,6 +26,12 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  // Check authentication
+  const authResult = await authenticateRequest();
+  if (authResult.error) {
+    return authResult.error;
+  }
+
   try {
     const json = await request.json();
     const { name, content } = json;

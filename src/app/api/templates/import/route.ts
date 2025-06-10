@@ -4,8 +4,15 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { Template, TemplateImportResponse } from '@/types/templates';
 import { getBebopDocs } from '@/lib/templates/official-docs';
+import { authenticateRequest } from '@/lib/auth';
 
 export async function POST(request: Request) {
+  // Check authentication
+  const authResult = await authenticateRequest();
+  if (authResult.error) {
+    return authResult.error;
+  }
+
   try {
     const { templateId, type } = await request.json();
 

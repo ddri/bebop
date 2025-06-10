@@ -3,8 +3,15 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { deleteFileFromStorage } from '@/lib/storage';
+import { authenticateRequest } from '@/lib/auth';
 
 export async function DELETE(request: Request, props: { params: Promise<{ id: string }> }) {
+  // Check authentication
+  const authResult = await authenticateRequest();
+  if (authResult.error) {
+    return authResult.error;
+  }
+
   const params = await props.params;
   try {
     const mediaItem = await prisma.mediaItem.findUnique({

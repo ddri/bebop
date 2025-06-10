@@ -55,7 +55,7 @@ export function GitHubSettings() {
         setRepositories(repos);
         // If there's a previously selected repo, maintain the selection
         const savedRepo = localStorage.getItem('bebop-backup-repo');
-        if (savedRepo && repos.some(r => r.full_name === savedRepo)) {
+        if (savedRepo && repos.some((r: Repository) => r.full_name === savedRepo)) {
           setSelectedRepo(savedRepo);
         }
       }

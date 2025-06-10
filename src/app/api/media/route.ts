@@ -3,11 +3,18 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { uploadFileToStorage } from '@/lib/storage';
+import { authenticateRequest } from '@/lib/auth';
 import { mkdir } from 'fs/promises';
 import path from 'path';
 
 // GET /api/media - List all media items
 export async function GET() {
+  // Check authentication
+  const authResult = await authenticateRequest();
+  if (authResult.error) {
+    return authResult.error;
+  }
+
   try {
     const mediaItems = await prisma.mediaItem.findMany({
       orderBy: {
@@ -27,6 +34,12 @@ export async function GET() {
 
 // POST /api/media - Upload new media
 export async function POST(request: Request) {
+  // Check authentication
+  const authResult = await authenticateRequest();
+  if (authResult.error) {
+    return authResult.error;
+  }
+
   try {
     // Ensure uploads directory exists
     const uploadsDir = path.join(process.cwd(), 'public', 'uploads');

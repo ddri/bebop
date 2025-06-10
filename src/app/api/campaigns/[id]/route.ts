@@ -1,7 +1,14 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { authenticateRequest } from '@/lib/auth';
 
 export async function GET(request: Request, props: { params: Promise<{ id: string }> }) {
+  // Check authentication
+  const authResult = await authenticateRequest();
+  if (authResult.error) {
+    return authResult.error;
+  }
+
   const params = await props.params;
   try {
     const campaign = await prisma.campaign.findUnique({
@@ -29,9 +36,23 @@ export async function GET(request: Request, props: { params: Promise<{ id: strin
 }
 
 export async function PUT(request: Request, props: { params: Promise<{ id: string }> }) {
+  // Check authentication
+  const authResult = await authenticateRequest();
+  if (authResult.error) {
+    return authResult.error;
+  }
+
   const params = await props.params;
   try {
     const { name, description, startDate, endDate, status } = await request.json();
+    
+    // Basic input validation
+    if (name !== undefined && !name) {
+      return NextResponse.json(
+        { error: 'Campaign name cannot be empty' },
+        { status: 400 }
+      );
+    }
     
     const campaign = await prisma.campaign.update({
       where: { id: params.id },
@@ -58,6 +79,12 @@ export async function PUT(request: Request, props: { params: Promise<{ id: strin
 }
 
 export async function DELETE(request: Request, props: { params: Promise<{ id: string }> }) {
+  // Check authentication
+  const authResult = await authenticateRequest();
+  if (authResult.error) {
+    return authResult.error;
+  }
+
   const params = await props.params;
   try {
     // First delete all associated publishing plans

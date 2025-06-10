@@ -1,11 +1,18 @@
 // app/api/publishing-plans/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { authenticateRequest } from '@/lib/auth';
 
 export async function DELETE(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
+  // Check authentication
+  const authResult = await authenticateRequest();
+  if (authResult.error) {
+    return authResult.error;
+  }
+
   const { id } = await context.params;
   try {
     await prisma.publishingPlan.delete({
@@ -15,7 +22,7 @@ export async function DELETE(
   } catch (error) {
     console.error('Error deleting publishing plan:', error);
     return NextResponse.json(
-      { error: 'Internal error' }, 
+      { error: 'Failed to delete publishing plan' }, 
       { status: 500 }
     );
   }
@@ -25,6 +32,12 @@ export async function PUT(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
+  // Check authentication
+  const authResult = await authenticateRequest();
+  if (authResult.error) {
+    return authResult.error;
+  }
+
   const { id } = await context.params;
   try {
     const body = await request.json();
@@ -42,7 +55,7 @@ export async function PUT(
   } catch (error) {
     console.error('Error updating publishing plan:', error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Internal error' }, 
+      { error: error instanceof Error ? error.message : 'Failed to update publishing plan' }, 
       { status: 500 }
     );
   }
