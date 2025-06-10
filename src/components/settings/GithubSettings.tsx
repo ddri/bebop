@@ -2,10 +2,10 @@
 
 // src/components/settings/GitHubSettings.tsx
 import { useState, useEffect } from 'react';
-import { Button } from "../ui/button";
-import { Alert, AlertDescription } from "../ui/alert";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
-import { Switch } from "../ui/switch";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { AlertCircle, Github, Check, RefreshCcw } from 'lucide-react';
 
 interface Repository {
