@@ -10,8 +10,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, Upload, Eye, Globe, ExternalLink } from 'lucide-react';
 import Layout from '@/components/Layout';
 import { TemplateManager } from '@/components/templates/TemplateManager';
-import { SocialSettings } from '../../components/settings/SocialSettings';
-import { GitHubSettings } from '../../components/settings/GitHubSettings';
+import { SocialSettings, GitHubSettings } from '../../components/settings';
 
 export default function Settings() {
   const pathname = usePathname();
