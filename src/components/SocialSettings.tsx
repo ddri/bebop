@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useSocialSettings } from '@/hooks/useSocialSettings';
 import { PLATFORMS } from '@/lib/social/platforms';
-import { BlueskyIcon } from '../social/icons/BlueskyIcon';
+import { BlueskyIcon } from './social/icons/BlueskyIcon';
 import { AlertCircle } from 'lucide-react';
 import { PlatformId, SocialCredentials } from '@/types/social';
 
