@@ -1,12 +1,6 @@
-// Temporarily disabled for deployment
-// import { clerkMiddleware } from "@clerk/nextjs/server";
+import { clerkMiddleware } from "@clerk/nextjs/server";
 
-// export default clerkMiddleware();
-
-export default function middleware() {
-  // Placeholder middleware
-  return;
-}
+export default clerkMiddleware();
 
 export const config = {
   matcher: [
