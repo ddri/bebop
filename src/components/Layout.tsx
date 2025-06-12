@@ -1,12 +1,18 @@
+'use client';
+
 // src/components/Layout.tsx
 import Link from 'next/link';
+import { useAuth } from "@clerk/nextjs";
+import { SignInButtons, UserNav } from "./AuthComponents";
 
 interface LayoutProps {
   children: React.ReactNode;
-  pathname: string;
+  pathname?: string;
 }
 
 export default function Layout({ children, pathname }: LayoutProps) {
+  const { isSignedIn, isLoaded } = useAuth();
+
   return (
     <div className="min-h-screen bg-[#2f2f2d]">
       {/* Navigation Bar */}
@@ -39,6 +45,12 @@ export default function Layout({ children, pathname }: LayoutProps) {
                 Collections
               </Link>
               <Link 
+                href="/campaigns" 
+                className={`${pathname === '/campaigns' ? 'text-[#E669E8] font-semibold' : 'hover:text-[#E669E8]'} transition-colors`}
+              >
+                Campaigns
+              </Link>
+              <Link 
                 href="/media" 
                 className={`${pathname === '/media' ? 'text-[#E669E8] font-semibold' : 'hover:text-[#E669E8]'} transition-colors`}
               >
@@ -52,6 +64,11 @@ export default function Layout({ children, pathname }: LayoutProps) {
               </Link>
             </div>
           </div>
+          {isLoaded && (
+            <div>
+              {isSignedIn ? <UserNav /> : <SignInButtons />}
+            </div>
+          )}
         </div>
       </nav>
 

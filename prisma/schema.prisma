@@ -84,11 +84,13 @@ model PublishingPlan {
   id          String    @id @default(auto()) @map("_id") @db.ObjectId
   campaignId  String    @db.ObjectId
   topicId     String    @db.ObjectId
-  platform    String    // 'hashnode', 'devto', 'medium', etc.
-  status      String    @default("scheduled") // scheduled, published, failed
+  platform    String    
+  status      String    @default("scheduled") 
   scheduledFor DateTime?
   publishedAt DateTime?
   publishedUrl String?
+  hashnodeUrl String?  // Add this
+  devToUrl    String?  // Add this
   campaign    Campaign  @relation(fields: [campaignId], references: [id])
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt

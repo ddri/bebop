@@ -1,11 +1,18 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { authenticateRequest } from '@/lib/auth';
 
 interface TopicParams {
   params: Promise<{ id: string }>;
 }
 
 export async function GET(request: Request, props: TopicParams) {
+  // Check authentication
+  const authResult = await authenticateRequest();
+  if (authResult.error) {
+    return authResult.error;
+  }
+
   const params = await props.params;
   try {
     const topic = await prisma.topic.findUnique({
@@ -30,9 +37,24 @@ export async function GET(request: Request, props: TopicParams) {
 }
 
 export async function PUT(request: Request, props: TopicParams) {
+  // Check authentication
+  const authResult = await authenticateRequest();
+  if (authResult.error) {
+    return authResult.error;
+  }
+
   const params = await props.params;
   try {
     const body = await request.json();
+    
+    // Basic input validation
+    if (body.name !== undefined && !body.name) {
+      return NextResponse.json(
+        { error: 'Topic name cannot be empty' },
+        { status: 400 }
+      );
+    }
+    
     const updatedTopic = await prisma.topic.update({
       where: { id: params.id },
       data: body,
@@ -48,6 +70,12 @@ export async function PUT(request: Request, props: TopicParams) {
 }
 
 export async function DELETE(request: Request, props: TopicParams) {
+  // Check authentication
+  const authResult = await authenticateRequest();
+  if (authResult.error) {
+    return authResult.error;
+  }
+
   const params = await props.params;
   try {
     await prisma.topic.delete({

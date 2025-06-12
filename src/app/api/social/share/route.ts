@@ -3,8 +3,15 @@ import { NextResponse } from 'next/server';
 import { BlueskyClient } from '@/lib/social/clients/BlueskyClient';
 import { MastodonClient } from '@/lib/social/clients/MastodonClient';
 import { PlatformId, SocialShareContent, SocialCredentials } from '@/types/social';
+import { authenticateRequest } from '@/lib/auth';
 
 export async function POST(request: Request) {
+  // Check authentication
+  const authResult = await authenticateRequest();
+  if (authResult.error) {
+    return authResult.error;
+  }
+
   try {
     const body = await request.json();
     const { platformId, credentials, content } = body as {
