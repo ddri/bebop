@@ -5,7 +5,7 @@ import { Campaign, CreateCampaignInput } from '@/types/campaigns';
 export const useCampaigns = () => {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<any>(null);
+  const [error, setError] = useState<Error | null>(null);
 
   // Fetch campaigns on mount
   useEffect(() => {
@@ -17,7 +17,7 @@ export const useCampaigns = () => {
         const data = await response.json();
         setCampaigns(data);
       } catch (err) {
-        setError(err);
+        setError(err instanceof Error ? err : new Error('Unknown error'));
       } finally {
         setLoading(false);
       }
@@ -45,8 +45,9 @@ export const useCampaigns = () => {
       setCampaigns(prev => [...prev, newCampaign]);
       return newCampaign;
     } catch (err) {
-      setError(err);
-      throw err;
+      const error = err instanceof Error ? err : new Error('Unknown error');
+      setError(error);
+      throw error;
     }
   }, []);
 
@@ -73,8 +74,9 @@ export const useCampaigns = () => {
       );
       return updatedCampaign;
     } catch (err) {
-      setError(err);
-      throw err;
+      const error = err instanceof Error ? err : new Error('Unknown error');
+      setError(error);
+      throw error;
     }
   }, []);
 
@@ -111,8 +113,9 @@ export const useCampaigns = () => {
 
       return newPlan;
     } catch (err) {
-      setError(err);
-      throw err;
+      const error = err instanceof Error ? err : new Error('Unknown error');
+      setError(error);
+      throw error;
     }
   }, []);
 
@@ -137,8 +140,9 @@ export const useCampaigns = () => {
         return campaign;
       }));
     } catch (err) {
-      setError(err);
-      throw err;
+      const error = err instanceof Error ? err : new Error('Unknown error');
+      setError(error);
+      throw error;
     }
   }, []);
 
@@ -180,8 +184,9 @@ export const useCampaigns = () => {
 
       return updatedPlan;
     } catch (err) {
-      setError(err);
-      throw err;
+      const error = err instanceof Error ? err : new Error('Unknown error');
+      setError(error);
+      throw error;
     }
   }, []);
 

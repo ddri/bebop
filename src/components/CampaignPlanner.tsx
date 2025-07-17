@@ -29,6 +29,7 @@ import Layout from '@/components/Layout';
 import CampaignDetails from '@/components/CampaignDetails';
 import CampaignMetrics from '@/components/CampaignMetrics';
 import { PlatformId } from '@/types/social';
+import { PublishingPlan } from '@/types/campaigns';
 
 // Define available platforms including social media
 const PLATFORMS = [
@@ -65,7 +66,7 @@ const CampaignPlanner = ({ campaignId, pathname }: CampaignPlannerProps) => {
   const [showDevToPublisher, setShowDevToPublisher] = useState(false);
   const [showSocialPublisher, setShowSocialPublisher] = useState(false);
   const [selectedPlatform, setSelectedPlatform] = useState<PlatformId | null>(null);
-  const [publishingPlan, setPublishingPlan] = useState<any>(null);
+  const [publishingPlan, setPublishingPlan] = useState<PublishingPlan | null>(null);
   
   const campaign = campaigns?.find(c => c.id === campaignId);
 

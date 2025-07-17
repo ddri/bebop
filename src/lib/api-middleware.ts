@@ -1,14 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticateRequest } from './auth';
 
-type ApiHandler = (request: NextRequest, context?: any) => Promise<NextResponse>;
+type ApiContext = {
+  params?: Record<string, string | string[]>;
+  searchParams?: URLSearchParams;
+};
+
+type ApiHandler = (request: NextRequest, context?: ApiContext) => Promise<NextResponse>;
 
 /**
  * Higher-order function to add authentication to API routes
  * Usage: export const GET = withAuth(async (request) => { ... });
  */
 export function withAuth(handler: ApiHandler): ApiHandler {
-  return async (request: NextRequest, context?: any) => {
+  return async (request: NextRequest, context?: ApiContext) => {
     // Check authentication
     const authResult = await authenticateRequest();
     if (authResult.error) {
@@ -16,7 +21,7 @@ export function withAuth(handler: ApiHandler): ApiHandler {
     }
 
     // Add userId to request for use in handlers
-    (request as any).userId = authResult.userId;
+    (request as NextRequest & { userId: string }).userId = authResult.userId;
     
     return handler(request, context);
   };
@@ -26,10 +31,10 @@ export function withAuth(handler: ApiHandler): ApiHandler {
  * Higher-order function for API routes that need basic input validation
  */
 export function withValidation<T>(
-  handler: (request: NextRequest, body: T, context?: any) => Promise<NextResponse>,
+  handler: (request: NextRequest, body: T, context?: ApiContext) => Promise<NextResponse>,
   requiredFields: (keyof T)[]
 ): ApiHandler {
-  return async (request: NextRequest, context?: any) => {
+  return async (request: NextRequest, context?: ApiContext) => {
     try {
       const body = await request.json();
       
@@ -57,13 +62,13 @@ export function withValidation<T>(
  * Combine authentication and validation
  */
 export function withAuthAndValidation<T>(
-  handler: (request: NextRequest, body: T, userId: string, context?: any) => Promise<NextResponse>,
+  handler: (request: NextRequest, body: T, userId: string, context?: ApiContext) => Promise<NextResponse>,
   requiredFields: (keyof T)[]
 ): ApiHandler {
   return withAuth(
     withValidation<T>(
-      async (request: NextRequest, body: T, context?: any) => {
-        const userId = (request as any).userId;
+      async (request: NextRequest, body: T, context?: ApiContext) => {
+        const userId = (request as NextRequest & { userId: string }).userId;
         return handler(request, body, userId, context);
       },
       requiredFields

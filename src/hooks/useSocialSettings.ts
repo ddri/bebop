@@ -11,7 +11,7 @@ interface SocialSettingsStore {
   }>>;
   setCredentials: (platform: PlatformId, credentials: SocialCredentials) => void;
   clearCredentials: (platform: PlatformId) => void;
-  updatePreferences: (platform: PlatformId, preferences: Record<string, any>) => void;
+  updatePreferences: (platform: PlatformId, preferences: { autoShare?: boolean; instanceUrl?: string }) => void;
 }
 
 export const useSocialSettings = create<SocialSettingsStore>()(

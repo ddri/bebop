@@ -58,7 +58,7 @@ export default function Campaigns() {
   if (error) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-lg text-red-500">{error}</div>
+        <div className="text-lg text-red-500">{error?.message || 'An error occurred'}</div>
       </div>
     );
   }

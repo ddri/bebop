@@ -35,6 +35,6 @@ export function createErrorResponse(message: string, status: number = 400) {
   return NextResponse.json({ error: message }, { status });
 }
 
-export function createSuccessResponse(data: any, status: number = 200) {
+export function createSuccessResponse<T = unknown>(data: T, status: number = 200) {
   return NextResponse.json(data, { status });
 } 

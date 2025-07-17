@@ -3,7 +3,7 @@ import { SocialCredentials, SocialShareContent, SocialShareResponse } from '@/ty
 
 export abstract class AbstractSocialClient {
   protected authenticated = false;
-  protected settings: Record<string, any> = {};
+  protected settings: Record<string, unknown> = {};
  
   abstract authenticate(credentials: SocialCredentials): Promise<boolean>;
   abstract share(content: SocialShareContent): Promise<SocialShareResponse>;
@@ -13,11 +13,11 @@ export abstract class AbstractSocialClient {
     return this.authenticated;
   }
 
-  getSettings(): Record<string, any> {
+  getSettings(): Record<string, unknown> {
     return this.settings;
   }
 
-  updateSettings(settings: Record<string, any>): void {
+  updateSettings(settings: Record<string, unknown>): void {
     this.settings = { ...this.settings, ...settings };
   }
 }
