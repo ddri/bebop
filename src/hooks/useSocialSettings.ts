@@ -1,7 +1,7 @@
 // hooks/useSocialSettings.ts
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { SocialSettings, PlatformId, SocialCredentials } from '@/types/social';
+import { PlatformId, SocialCredentials } from '@/types/social';
 
 interface SocialSettingsStore {
   credentials: Partial<Record<PlatformId, SocialCredentials>>;

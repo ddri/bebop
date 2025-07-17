@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, Plus, Clock } from 'lucide-react';
 import { useCampaigns } from '@/hooks/useCampaigns';
-import { Campaign, CampaignStatus, CreateCampaignInput } from '@/types/campaigns';
+import { CreateCampaignInput } from '@/types/campaigns';
 
 export default function Campaigns() {
   const router = useRouter();

@@ -2,7 +2,6 @@ import React from 'react';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
-  Pencil, 
   Eye, 
   Globe, 
   Trash2,

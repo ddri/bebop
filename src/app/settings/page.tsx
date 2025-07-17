@@ -1,13 +1,11 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import Link from 'next/link';
 import { useCollections } from '@/hooks/useCollections';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, Upload, Eye, Globe, ExternalLink } from 'lucide-react';
+import { Upload, Eye, Globe, ExternalLink } from 'lucide-react';
 import Layout from '@/components/Layout';
 import { TemplateManager } from '@/components/templates/TemplateManager';
 import { SocialSettings } from '@/components/SocialSettings';

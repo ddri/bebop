@@ -1,7 +1,7 @@
 // lib/social/BlueskyClient.ts
 import { BskyAgent } from '@atproto/api';
 import { AbstractSocialClient } from './AbstractSocialClient';
-import { SocialShareContent, SocialShareResponse, SocialCredentials } from '@/types/social';
+import { SocialShareContent, SocialShareResponse } from '@/types/social';
 
 export class BlueskyClient extends AbstractSocialClient {
   private agent: BskyAgent;

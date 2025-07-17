@@ -21,7 +21,7 @@ export async function PUT(request: Request, props: RouteParams) {
     });
     
     return NextResponse.json(collection);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Failed to update Hashnode URL' },
       { status: 500 }

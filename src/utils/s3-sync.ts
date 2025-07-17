@@ -4,12 +4,6 @@ import { ListObjectsCommand } from '@aws-sdk/client-s3';
 import { s3Client } from '@/lib/s3';
 import { prisma } from '@/lib/prisma';
 
-interface S3Object {
-  Key?: string;
-  Size?: number;
-  LastModified?: Date;
-}
-
 export async function syncS3WithDatabase() {
   try {
     // List all objects in the S3 bucket

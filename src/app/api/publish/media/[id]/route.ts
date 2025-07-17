@@ -1,7 +1,7 @@
 // app/api/media/[id]/route.ts
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { uploadFileToStorage, deleteFileFromStorage } from '@/lib/storage';
+import { deleteFileFromStorage } from '@/lib/storage';
 
 export async function DELETE(request: Request, props: { params: Promise<{ id: string }> }) {
   const params = await props.params;

@@ -2,7 +2,7 @@
 
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { Template, TemplateImportResponse } from '@/types/templates';
+import { TemplateImportResponse } from '@/types/templates';
 import { getBebopDocs } from '@/lib/templates/official-docs';
 import { authenticateRequest } from '@/lib/auth';
 

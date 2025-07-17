@@ -1,5 +1,4 @@
 // types/social.ts
-import { type } from "os";
 import { BlueskyIcon } from '@/components/social/icons/BlueskyIcon';
 import { MastodonIcon } from '@/components/social/icons/MastodonIcon';
 import { ThreadsIcon } from '@/components/social/icons/ThreadsIcon';

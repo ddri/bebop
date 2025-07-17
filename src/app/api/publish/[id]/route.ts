@@ -15,7 +15,7 @@ export async function GET(request: Request, props: { params: Promise<{ id: strin
     return new NextResponse(publishedContent.content, {
       headers: { 'Content-Type': 'text/html' }
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to fetch content' }, { status: 500 });
   }
 }

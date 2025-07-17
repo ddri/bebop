@@ -1,6 +1,6 @@
 // components/editor/urlTransformExtension.ts
 import { Extension } from '@codemirror/state';
-import { EditorView, ViewPlugin, ViewUpdate } from '@codemirror/view';
+import { ViewPlugin, ViewUpdate } from '@codemirror/view';
 import { detectRichMedia } from './RichMediaTransformer';
 
 export function urlTransformExtension(): Extension {

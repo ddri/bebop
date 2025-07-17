@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Calendar, Clock, Globe, CheckCircle, AlertCircle } from 'lucide-react';
-import { Campaign, PublishingPlan } from '@/types/campaigns';
+import { Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { Campaign } from '@/types/campaigns';
 import { LucideIcon } from 'lucide-react';
 
 interface MetricCardProps {

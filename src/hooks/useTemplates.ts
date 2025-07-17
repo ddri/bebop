@@ -1,5 +1,3 @@
-import { Template } from '@/types/templates';
-
 export function useTemplates() {
   // In the future, this could fetch available templates from an API
   const templates = [

@@ -32,7 +32,6 @@ import {
   Plus, 
   Clock, 
   FileText,
-  Pencil,
   Eye,
   Globe,
   GripVertical,
