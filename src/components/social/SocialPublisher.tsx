@@ -29,12 +29,8 @@ export function SocialPublisher({
   onClose
 }: SocialPublisherProps) {
   const platform = PLATFORMS[platformId];
-
-  // Skip rendering for web intent platforms (like Threads)
-  if (platform.webIntent) {
-    return null;
-  }
-
+  
+  // All hooks must be called before any conditional returns
   const { credentials, setCredentials } = useSocialSettings();
   const [inputValues, setInputValues] = useState(credentials[platformId] || {});
   const [status, setStatus] = useState<{ type: 'error' | 'success' | ''; message: string }>({
@@ -42,6 +38,11 @@ export function SocialPublisher({
     message: ''
   });
   const [isLoading, setIsLoading] = useState(false);
+
+  // Skip rendering for web intent platforms (like Threads)
+  if (platform.webIntent) {
+    return null;
+  }
 
   // Check if collection is published
   if (!collection.publishedUrl) {

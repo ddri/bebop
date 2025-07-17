@@ -640,7 +640,7 @@ export default function Collections() {
           />
         )) : (
           <div className="col-span-full text-center py-8 text-slate-500 dark:text-slate-400">
-            No collections yet. Click "New Collection" to create one.
+            No collections yet. Click &quot;New Collection&quot; to create one.
           </div>
         )}
       </div>

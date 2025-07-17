@@ -108,7 +108,7 @@ export default function Campaigns() {
           ))
         ) : (
           <div className="col-span-full text-center py-8 text-slate-400">
-            No campaigns yet. Click "New Campaign" to create one.
+            No campaigns yet. Click &quot;New Campaign&quot; to create one.
           </div>
         )}
       </div>

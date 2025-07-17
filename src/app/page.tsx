@@ -73,7 +73,7 @@ export default function Home() {
         {/* Quick Tips */}
         <div className="bg-[#1c1c1e] rounded-lg p-6 text-left border-0">
           <h2 className="text-2xl font-semibold mb-4 text-white">Quick Tips</h2>
-          <p className="text-slate-300 mb-4">Here's the basic idea of Bebop:</p>
+          <p className="text-slate-300 mb-4">Here&apos;s the basic idea of Bebop:</p>
           <ol className="list-decimal list-inside space-y-2 text-slate-300">
             <li>Write your content</li>
             <li>Organize it into topics</li>

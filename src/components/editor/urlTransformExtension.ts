@@ -8,7 +8,7 @@ export function urlTransformExtension(): Extension {
     update(update: ViewUpdate) {
       if (update.docChanged) {
         const changes = update.changes;
-        let transformations: {from: number, to: number, insert: string}[] = [];
+        const transformations: {from: number, to: number, insert: string}[] = [];
         
         changes.iterChanges((fromA, toA, fromB, toB, inserted) => {
           const insertedText = inserted.toString();
