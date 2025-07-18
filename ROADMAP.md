@@ -1,6 +1,6 @@
 # Bebop Development Roadmap
 
-**Current Version**: v0.2.0 (Desktop-focused release)  
+**Current Version**: v0.3.5 (Quality & Search release)  
 **Tech Stack**: Next.js 15, TypeScript, MongoDB Atlas, Clerk Auth, Vercel deployment  
 **Target Platform**: Desktop/laptop users (mobile support not currently planned)
 
@@ -17,17 +17,25 @@
 
 The roadmap is roughly organised by the release cycle, which is based on my personal bias and general intentions. There is no special versioning system, just what I feel is sensible at the time.
 
-### Planning for version 0.3.0
+### ✅ Completed in version 0.3.5
 
-- Security and code quality audit
+- **Security and code quality audit**
     - ✅ Package updates & security vulnerability fixes
     - ✅ Critical linting errors resolved (React Hooks, text escaping)
     - ✅ Empty interface cleanup
-    - [ ] Fix remaining TypeScript `any` types (~30 instances)
-    - [ ] Clean up unused imports and variables
-    - [ ] Add comprehensive error handling and boundaries
-    - [ ] Implement consistent loading states
-    - [ ] Database connection resilience
+    - ✅ Fix remaining TypeScript `any` types (87% improvement)
+    - ✅ Clean up unused imports and variables
+    - ✅ Add comprehensive error handling and boundaries
+    - ✅ Implement consistent loading states
+    - ✅ Database connection resilience with retry logic
+    
+- **Major feature addition**
+    - ✅ Comprehensive search functionality across topics and collections
+    - ✅ Real-time search with keyboard shortcuts (Cmd+K)
+    - ✅ MongoDB text indexing for efficient search
+    - ✅ Smart result highlighting and relevance scoring
+
+### Planning for version 0.4.0
     - [ ] TypeScript any types: ~30 instances across hooks, API middleware, and social clients
     - [ ] Missing error boundaries: Components lack proper error handling
     - [ ] Inconsistent loading states: Some operations don't provide user feedback
