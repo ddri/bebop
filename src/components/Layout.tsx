@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useAuth } from "@clerk/nextjs";
 import { SignInButtons, UserNav } from "./AuthComponents";
 import { ErrorBoundary } from "./ErrorBoundary";
+import { SearchBar } from "./SearchBar";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -58,6 +59,12 @@ export default function Layout({ children, pathname }: LayoutProps) {
                 Media
               </Link>
               <Link 
+                href="/search" 
+                className={`${pathname === '/search' ? 'text-[#E669E8] font-semibold' : 'hover:text-[#E669E8]'} transition-colors`}
+              >
+                Search
+              </Link>
+              <Link 
                 href="/settings" 
                 className={`${pathname === '/settings' ? 'text-[#E669E8] font-semibold' : 'hover:text-[#E669E8]'} transition-colors`}
               >
@@ -65,6 +72,18 @@ export default function Layout({ children, pathname }: LayoutProps) {
               </Link>
             </div>
           </div>
+          
+          {/* Search Bar */}
+          {isSignedIn && (
+            <div className="flex-1 max-w-md mx-8">
+              <SearchBar 
+                placeholder="Search..."
+                showQuickResults={true}
+                maxQuickResults={5}
+              />
+            </div>
+          )}
+          
           {isLoaded && (
             <div>
               {isSignedIn ? <UserNav /> : <SignInButtons />}

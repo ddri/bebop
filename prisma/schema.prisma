@@ -17,6 +17,7 @@ model Topic {
   updatedAt DateTime @updatedAt
   collectionIds String[] @db.ObjectId
 
+  @@index([name(sort: Asc), content(sort: Asc), description(sort: Asc)], map: "search_text_index")
   @@map("topics")
 }
 
@@ -34,6 +35,7 @@ model Collections {
   createdAt    DateTime @default(now())
   lastEdited   DateTime @updatedAt
 
+  @@index([name(sort: Asc), description(sort: Asc)], map: "search_text_index")
   @@map("collections")
 }
 
