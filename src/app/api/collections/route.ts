@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
+import { executeWithRetryAndErrorHandling } from '@/lib/db-utils';
 
 export async function GET() {
   // Check authentication
@@ -10,21 +11,20 @@ export async function GET() {
     return authResult.error;
   }
 
-  try {
-    const collections = await prisma.collections.findMany({
+  const result = await executeWithRetryAndErrorHandling(
+    () => prisma.collections.findMany({
       orderBy: {
         createdAt: 'desc'
       }
-    });
+    }),
+    'fetch collections'
+  );
 
-    return NextResponse.json(collections);
-  } catch (error) {
-    console.error('Failed to fetch collections:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch collections' },
-      { status: 500 }
-    );
+  if (!result.success) {
+    return result.response;
   }
+
+  return NextResponse.json(result.data);
 }
 
 export async function POST(request: Request) {

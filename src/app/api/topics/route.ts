@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
-import { executeWithErrorHandling } from '@/lib/db-utils';
+import { executeWithErrorHandling, executeWithRetryAndErrorHandling } from '@/lib/db-utils';
 
 export async function GET() {
   // Check authentication
@@ -10,7 +10,7 @@ export async function GET() {
     return authResult.error;
   }
 
-  const result = await executeWithErrorHandling(
+  const result = await executeWithRetryAndErrorHandling(
     () => prisma.topic.findMany({
       orderBy: {
         createdAt: 'desc'
