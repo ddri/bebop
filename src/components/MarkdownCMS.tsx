@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useTopics } from '@/hooks/useTopics';
 import { ApiErrorBoundary } from '@/components/ErrorBoundary';
+import { LoadingButton, GridLoading, PageLoading } from '@/components/ui/loading';
 import { 
   Plus, 
   Trash2, 
@@ -55,6 +56,9 @@ export function MarkdownCMS({ pathname }: { pathname: string }) {
     content: string;
     description: string;
   } | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -88,7 +92,7 @@ export function MarkdownCMS({ pathname }: { pathname: string }) {
   if (!mounted) return null;
 
   if (loading) {
-    return <div className="text-lg text-white">Loading topics...</div>;
+    return <PageLoading message="Loading topics..." />;
   }
 
   if (error) {
@@ -101,6 +105,7 @@ export function MarkdownCMS({ pathname }: { pathname: string }) {
 
   const saveDocument = async () => {
     if (newDocName && newDocContent) {
+      setIsCreating(true);
       try {
         await createTopic(newDocName, newDocContent, newDocDescription);
         setNewDocName('');
@@ -109,28 +114,36 @@ export function MarkdownCMS({ pathname }: { pathname: string }) {
         setShowNewDocForm(false);
       } catch (error) {
         console.error('Failed to create topic:', error);
+      } finally {
+        setIsCreating(false);
       }
     }
   };
 
   const saveEditedDocument = async () => {
     if (editingDoc && editingDoc.name && editingDoc.content) {
+      setIsSaving(true);
       try {
         await updateTopic(editingDoc.id, editingDoc.name, editingDoc.content, editingDoc.description);
         setEditingDoc(null);
       } catch (error) {
         console.error('Failed to update topic:', error);
+      } finally {
+        setIsSaving(false);
       }
     }
   };
 
   const handleDeleteDocument = async (docId: string) => {
     if (window.confirm('Are you sure you want to delete this topic?')) {
+      setDeletingId(docId);
       try {
         await deleteTopic(docId);
         setSelectedDocs(prev => prev.filter(id => id !== docId));
       } catch (error) {
         console.error('Failed to delete topic:', error);
+      } finally {
+        setDeletingId(null);
       }
     }
   };
@@ -198,13 +211,15 @@ export function MarkdownCMS({ pathname }: { pathname: string }) {
                 theme={theme}
               />
               <div className="flex gap-2">
-                <Button 
+                <LoadingButton 
                   onClick={saveDocument}
                   disabled={!newDocName || !newDocContent}
+                  isLoading={isCreating}
+                  loadingText="Creating..."
                   className="bg-[#E669E8] hover:bg-[#d15dd3] text-white"
                 >
                   Save Topic
-                </Button>
+                </LoadingButton>
                 <Button 
                   variant="outline"
                   onClick={() => setShowNewDocForm(false)}
@@ -250,13 +265,15 @@ export function MarkdownCMS({ pathname }: { pathname: string }) {
               theme={theme}
             />
             <div className="flex gap-2">
-              <Button 
+              <LoadingButton 
                 onClick={saveEditedDocument}
                 disabled={!editingDoc.name || !editingDoc.content}
+                isLoading={isSaving}
+                loadingText="Saving..."
                 className="bg-[#E669E8] hover:bg-[#d15dd3] text-white"
               >
                 Save Changes
-              </Button>
+              </LoadingButton>
               <Button 
                 variant="outline"
                 onClick={() => setEditingDoc(null)}
@@ -293,17 +310,18 @@ export function MarkdownCMS({ pathname }: { pathname: string }) {
             >
               <Pencil className="h-4 w-4" />
             </Button>
-            <Button
+            <LoadingButton
               variant="ghost"
               size="sm"
               onClick={(e) => {
-                e.stopPropagation();
+                e?.stopPropagation();
                 handleDeleteDocument(topic.id);
               }}
+              isLoading={deletingId === topic.id}
               className="hover:text-red-500 hover:bg-transparent"
             >
               <Trash2 className="h-4 w-4" />
-            </Button>
+            </LoadingButton>
           </div>
         </CardHeader>
         <CardContent>

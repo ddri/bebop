@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { useCollections } from '@/hooks/useCollections';
 import { Button } from '@/components/ui/button';
@@ -8,12 +9,14 @@ import { Input } from '@/components/ui/input';
 import { Upload, Eye, Globe, ExternalLink } from 'lucide-react';
 import Layout from '@/components/Layout';
 import { TemplateManager } from '@/components/templates/TemplateManager';
+import { LoadingButton, LoadingOverlay } from '@/components/ui/loading';
 import { SocialSettings } from '@/components/SocialSettings';
 import { GitHubSettings } from '@/components/GitHubSettings';
 
 export default function Settings() {
   const pathname = usePathname();
   const { collections, unpublishCollection } = useCollections();
+  const [isUnpublishing, setIsUnpublishing] = useState<string | null>(null);
 
   return (
     <Layout pathname={pathname}>
@@ -176,19 +179,26 @@ export default function Settings() {
                         <Eye className="h-4 w-4 mr-2" />
                         View
                       </Button>
-                      <Button
+                      <LoadingButton
                         variant="outline"
                         size="sm"
+                        isLoading={isUnpublishing === collection.id}
+                        loadingText="Unpublishing..."
                         onClick={async () => {
-                          if (await unpublishCollection(collection.id)) {
-                            alert('Collection unpublished successfully');
+                          setIsUnpublishing(collection.id);
+                          try {
+                            if (await unpublishCollection(collection.id)) {
+                              alert('Collection unpublished successfully');
+                            }
+                          } finally {
+                            setIsUnpublishing(null);
                           }
                         }}
                         className="text-white border-slate-600 hover:bg-red-500 hover:text-white"
                       >
                         <Globe className="h-4 w-4 mr-2" />
                         Unpublish
-                      </Button>
+                      </LoadingButton>
                     </div>
                   </div>
                 ))}

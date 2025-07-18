@@ -30,6 +30,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { useCollections } from '@/hooks/useCollections';
 import { useTopics } from '@/hooks/useTopics';
 import { ApiErrorBoundary } from '@/components/ErrorBoundary';
+import { LoadingButton, LoadingOverlay, GridLoading } from '@/components/ui/loading';
 import { 
   Plus, 
   Clock, 
@@ -171,6 +172,9 @@ export default function Collections() {
   const [showSocialPublisher, setShowSocialPublisher] = useState(false);
   const [selectedPlatform, setSelectedPlatform] = useState<PlatformId | null>(null);
   const [publishingCollection, setPublishingCollection] = useState<Collection | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -417,6 +421,7 @@ export default function Collections() {
 
   const saveNewCollection = async () => {
     if (newCollectionName && selectedTopicIds.length > 0) {
+      setIsCreating(true);
       try {
         await createCollection(newCollectionName, newCollectionDesc, selectedTopicIds);
         setNewCollectionName('');
@@ -427,12 +432,15 @@ export default function Collections() {
       } catch (error) {
         console.error('Failed to create collection:', error);
         alert('Failed to create collection');
+      } finally {
+        setIsCreating(false);
       }
     }
   };
 
   const saveEditedCollection = async () => {
     if (editingCollection && newCollectionName && selectedTopicIds.length > 0) {
+      setIsEditing(true);
       try {
         const truncatedDesc = newCollectionDesc.slice(0, 280);
         
@@ -450,6 +458,8 @@ export default function Collections() {
       } catch (error) {
         console.error('Failed to update collection:', error);
         alert('Failed to update collection');
+      } finally {
+        setIsEditing(false);
       }
     }
   };
@@ -602,13 +612,15 @@ export default function Collections() {
               )}
 
               <div className="flex gap-2">
-                <Button 
+                <LoadingButton
                   onClick={editingCollection ? saveEditedCollection : saveNewCollection}
                   disabled={!newCollectionName || selectedTopicIds.length === 0}
+                  isLoading={editingCollection ? isEditing : isCreating}
+                  loadingText={editingCollection ? 'Saving...' : 'Creating...'}
                   className="bg-[#E669E8] hover:bg-[#d15dd3] text-white"
                 >
                   {editingCollection ? 'Save Changes' : 'Create Collection'}
-                </Button>
+                </LoadingButton>
                 <Button 
                   variant="outline"
                   onClick={() => {
