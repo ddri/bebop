@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
+import { executeWithErrorHandling } from '@/lib/db-utils';
 
 export async function GET() {
   // Check authentication
@@ -9,20 +10,20 @@ export async function GET() {
     return authResult.error;
   }
 
-  try {
-    const topics = await prisma.topic.findMany({
+  const result = await executeWithErrorHandling(
+    () => prisma.topic.findMany({
       orderBy: {
         createdAt: 'desc'
       }
-    });
-    return NextResponse.json(topics);
-  } catch (error) {
-    console.error('Failed to fetch topics:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch topics' },
-      { status: 500 }
-    );
+    }),
+    'fetch topics'
+  );
+
+  if (!result.success) {
+    return result.response;
   }
+
+  return NextResponse.json(result.data);
 }
 
 export async function POST(request: Request) {
@@ -43,20 +44,28 @@ export async function POST(request: Request) {
       );
     }
 
-    const topic = await prisma.topic.create({
-      data: {
-        name,
-        content,
-        collectionIds: [] // Initialize empty array for MongoDB
-      }
-    });
+    const result = await executeWithErrorHandling(
+      () => prisma.topic.create({
+        data: {
+          name,
+          content,
+          collectionIds: [] // Initialize empty array for MongoDB
+        }
+      }),
+      'create topic'
+    );
 
-    return NextResponse.json(topic, { status: 201 });
+    if (!result.success) {
+      return result.response;
+    }
+
+    return NextResponse.json(result.data, { status: 201 });
   } catch (error) {
-    console.error('Failed to create topic:', error);
+    // Handle JSON parsing errors or other non-database errors
+    console.error('Request processing error:', error);
     return NextResponse.json(
-      { error: 'Failed to create topic' },
-      { status: 500 }
+      { error: 'Invalid request format' },
+      { status: 400 }
     );
   }
 }
