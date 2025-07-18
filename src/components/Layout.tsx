@@ -4,6 +4,7 @@
 import Link from 'next/link';
 import { useAuth } from "@clerk/nextjs";
 import { SignInButtons, UserNav } from "./AuthComponents";
+import { ErrorBoundary } from "./ErrorBoundary";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -74,7 +75,9 @@ export default function Layout({ children, pathname }: LayoutProps) {
 
       {/* Main Content */}
       <div className="container mx-auto p-8 max-w-7xl">
-        {children}
+        <ErrorBoundary>
+          {children}
+        </ErrorBoundary>
       </div>
     </div>
   );

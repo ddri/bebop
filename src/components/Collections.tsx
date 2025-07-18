@@ -29,6 +29,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { useCollections } from '@/hooks/useCollections';
 import { useTopics } from '@/hooks/useTopics';
+import { ApiErrorBoundary } from '@/components/ErrorBoundary';
 import { 
   Plus, 
   Clock, 
@@ -629,20 +630,22 @@ export default function Collections() {
 
       {/* Collections Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {collections && collections.length > 0 ? collections.map((collection) => (
-          <CollectionCard
-            key={collection.id}
-            collection={collection}
-            onEdit={() => startEditing(collection)}
-            onPreview={() => previewCollection(collection)}
-            onPublish={() => handlePublish(collection)}
-            onDelete={() => handleDelete(collection)}
-          />
-        )) : (
-          <div className="col-span-full text-center py-8 text-slate-500 dark:text-slate-400">
-            No collections yet. Click &quot;New Collection&quot; to create one.
-          </div>
-        )}
+        <ApiErrorBoundary>
+          {collections && collections.length > 0 ? collections.map((collection) => (
+            <CollectionCard
+              key={collection.id}
+              collection={collection}
+              onEdit={() => startEditing(collection)}
+              onPreview={() => previewCollection(collection)}
+              onPublish={() => handlePublish(collection)}
+              onDelete={() => handleDelete(collection)}
+            />
+          )) : (
+            <div className="col-span-full text-center py-8 text-slate-500 dark:text-slate-400">
+              No collections yet. Click &quot;New Collection&quot; to create one.
+            </div>
+          )}
+        </ApiErrorBoundary>
       </div>
 
       {/* Publisher Modals */}

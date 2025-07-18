@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useTopics } from '@/hooks/useTopics';
+import { ApiErrorBoundary } from '@/components/ErrorBoundary';
 import { 
   Plus, 
   Trash2, 
@@ -219,7 +220,8 @@ export function MarkdownCMS({ pathname }: { pathname: string }) {
 
       {/* Topics List */}
       <div className="grid gap-4">
-      {sortedTopics.map((topic) => (
+      <ApiErrorBoundary>
+        {sortedTopics.map((topic) => (
   <React.Fragment key={topic.id}>
     {editingDoc?.id === topic.id ? (
       <Card className="bg-[#1c1c1e] border-0">
@@ -323,6 +325,7 @@ export function MarkdownCMS({ pathname }: { pathname: string }) {
     )}
   </React.Fragment>
 ))}
+        </ApiErrorBoundary>
         {!sortedTopics.length && (
           <div className="text-center py-8 text-slate-300">
             No topics yet. Click "New Topic" to create one.

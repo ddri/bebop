@@ -8,6 +8,7 @@ import { oneDark } from '@codemirror/theme-one-dark';
 import { EditorView } from '@codemirror/view';
 import { useTopics } from '@/hooks/useTopics';
 import { Button } from '@/components/ui/button';
+import { EditorErrorBoundary } from '@/components/ErrorBoundary';
 import {
   Dialog,
   DialogContent,
@@ -459,26 +460,28 @@ const WriteMode = () => {
             previewMode === 'split' ? "w-1/2" : "hidden"
           ) : "w-full"
         )}>
-          <CodeMirror
-            ref={editorRef as any}
-            value={content}
-            height="600px"
-            autoFocus
-            extensions={[
-              markdown(),
-              EditorView.lineWrapping,
-              urlDetectorExtension(handleUrlFound)
-            ]}
-            theme={oneDark}
-            onChange={setContent}
-            className="text-base"
-            basicSetup={{
-              lineNumbers: true,
-              highlightActiveLine: true,
-              highlightActiveLineGutter: true,
-              foldGutter: true,
-            }}
-          />
+          <EditorErrorBoundary>
+            <CodeMirror
+              ref={editorRef as any}
+              value={content}
+              height="600px"
+              autoFocus
+              extensions={[
+                markdown(),
+                EditorView.lineWrapping,
+                urlDetectorExtension(handleUrlFound)
+              ]}
+              theme={oneDark}
+              onChange={setContent}
+              className="text-base"
+              basicSetup={{
+                lineNumbers: true,
+                highlightActiveLine: true,
+                highlightActiveLineGutter: true,
+                foldGutter: true,
+              }}
+            />
+          </EditorErrorBoundary>
         </div>
 
         {showPreview && (
