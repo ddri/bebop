@@ -1,45 +1,220 @@
-# bebop
+# 🎯 Bebop - Campaign-Centric Content Marketing Platform
 
-Bebop is an opinionated content publishing tool for technical content creators. It is built around the workflow familiar to roles such as Developer Relations, where managing content to publish and cross-post across multiple publishing destinations often involved a range of writing tools, copying and pasting, and spreadsheets to track it all. 
+Bebop is a **campaign-centric content marketing orchestration platform** designed for technical content creators, Developer Relations professionals, and content marketing teams. It combines the power of content planning, creation, scheduling, and multi-platform publishing in a unified workflow.
 
-Bebop is being built to enhance the writing workflow by:
+## 🚀 What Makes Bebop Different
 
-- **Eliminating content silos:** Bring all your writing together in one place.
-- **Saving time and effort:** Automate repetitive tasks and streamline the publishing process.
-- **Ensuring consistency:** Maintain a single source of truth for your content and easily update it across all platforms.
+**Campaign-First Approach**: Unlike traditional CMSs that focus on individual posts, Bebop organizes content around **marketing campaigns** - helping you plan, create, and execute cohesive content strategies across multiple channels.
 
-Bebop has a suite of features in development that are inspired by prior products I've built either for large software companies (e.g. Red Hat's PressGang CCMS) or for commercial projects (my previous SaaS company Corilla) and have been annoying to live without. These are the kinds of features that allow the user to write in whatever writing tool they prefer, sync the files to Bebop, and then be able to:
+**Multi-Platform Publishing**: Write once, publish everywhere. Bebop automatically adapts and publishes your content to:
+- **Technical Blogs**: Hashnode, Dev.to
+- **Social Networks**: Bluesky, Mastodon  
+- **Coming Soon**: LinkedIn, Twitter, WordPress, Ghost
 
-- **Combine content dynamically with Collections:** Merge multiple notes into a single output, like a team document or blog post, with the ability to regenerate and update all downstream copies with one click.
-- **Streamline cross-posting:** Publish your content to various platforms without the hassle of manual copying and pasting.
-- **Automate reporting:** Understand what content and communications are most effective in a devrel campaign, or to review product launches, etc.
+**Intelligent Scheduling**: Built-in publishing queue with retry logic, failure monitoring, and real-time status tracking.
 
-## Contributions and requests
+## 🎯 Core Workflow
 
-Bebop is a personal project I am developing on nights and weekends. My day job is as a product manager and developer for a quantum computing company, so please be patient with any feedback, feature requests, bugs, or pull requests. I appreciate your time and attention and will do my best to accomdoate where possible.
+1. **📋 Plan** → Create content marketing campaigns with strategic goals
+2. **✍️ Create** → Write content using our integrated editor with live preview
+3. **⏰ Schedule** → Plan publishing timeline across multiple platforms
+4. **📊 Monitor** → Track publishing status with real-time dashboard
+5. **📈 Analyze** → Monitor campaign performance and content analytics
 
-## Stack
+## ✨ Key Features
 
-The current version of Bebop is a local application built on NextJS and Typescript, using the shadcn component library, and CodeMirror as basic text editor. The next milestone release is a webapp using MongoDB Atlas for document storage, and a host of publishing services integrated directly into the UI. 
+- **Campaign Management**: Organize content around marketing objectives
+- **Content Library**: Centralized content creation and management
+- **Multi-Platform Publishing**: Automated cross-posting with platform-specific formatting
+- **Publishing Queue**: Reliable scheduling with retry logic and monitoring
+- **Real-Time Dashboard**: Monitor publishing status and campaign progress
+- **Platform Integration**: Easy setup for Hashnode, Dev.to, Bluesky, and Mastodon
+- **Content Analytics**: Track performance across all publishing destinations
 
+## 🏗️ Architecture
 
-## Upcoming features and roadmap
+Bebop is built with **Next-Forge**, a production-grade Next.js monorepo template, providing:
+- **Next.js 15** with React 19
+- **TypeScript** for type safety
+- **Tailwind CSS** + **shadcn/ui** for modern UI
+- **Prisma** with **MongoDB** for data persistence
+- **Clerk** for authentication
+- **Turborepo** for efficient monorepo management
 
-See the GitHub Issues for upcoming features and Milestone releases. 
+## 🚀 Getting Started
 
-## Screenshots
+### Prerequisites
+- Node.js 18+
+- MongoDB (local or Atlas)
+- Git
 
-The Topcis page is a collection of topics, which is the name given to the document files covering a specific topic. 
+### Development Setup
 
-<img width="1395" alt="image" src="https://github.com/user-attachments/assets/585f1225-a876-4dfb-b99f-6cb96133d969" />
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/ddri/bebop.git
+   cd bebop/bebop-next-forge/bebop-next-forge
+   ```
 
+2. **Install dependencies**
+   ```bash
+   pnpm install
+   ```
 
-The Collections page is where we create collections, which are a logical container for topics. Whatever documents we include in here, are combined together and published as a document, blog post, whatever the end point publishes to.
+3. **Environment Setup**
+   ```bash
+   # Copy environment template
+   cp .env.example .env.local
+   
+   # Configure your environment variables:
+   # - MongoDB connection string
+   # - Clerk authentication keys
+   # - Platform API keys (optional)
+   ```
 
-<img width="1396" alt="image" src="https://github.com/user-attachments/assets/66ed4260-61e5-48dc-a061-fa051fc17537" />
+4. **Database Setup**
+   ```bash
+   # Initialize database
+   pnpm migrate
+   ```
 
-Collections allow you to pick what Topics are included, order and reorder them, and then publish to the Bebop hosted blog posts, or your choice of a range of popular blogging sites (such as Hashnode and Medium).
+5. **Start development server**
+   ```bash
+   pnpm dev
+   ```
 
-<img width="1386" alt="image" src="https://github.com/user-attachments/assets/25701431-cf06-4065-bbb6-28e10a2bfea2" />
+6. **Access the application**
+   - App: http://localhost:3007
+   - Storybook: http://localhost:6006
 
+## 📚 Platform Integrations
 
+### Supported Platforms
+
+| Platform | Status | Content Types | Setup Guide |
+|----------|---------|---------------|-------------|
+| **Hashnode** | ✅ Ready | Blog posts, articles | [Setup Guide](docs/hashnode-setup.md) |
+| **Dev.to** | ✅ Ready | Technical articles | [Setup Guide](docs/devto-setup.md) |
+| **Bluesky** | ✅ Ready | Social posts, threads | [Setup Guide](docs/bluesky-setup.md) |
+| **Mastodon** | ✅ Ready | Social posts, updates | [Setup Guide](docs/mastodon-setup.md) |
+| **LinkedIn** | 🚧 Coming Soon | Professional posts | - |
+| **Twitter/X** | 🚧 Coming Soon | Tweets, threads | - |
+| **WordPress** | 🚧 Coming Soon | Blog posts | - |
+| **Ghost** | 🚧 Coming Soon | Blog posts | - |
+
+### Setting Up Platform Integrations
+
+1. Navigate to **Settings → Destinations**
+2. Click **Add Destination**
+3. Select your platform and follow the setup wizard
+4. Test the connection to ensure proper configuration
+
+## 📊 Monitoring & Analytics
+
+### Publishing Dashboard
+- **Real-time status** of all scheduled content
+- **Retry management** for failed publications
+- **Publishing activity feed** with detailed logs
+- **Performance metrics** and success rates
+
+### Campaign Analytics
+- **Content performance** across all platforms
+- **Publishing success rates** by destination
+- **Campaign ROI** and engagement metrics
+- **Content type analysis** (blog posts vs social media)
+
+## 🛠️ Development
+
+### Project Structure
+```
+bebop-next-forge/
+├── apps/
+│   ├── app/           # Main Bebop application
+│   ├── api/           # API server
+│   ├── web/           # Marketing website
+│   └── docs/          # Documentation
+├── packages/
+│   ├── design-system/ # UI components
+│   ├── database/      # Prisma schema
+│   ├── auth/          # Authentication
+│   └── shared/        # Shared utilities
+```
+
+### Key Commands
+```bash
+# Development
+pnpm dev                 # Start all apps
+pnpm dev --filter=app    # Start main app only
+
+# Building
+pnpm build              # Build all packages
+pnpm test               # Run test suite
+
+# Database
+pnpm migrate            # Run database migrations
+pnpm db:studio          # Open Prisma Studio
+
+# Code Quality
+pnpm lint               # Run linting
+pnpm format             # Format code
+```
+
+## 🚀 Deployment
+
+### Vercel (Recommended)
+1. Connect your GitHub repository to Vercel
+2. Configure environment variables in Vercel dashboard
+3. Deploy with automatic CI/CD
+
+### Self-Hosting
+1. Build the application: `pnpm build`
+2. Set up MongoDB and environment variables
+3. Deploy using Docker or your preferred hosting platform
+
+## 🤝 Contributing
+
+Bebop is a personal project developed on nights and weekends. Contributions are welcome! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+
+### Development Workflow
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Make your changes and test thoroughly
+4. Submit a pull request with a clear description
+
+## 📋 Roadmap
+
+See our [ROADMAP.md](ROADMAP.md) for upcoming features and development priorities.
+
+### Current Focus (v0.4.0)
+- ✅ Campaign-centric content management
+- ✅ Multi-platform publishing (Phase 1)
+- ✅ Real-time monitoring dashboard
+- ✅ Publishing queue with retry logic
+
+### Next Release (v0.5.0)
+- 🚧 Performance metrics and analytics
+- 🚧 Content adaptation engine
+- 🚧 LinkedIn and Twitter integrations
+- 🚧 Advanced scheduling features
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙋‍♂️ About the Author
+
+Bebop is created and maintained by **David Ryan**, a product manager and developer in the quantum computing space. This project combines experience from building content management systems at Red Hat and commercial SaaS platforms.
+
+- **Day Job**: Product Manager for quantum computing
+- **Background**: Developer Relations, Technical Writing, Content Strategy
+- **Previous Work**: Red Hat PressGang CCMS, Corilla SaaS platform
+
+## 📞 Support
+
+- **Issues**: [GitHub Issues](https://github.com/ddri/bebop/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/ddri/bebop/discussions)
+- **Email**: [Contact via GitHub](https://github.com/ddri)
+
+---
+
+**Built with ❤️ for content creators and Developer Relations professionals**
