@@ -25,11 +25,11 @@ export const PLATFORMS: Record<PlatformId, SocialPlatform> = {
     icon: MastodonIcon,
     color: 'rgb(99, 100, 255)',
     requiresAuth: true,
-    credentialFields: ['instanceUrl', 'token'],
+    credentialFields: ['instanceUrl', 'accessToken'],
     helpText: 'You can find your access token in your Mastodon instance settings under Development > Applications',
     placeholders: {
       instanceUrl: 'https://mastodon.social',
-      token: 'Your access token'
+      accessToken: 'Your access token'
     },
     webIntent: false
   },

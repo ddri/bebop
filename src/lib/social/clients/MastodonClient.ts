@@ -1,4 +1,5 @@
 // lib/social/clients/MastodonClient.ts
+import { ConnectionTestResult } from '../AbstractSocialClient';
 import { AbstractSocialClient } from '../AbstractSocialClient';
 import { SocialCredentials, SocialShareContent, SocialShareResponse } from '@/types/social';
 
@@ -142,5 +143,55 @@ export class MastodonClient extends AbstractSocialClient {
   async logout(): Promise<void> {
     this.authenticated = false;
     this.token = null;
+  }
+
+  async testConnection(credentials: SocialCredentials): Promise<ConnectionTestResult> {
+    try {
+      const instanceUrl = (credentials as any).instanceUrl;
+      const accessToken = (credentials as any).accessToken;
+      
+      if (!instanceUrl || !accessToken) {
+        return {
+          success: false,
+          error: 'Instance URL and access token are required'
+        };
+      }
+
+      const cleanInstanceUrl = instanceUrl.replace(/\/$/, '');
+      const response = await fetch(`${cleanInstanceUrl}/api/v1/accounts/verify_credentials`, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          return {
+            success: false,
+            error: 'Invalid access token'
+          };
+        }
+        return {
+          success: false,
+          error: `Connection failed (${response.status})`
+        };
+      }
+
+      const userData = await response.json();
+      return {
+        success: true,
+        message: `Connected as ${userData.display_name || userData.username} on ${cleanInstanceUrl}`,
+        userInfo: {
+          username: userData.username,
+          displayName: userData.display_name,
+          avatar: userData.avatar
+        }
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Connection failed'
+      };
+    }
   }
 }

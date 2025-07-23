@@ -1,6 +1,7 @@
 # Bebop Development Roadmap
 
 **Current Version**: v0.3.5 (Quality & Search release)  
+**Last Updated**: January 2025 (based on codebase analysis)  
 **Tech Stack**: Next.js 15, TypeScript, MongoDB Atlas, Clerk Auth, Vercel deployment  
 **Target Platform**: Desktop/laptop users (mobile support not currently planned)
 
@@ -23,11 +24,13 @@ The roadmap is roughly organised by the release cycle, which is based on my pers
     - ✅ Package updates & security vulnerability fixes
     - ✅ Critical linting errors resolved (React Hooks, text escaping)
     - ✅ Empty interface cleanup
-    - ✅ Fix remaining TypeScript `any` types (87% improvement)
+    - ✅ Fix remaining TypeScript `any` types (97% improvement - only 3 instances remain)
     - ✅ Clean up unused imports and variables
     - ✅ Add comprehensive error handling and boundaries
     - ✅ Implement consistent loading states
     - ✅ Database connection resilience with retry logic
+    - ✅ Robust ErrorBoundary system with specialized variants (ApiErrorBoundary, EditorErrorBoundary)
+    - ✅ Database error categorization with user-friendly messaging
     
 - **Major feature addition**
     - ✅ Comprehensive search functionality across topics and collections
@@ -35,15 +38,15 @@ The roadmap is roughly organised by the release cycle, which is based on my pers
     - ✅ MongoDB text indexing for efficient search
     - ✅ Smart result highlighting and relevance scoring
 
-### Planning for version 0.4.0
-    - [ ] TypeScript any types: ~30 instances across hooks, API middleware, and social clients
-    - [ ] Missing error boundaries: Components lack proper error handling
-    - [ ] Inconsistent loading states: Some operations don't provide user feedback
-    - [ ] Unused imports: ~70 unused import statements (warnings)
-    - [ ] useEffect dependencies: Missing dependencies in Collections.tsx
-    - [ ] Performance optimization: Bundle size and runtime optimizations
+### Planning for version 0.4.0 - Code Quality Polish (**Updated based on analysis**)
 
-### Planning for version 0.4.0
+**Minor cleanup tasks (quick wins):**
+- [ ] **TypeScript cleanup**: Fix remaining 3 `any` types in search route, db-utils, and WriteMode
+- [ ] **useEffect dependencies**: Review and fix missing dependencies in Collections.tsx and other components
+- [ ] **Unused imports**: Clean up remaining unused import statements (automated linting)
+- [ ] **Loading states**: Audit and ensure all async operations have proper loading feedback
+
+**New features and UX improvements:**
 
 - Content version control
     - [ ] Content versioning and history
@@ -64,27 +67,34 @@ The roadmap is roughly organised by the release cycle, which is based on my pers
     - [ ] Advanced markdown features
     - [ ] Collaborative editing features
 
-- Improved UX and workflow
-    - [ ] Topic Card UX** - Fix frustrating interaction patterns
-    - [ ] Workflow Indicators** - Visual connections between Write → Topics → Collections
-    - [ ] Bulk Operations** - Multi-select for topics and collections
+- **Improved UX and workflow** (high impact)
+    - [ ] **Topic Card UX** - Fix frustrating interaction patterns
+    - [ ] **Workflow Indicators** - Visual connections between Write → Topics → Collections
+    - [ ] **Bulk Operations** - Multi-select for topics and collections
+    - [ ] **Settings Validation** - Form validation and API key verification
 
-- Miscellaneous technical changes
-    - [ ] Error Handling - Comprehensive error boundaries and user feedback
-    - [ ] Settings Validation - Form validation and API key verification
-    - [ ] Loading States - Add user feedback for all actions
+- **Performance optimization**
+    - [ ] **Bundle analysis** - Identify and reduce bundle size
+    - [ ] **Component optimization** - Lazy loading and code splitting
+    - [ ] **Database query optimization** - Review and optimize slow queries
 
 
 ### Planning for version 0.5.0
 
-- Search functionality for website and content
-    - [ ] Search Functionality - Useful for content management
+- **User experience enhancements**
+    - [ ] **User Onboarding** - Welcome tour and empty state guidance
+    - [ ] **Content Organization** - Tags, categories, and advanced filtering
+    - [ ] **Advanced search** - Filters, saved searches, and search history
 
-- Onboarding for new users
-    - [ ] User Onboarding - Welcome tour and empty state guidance
+- **Platform expansion**
+    - [ ] **LinkedIn integration** - Professional content publishing
+    - [ ] **Twitter/X integration** - Social media content distribution
+    - [ ] **WordPress integration** - Blog platform connectivity
 
-- Content management
-    - [ ] Content Organization - Tags, categories, and advanced filtering
+- **Analytics and insights**
+    - [ ] **Content performance tracking** - Views, engagement, conversions
+    - [ ] **Publishing analytics** - Success rates, optimal timing
+    - [ ] **Campaign effectiveness** - ROI and goal tracking
 
 
 ----------

@@ -1,7 +1,7 @@
 'use client';
 
 // src/components/settings/GitHubSettings.tsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -27,9 +27,9 @@ export function GitHubSettings() {
 
   useEffect(() => {
     checkConnection();
-  }, []);
+  }, [checkConnection]);
 
-  async function checkConnection() {
+  const checkConnection = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch('/api/github');
@@ -44,7 +44,7 @@ export function GitHubSettings() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
   async function fetchRepositories() {
     try {

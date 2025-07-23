@@ -184,8 +184,8 @@ export default function Collections() {
   );
   // Fetch collections with metrics
   useEffect(() => {
-    fetchCollections();
-  }, []);
+    refreshCollections();
+  }, [refreshCollections]);
 
   useEffect(() => {
     setMounted(true);

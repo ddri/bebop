@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { useTheme } from "next-themes";
 import CodeMirror from '@uiw/react-codemirror';
 import { markdown } from '@codemirror/lang-markdown';
 import { oneDark } from '@codemirror/theme-one-dark';
@@ -60,6 +59,8 @@ const WriteMode = () => {
   } | null>(null);
 
   const editorRef = React.useRef<{
+    editor?: HTMLDivElement | null;
+    state?: import('@codemirror/state').EditorState;
     view?: EditorView;
   }>(null);
 
@@ -462,7 +463,7 @@ const WriteMode = () => {
         )}>
           <EditorErrorBoundary>
             <CodeMirror
-              ref={editorRef as any}
+              ref={editorRef}
               value={content}
               height="600px"
               autoFocus

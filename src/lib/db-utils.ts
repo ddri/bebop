@@ -116,6 +116,20 @@ export function categorizePrismaError(error: unknown): DatabaseError {
 }
 
 /**
+ * Error response payload interface
+ */
+interface ErrorResponsePayload {
+  error: string;
+  type: DatabaseError['type'];
+  isRetryable: boolean;
+  debug?: {
+    operation: string;
+    code?: string;
+    originalMessage: string;
+  };
+}
+
+/**
  * Creates a standardized error response based on database error type
  */
 export function createErrorResponse(
@@ -141,7 +155,7 @@ export function createErrorResponse(
     : 500;
 
   // Response payload
-  const responsePayload: any = {
+  const responsePayload: ErrorResponsePayload = {
     error: dbError.userMessage,
     type: dbError.type,
     isRetryable: dbError.isRetryable

@@ -1,6 +1,13 @@
 // lib/social/AbstractSocialClient.ts
 import { SocialCredentials, SocialShareContent, SocialShareResponse } from '@/types/social';
 
+export interface ConnectionTestResult {
+  success: boolean;
+  message?: string;
+  userInfo?: any;
+  error?: string;
+}
+
 export abstract class AbstractSocialClient {
   protected authenticated = false;
   protected settings: Record<string, unknown> = {};
@@ -8,6 +15,7 @@ export abstract class AbstractSocialClient {
   abstract authenticate(credentials: SocialCredentials): Promise<boolean>;
   abstract share(content: SocialShareContent): Promise<SocialShareResponse>;
   abstract logout(): Promise<void>;
+  abstract testConnection(credentials: SocialCredentials): Promise<ConnectionTestResult>;
   
   isAuthenticated(): boolean {
     return this.authenticated;

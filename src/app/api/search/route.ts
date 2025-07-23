@@ -88,13 +88,20 @@ export async function GET(request: Request) {
     }
 
     // Helper function to determine which fields matched
-    const getMatches = (item: any, fields: string[]): string[] => {
+    type SearchableItem = {
+      name: string;
+      description?: string | null;
+      content?: string;
+      [key: string]: string | Date | string[] | null | undefined;
+    };
+
+    const getMatches = (item: SearchableItem, fields: string[]): string[] => {
       const matches: string[] = [];
       const lowerQuery = searchTerm.toLowerCase();
       
       fields.forEach(field => {
         const value = item[field];
-        if (value && value.toLowerCase().includes(lowerQuery)) {
+        if (value && typeof value === 'string' && value.toLowerCase().includes(lowerQuery)) {
           matches.push(field);
         }
       });

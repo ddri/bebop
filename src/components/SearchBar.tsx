@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, X, Clock, FileText, FolderOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -43,7 +43,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   // Debounced search function
-  const performSearch = async (searchQuery: string) => {
+  const performSearch = useCallback(async (searchQuery: string) => {
     if (!searchQuery.trim()) {
       setResults([]);
       setShowResults(false);
@@ -72,7 +72,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [maxQuickResults]);
 
   // Handle input changes with debouncing
   useEffect(() => {
@@ -91,7 +91,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         clearTimeout(debounceRef.current);
       }
     };
-  }, [query, showQuickResults, maxQuickResults]);
+  }, [query, showQuickResults, performSearch]);
 
   // Handle keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent) => {

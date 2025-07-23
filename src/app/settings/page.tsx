@@ -10,8 +10,10 @@ import { Upload, Eye, Globe, ExternalLink } from 'lucide-react';
 import Layout from '@/components/Layout';
 import { TemplateManager } from '@/components/templates/TemplateManager';
 import { LoadingButton, LoadingOverlay } from '@/components/ui/loading';
-import { SocialSettings } from '@/components/SocialSettings';
-import { GitHubSettings } from '@/components/GitHubSettings';
+import { HashnodeSettingsForm } from '@/components/settings/HashnodeSettingsForm';
+import { DevToSettingsForm } from '@/components/settings/DevToSettingsForm';
+import { SocialSettingsForm } from '@/components/settings/SocialSettingsForm';
+import { GitHubSettingsForm } from '@/components/settings/GitHubSettingsForm';
 
 export default function Settings() {
   const pathname = usePathname();
@@ -28,17 +30,7 @@ export default function Settings() {
           <TemplateManager />
 
           {/* GitHub Integration */}
-          <Card className="bg-[#1c1c1e] border-0">
-            <CardHeader>
-              <CardTitle className="text-white text-2xl">GitHub Integration</CardTitle>
-              <CardDescription className="text-slate-300">
-                Connect with GitHub for backups and content management
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <GitHubSettings />
-            </CardContent>
-          </Card>
+          <GitHubSettingsForm />
 
           {/* Import Content Section */}
           <Card className="bg-[#1c1c1e] border-0">
@@ -108,7 +100,7 @@ export default function Settings() {
           </Card>
 
           {/* Social Settings */}
-          <SocialSettings />
+          <SocialSettingsForm />
 
           {/* Published Collections Section */}
           <Card className="bg-[#1c1c1e] border-0">
@@ -212,92 +204,10 @@ export default function Settings() {
           </Card>
 
           {/* Hashnode Integration */}
-          <Card className="bg-[#1c1c1e] border-0">
-            <CardHeader>
-              <CardTitle className="text-white">Hashnode Integration</CardTitle>
-              <CardDescription className="text-slate-300">
-                Configure your Hashnode publication settings
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <label className="block text-sm font-medium mb-2 text-white">
-                  Personal Access Token
-                </label>
-                <Input
-                  type="password"
-                  placeholder="Enter your Hashnode Personal Access Token"
-                  className="bg-[#2f2f2d] border-slate-600 text-white placeholder:text-slate-400"
-                />
-                <p className="text-sm text-slate-300">
-                  Get your token from{' '}
-                  <a 
-                    href="https://hashnode.com/settings/developer"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[#E669E8] hover:text-[#d15dd3]"
-                  >
-                    Hashnode Developer Settings
-                  </a>
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <label className="block text-sm font-medium mb-2 text-white">
-                  Publication ID
-                </label>
-                <Input
-                  type="text"
-                  placeholder="Enter your Hashnode publication ID"
-                  className="bg-[#2f2f2d] border-slate-600 text-white placeholder:text-slate-400"
-                />
-                <p className="text-sm text-slate-300">
-                  Found in your Hashnode publication settings
-                </p>
-              </div>
-
-              <Button className="bg-[#E669E8] hover:bg-[#d15dd3] text-white">
-                Save Hashnode Settings
-              </Button>
-            </CardContent>
-          </Card>
+          <HashnodeSettingsForm />
 
           {/* Dev.to Integration */}
-          <Card className="bg-[#1c1c1e] border-0">
-            <CardHeader>
-              <CardTitle className="text-white">Dev.to Integration</CardTitle>
-              <CardDescription className="text-slate-300">
-                Configure your Dev.to API settings
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <label className="block text-sm font-medium mb-2 text-white">
-                  API Key
-                </label>
-                <Input
-                  type="password"
-                  placeholder="Enter your Dev.to API key"
-                  className="bg-[#2f2f2d] border-slate-600 text-white placeholder:text-slate-400"
-                />
-                <p className="text-sm text-slate-300">
-                  Get your API key from{' '}
-                  <a 
-                    href="https://dev.to/settings/extensions"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[#E669E8] hover:text-[#d15dd3]"
-                  >
-                    Dev.to Settings
-                  </a>
-                </p>
-              </div>
-
-              <Button className="bg-[#E669E8] hover:bg-[#d15dd3] text-white">
-                Save Dev.to Settings
-              </Button>
-            </CardContent>
-          </Card>
+          <DevToSettingsForm />
 
           {/* General Settings */}
           <Card className="bg-[#1c1c1e] border-0">

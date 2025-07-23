@@ -1,6 +1,6 @@
 // lib/social/clients/BlueskyClient.ts
 import { BskyAgent } from '@atproto/api';  // Keep this import
-import { AbstractSocialClient } from '../AbstractSocialClient';
+import { AbstractSocialClient, ConnectionTestResult } from '../AbstractSocialClient';
 import { SocialShareContent, SocialShareResponse, SocialCredentials } from '@/types/social';
 
 export class BlueskyClient extends AbstractSocialClient {
@@ -64,5 +64,40 @@ export class BlueskyClient extends AbstractSocialClient {
   async logout(): Promise<void> {
     this.authenticated = false;
     await this.agent.logout();
+  }
+
+  async testConnection(credentials: SocialCredentials): Promise<ConnectionTestResult> {
+    try {
+      if (!credentials.identifier || !credentials.password) {
+        return {
+          success: false,
+          error: 'Identifier and password are required'
+        };
+      }
+
+      const testAgent = new BskyAgent({ service: 'https://bsky.social' });
+      await testAgent.login({
+        identifier: credentials.identifier,
+        password: credentials.password,
+      });
+
+      // Get user profile to verify connection
+      const profile = await testAgent.getProfile({ actor: testAgent.session?.did || '' });
+      
+      return {
+        success: true,
+        message: `Connected as ${profile.data.displayName || profile.data.handle}`,
+        userInfo: {
+          handle: profile.data.handle,
+          displayName: profile.data.displayName,
+          avatar: profile.data.avatar
+        }
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Connection failed'
+      };
+    }
   }
 }
