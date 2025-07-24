@@ -147,8 +147,8 @@ export class MastodonClient extends AbstractSocialClient {
 
   async testConnection(credentials: SocialCredentials): Promise<ConnectionTestResult> {
     try {
-      const instanceUrl = (credentials as any).instanceUrl;
-      const accessToken = (credentials as any).accessToken;
+      const instanceUrl = credentials.instanceUrl;
+      const accessToken = credentials.accessToken;
       
       if (!instanceUrl || !accessToken) {
         return {

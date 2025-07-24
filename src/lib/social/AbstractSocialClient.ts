@@ -4,7 +4,7 @@ import { SocialCredentials, SocialShareContent, SocialShareResponse } from '@/ty
 export interface ConnectionTestResult {
   success: boolean;
   message?: string;
-  userInfo?: any;
+  userInfo?: unknown;
   error?: string;
 }
 

@@ -3,7 +3,7 @@ import React from 'react';
 
 interface EmbedConfig {
   type: string;
-  component: React.ComponentType<any>;
+  component: React.ComponentType<Record<string, unknown>>;
   pattern: RegExp;
   getEmbedData: (url: string) => Record<string, string>;
 }

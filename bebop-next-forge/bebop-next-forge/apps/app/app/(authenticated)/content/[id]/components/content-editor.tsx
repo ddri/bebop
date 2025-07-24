@@ -49,6 +49,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { BlockNoteEditorWrapper } from './blocknote-editor';
 
 const updateContentSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -308,10 +309,11 @@ export const ContentEditor = ({ content, campaigns }: ContentEditorProps) => {
                             <FormItem>
                               <FormLabel>Content Body</FormLabel>
                               <FormControl>
-                                <Textarea
-                                  placeholder="Write your content here..."
+                                <BlockNoteEditorWrapper
+                                  initialContent={field.value}
+                                  onChange={field.onChange}
+                                  placeholder="Start writing your content... Use / for commands"
                                   className="min-h-[400px]"
-                                  {...field}
                                 />
                               </FormControl>
                               <FormMessage />

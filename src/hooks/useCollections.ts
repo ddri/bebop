@@ -1,4 +1,5 @@
 import useSWR from 'swr';
+import { useCallback } from 'react';
 
 interface Collection {
   id: string;
@@ -171,6 +172,6 @@ export function useCollections() {
     deleteCollection,
     publishCollection,
     unpublishCollection,
-    refreshCollections: () => mutate()
+    refreshCollections: useCallback(() => mutate(), [mutate])
   };
 }

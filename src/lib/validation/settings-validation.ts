@@ -88,11 +88,11 @@ export type ValidationResult = {
 export type ConnectionTestResult = {
   success: boolean;
   message: string;
-  details?: any;
+  details?: unknown;
 };
 
 // Validation functions
-export function validateHashnodeSettings(data: any): ValidationResult {
+export function validateHashnodeSettings(data: unknown): ValidationResult {
   try {
     hashnodeSettingsSchema.parse(data);
     return { isValid: true, errors: {} };
@@ -110,7 +110,7 @@ export function validateHashnodeSettings(data: any): ValidationResult {
   }
 }
 
-export function validateDevToSettings(data: any): ValidationResult {
+export function validateDevToSettings(data: unknown): ValidationResult {
   try {
     devToSettingsSchema.parse(data);
     return { isValid: true, errors: {} };
@@ -128,7 +128,7 @@ export function validateDevToSettings(data: any): ValidationResult {
   }
 }
 
-export function validateSocialCredentials(data: any): ValidationResult {
+export function validateSocialCredentials(data: unknown): ValidationResult {
   try {
     socialCredentialsSchema.parse(data);
     return { isValid: true, errors: {} };
@@ -146,7 +146,7 @@ export function validateSocialCredentials(data: any): ValidationResult {
   }
 }
 
-export function validateGitHubSettings(data: any): ValidationResult {
+export function validateGitHubSettings(data: unknown): ValidationResult {
   try {
     githubSettingsSchema.parse(data);
     return { isValid: true, errors: {} };
@@ -165,7 +165,7 @@ export function validateGitHubSettings(data: any): ValidationResult {
 }
 
 // Dynamic validation for social platforms
-export function validateSocialPlatformCredentials(platformId: string, data: any): ValidationResult {
+export function validateSocialPlatformCredentials(platformId: string, data: unknown): ValidationResult {
   try {
     const schema = platformValidationSchemas[platformId as keyof typeof platformValidationSchemas];
     if (!schema) {
@@ -278,7 +278,7 @@ export async function testDevToConnection(token: string): Promise<ConnectionTest
   }
 }
 
-export async function testSocialConnection(platform: string, credentials: any): Promise<ConnectionTestResult> {
+export async function testSocialConnection(platform: string, credentials: unknown): Promise<ConnectionTestResult> {
   try {
     const response = await fetch('/api/social/test-connection', {
       method: 'POST',

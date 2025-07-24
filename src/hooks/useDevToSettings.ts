@@ -1,12 +1,14 @@
 // src/hooks/useDevToSettings.ts
-export function useDevToSettings() {
-  const getSettings = () => ({
-    token: localStorage.getItem('devToToken') || ''
-  });
+import { useCallback } from 'react';
 
-  const saveSettings = (token: string) => {
+export function useDevToSettings() {
+  const getSettings = useCallback(() => ({
+    token: localStorage.getItem('devToToken') || ''
+  }), []);
+
+  const saveSettings = useCallback((token: string) => {
     localStorage.setItem('devToToken', token);
-  };
+  }, []);
 
   return {
     getSettings,

@@ -5,7 +5,7 @@ import { LucideIcon } from 'lucide-react';
 export interface CardData {
   type: string;
   url: string;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }
 
 export interface CardDefinition {
@@ -22,7 +22,7 @@ export interface CardDefinition {
   patterns: RegExp[];
   
   // Extract metadata from URL
-  extractMetadata: (url: string) => Promise<Record<string, any>>;
+  extractMetadata: (url: string) => Promise<Record<string, unknown>>;
   
   // Convert card data to markdown
   toMarkdown: (data: CardData) => string;
