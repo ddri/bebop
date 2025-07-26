@@ -3,20 +3,20 @@ import { database } from '@repo/database';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { ScheduleTable } from './components/schedule-table';
-import { Header } from '../components/header';
+import { CalendarView } from './components/calendar-view';
+import { Header } from '../../components/header';
 import { Button } from '@repo/design-system/components/ui/button';
 import { Calendar, List } from 'lucide-react';
 
-const title = 'Schedule';
-const description = 'Manage your content publishing schedule';
+const title = 'Calendar';
+const description = 'Visual calendar view of your content publishing schedule';
 
 export const metadata: Metadata = {
   title,
   description,
 };
 
-const SchedulePage = async () => {
+const CalendarPage = async () => {
   const { userId } = await auth();
 
   if (!userId) {
@@ -34,6 +34,8 @@ const SchedulePage = async () => {
         select: {
           id: true,
           title: true,
+          body: true,
+          excerpt: true,
           type: true,
         },
       },
@@ -41,6 +43,7 @@ const SchedulePage = async () => {
         select: {
           id: true,
           name: true,
+          status: true,
         },
       },
       destination: {
@@ -56,14 +59,38 @@ const SchedulePage = async () => {
     },
   });
 
+  // Get available destinations for scheduling
+  const destinations = await database.destination.findMany({
+    where: {
+      userId,
+    },
+    select: {
+      id: true,
+      name: true,
+      type: true,
+    },
+  });
+
+  // Get available campaigns
+  const campaigns = await database.campaign.findMany({
+    where: {
+      userId,
+    },
+    select: {
+      id: true,
+      name: true,
+      status: true,
+    },
+  });
+
   return (
     <>
-      <Header pages={['Schedule']} page="Content Calendar" />
+      <Header pages={['Schedule', 'Calendar']} page="Content Calendar" />
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         {/* View Toggle */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <h2 className="text-lg font-semibold">Schedule</h2>
+            <h2 className="text-lg font-semibold">Calendar View</h2>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" asChild>
@@ -81,10 +108,14 @@ const SchedulePage = async () => {
           </div>
         </div>
         
-        <ScheduleTable schedules={schedules} />
+        <CalendarView 
+          schedules={schedules}
+          destinations={destinations}
+          campaigns={campaigns}
+        />
       </div>
     </>
   );
 };
 
-export default SchedulePage;
+export default CalendarPage;

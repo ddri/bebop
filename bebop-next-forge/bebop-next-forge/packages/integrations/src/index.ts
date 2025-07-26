@@ -61,10 +61,39 @@ export {
   HASHNODE_API_ENDPOINT,
 } from './platforms/hashnode';
 
-// Future platform implementations
-// export { DevToClient } from './platforms/devto/client';
-// export { DevToAdapter } from './platforms/devto/adapter';
-// export { BlueskyClient } from './platforms/bluesky/client';
-// export { BlueskyAdapter } from './platforms/bluesky/adapter';
-// export { MastodonClient } from './platforms/mastodon/client';
-// export { MastodonAdapter } from './platforms/mastodon/adapter';
+// Dev.to platform implementation
+export {
+  DevtoClient,
+  DevtoAdapter,
+  type DevtoCredentials,
+  type DevtoConfig,
+  type DevtoArticle,
+  DevtoCredentialsSchema,
+  DevtoConfigSchema,
+  DEVTO_API_ENDPOINT,
+  DEVTO_PLATFORM,
+} from './platforms/devto';
+
+// Bluesky platform implementation
+export {
+  BlueskyClient,
+  BlueskyAdapter,
+  type BlueskyCredentials,
+  type BlueskyConfig,
+  type BlueskyPost,
+  BlueskyCredentialsSchema,
+  BlueskyConfigSchema,
+  BLUESKY_PLATFORM,
+} from './platforms/bluesky';
+
+// Mastodon platform implementation
+export {
+  MastodonClient,
+  MastodonAdapter,
+  type MastodonCredentials,
+  type MastodonConfig,
+  type MastodonStatusInput,
+  MastodonCredentialsSchema,
+  MastodonConfigSchema,
+  MASTODON_PLATFORM,
+} from './platforms/mastodon';

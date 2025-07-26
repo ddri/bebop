@@ -1,6 +1,16 @@
 import * as cron from 'node-cron';
 import { database } from '@repo/database';
 import { ScheduleStatus, DestinationType } from '@repo/database/types';
+import {
+  HashnodeClient,
+  DevtoClient,
+  BlueskyClient,
+  MastodonClient,
+  type HashnodeCredentials,
+  type DevtoCredentials,
+  type BlueskyCredentials,
+  type MastodonCredentials,
+} from '@repo/integrations';
 
 interface SchedulerService {
   checkPendingJobs(): Promise<void>;
@@ -237,58 +247,159 @@ class SimpleScheduler implements SchedulerService {
     publish: (content: Record<string, unknown>) => Promise<{ url: string }>;
   }> {
     const { type, config } = destination;
-    
-    // Check for intentionally broken configs for testing
     const configObj = config as Record<string, unknown>;
-    const isTestFailure = (typeof configObj?.apiToken === 'string' && configObj.apiToken.includes('invalid')) || 
-                          (typeof configObj?.apiKey === 'string' && configObj.apiKey.includes('invalid')) || 
-                          (typeof configObj?.publicationId === 'string' && configObj.publicationId.includes('invalid'));
     
     switch (type) {
       case DestinationType.HASHNODE: {
+        const hashnodeCredentials = configObj as unknown as HashnodeCredentials;
+        const client = new HashnodeClient();
+        
+        // Authenticate the client
+        await client.authenticate({
+          type: 'api-key',
+          data: {
+            personalAccessToken: hashnodeCredentials.personalAccessToken
+          }
+        });
+        
         return {
           publish: async (content: Record<string, unknown>) => {
-            if (isTestFailure) {
-              throw new Error('Hashnode API authentication failed: Invalid token');
+            console.log('🚀 Publishing to Hashnode:', content.title);
+            
+            const adaptedContent = {
+              title: String(content.title || ''),
+              body: String(content.body || ''),
+              tags: content.tags as string[] || [],
+            };
+            
+            const result = await client.publish(adaptedContent, {
+              subtitle: String(content.excerpt || ''),
+              enableTableOfContents: true,
+              isNewsletterActivated: false,
+            });
+            
+            if (!result.success) {
+              throw new Error(result.error || 'Failed to publish to Hashnode');
             }
-            console.log('Mock publishing to Hashnode:', content.title);
-            return { url: 'https://example.hashnode.com/post' };
+            
+            return { url: result.platformUrl || '' };
           }
         };
       }
+      
       case DestinationType.DEVTO: {
+        const devtoCredentials = configObj as unknown as DevtoCredentials;
+        const client = new DevtoClient();
+        
+        // Authenticate the client  
+        await client.authenticate({
+          type: 'api-key',
+          data: {
+            apiKey: devtoCredentials.apiKey
+          }
+        });
+        
         return {
           publish: async (content: Record<string, unknown>) => {
-            if (isTestFailure) {
-              throw new Error('Dev.to API authentication failed: Invalid API key');
+            console.log('🚀 Publishing to Dev.to:', content.title);
+            
+            const adaptedContent = {
+              title: String(content.title || ''),
+              body: String(content.body || ''),
+              tags: content.tags as string[] || [],
+            };
+            
+            const result = await client.publish(adaptedContent, {
+              description: String(content.excerpt || ''),
+              published: true,
+            });
+            
+            if (!result.success) {
+              throw new Error(result.error || 'Failed to publish to Dev.to');
             }
-            console.log('Mock publishing to Dev.to:', content.title);
-            return { url: 'https://dev.to/user/post' };
+            
+            return { url: result.platformUrl || '' };
           }
         };
       }
+      
       case DestinationType.BLUESKY: {
+        const blueskyCredentials = configObj as unknown as BlueskyCredentials;
+        const client = new BlueskyClient();
+        
+        // Authenticate the client
+        await client.authenticate({
+          type: 'api-key',
+          data: {
+            identifier: blueskyCredentials.identifier,
+            password: blueskyCredentials.password
+          }
+        });
+        
         return {
           publish: async (content: Record<string, unknown>) => {
-            if (isTestFailure) {
-              throw new Error('Bluesky authentication failed: Invalid credentials');
+            console.log('🚀 Publishing to Bluesky:', String(content.text || '').substring(0, 50) + '...');
+            
+            const adaptedContent = {
+              title: content.text ? String(content.text) : String(content.title || ''),
+              body: content.text ? String(content.text) : String(content.title || ''),
+              tags: content.tags as string[] || [],
+            };
+            
+            const result = await client.publish(adaptedContent, {
+              images: content.images as { url: string; alt: string }[] || [],
+              language: 'en',
+            });
+            
+            if (!result.success) {
+              throw new Error(result.error || 'Failed to publish to Bluesky');
             }
-            console.log('Mock publishing to Bluesky:', String(content.text || '').substring(0, 50) + '...');
-            return { url: 'https://bsky.app/profile/user/post' };
+            
+            return { url: result.platformUrl || '' };
           }
         };
       }
+      
       case DestinationType.MASTODON: {
+        const mastodonCredentials = configObj as unknown as MastodonCredentials;
+        const client = new MastodonClient();
+        
+        // Authenticate the client
+        await client.authenticate({
+          type: 'api-key',
+          data: {
+            accessToken: mastodonCredentials.accessToken,
+            instanceUrl: mastodonCredentials.instanceUrl
+          }
+        });
+        
         return {
           publish: async (content: Record<string, unknown>) => {
-            if (isTestFailure) {
-              throw new Error('Mastodon authentication failed: Invalid access token');
+            console.log('🚀 Publishing to Mastodon:', String(content.status || '').substring(0, 50) + '...');
+            
+            const adaptedContent = {
+              title: content.status ? String(content.status) : String(content.title || ''),
+              body: content.status ? String(content.status) : String(content.title || ''),
+              tags: content.tags as string[] || [],
+            };
+            
+            const result = await client.publish(adaptedContent, {
+              mediaIds: content.mediaIds as string[] || [],
+              sensitive: Boolean(content.sensitive),
+              spoilerText: content.spoilerText ? String(content.spoilerText) : undefined,
+              visibility: (content.visibility as 'public' | 'unlisted' | 'private' | 'direct') || 'public',
+              language: 'en',
+            });
+            
+            if (!result.success) {
+              throw new Error(result.error || 'Failed to publish to Mastodon');
             }
-            console.log('Mock publishing to Mastodon:', String(content.status || '').substring(0, 50) + '...');
-            return { url: 'https://mastodon.social/@user/123' };
+            
+            return { url: result.platformUrl || '' };
           }
         };
       }
+      
       default:
         throw new Error(`Unsupported destination type: ${type}`);
     }

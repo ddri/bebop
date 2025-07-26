@@ -47,9 +47,13 @@ export const BlockNoteEditorWrapper = ({
         console.error('Error converting content:', error);
         // Fallback: extract plain text
         const textContent = editor.document
-          .map((block: any) => {
-            if (block.content && Array.isArray(block.content)) {
-              return block.content.map((item: any) => item.text || '').join('');
+          .map((block: unknown) => {
+            const blockObj = block as { content?: unknown[] };
+            if (blockObj.content && Array.isArray(blockObj.content)) {
+              return blockObj.content.map((item: unknown) => {
+                const itemObj = item as { text?: string };
+                return itemObj.text || '';
+              }).join('');
             }
             return '';
           })
