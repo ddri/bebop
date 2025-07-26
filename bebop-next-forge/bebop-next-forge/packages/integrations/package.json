@@ -10,11 +10,11 @@
   },
   "dependencies": {
     "@repo/database": "workspace:*",
-    "zod": "^3.23.8"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
-    "typescript": "^5.6.3"
+    "typescript": "^5.8.3"
   },
   "exports": {
     ".": {
