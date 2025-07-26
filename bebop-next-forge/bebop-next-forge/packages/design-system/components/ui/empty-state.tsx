@@ -25,22 +25,18 @@ export interface EmptyStateProps {
   colSpan?: number; // For table variant
 }
 
-const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
-  (
-    {
-      icon: Icon,
-      title,
-      description,
-      action,
-      children,
-      className,
-      variant = 'card',
-      size = 'md',
-      colSpan = 6,
-      ...props
-    },
-    ref
-  ) => {
+function EmptyState({
+  icon: Icon,
+  title,
+  description,
+  action,
+  children,
+  className,
+  variant = 'card',
+  size = 'md',
+  colSpan = 6,
+  ...props
+}: EmptyStateProps) {
     // Size configurations
     const sizeConfig = {
       sm: {
@@ -67,7 +63,6 @@ const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
 
     const renderContent = () => (
       <div
-        ref={ref}
         className={cn(
           'flex flex-col items-center justify-center text-center',
           config.container,
@@ -147,9 +142,6 @@ const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
 
     // Inline variant - renders as a plain div
     return renderContent();
-  }
-);
-
-EmptyState.displayName = 'EmptyState';
+}
 
 export { EmptyState };

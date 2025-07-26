@@ -37,7 +37,6 @@ export async function POST(
         type: existingContent.type,
         status: 'DRAFT', // Always create duplicates as drafts
         campaignId: existingContent.campaignId,
-        userId,
       },
       include: {
         campaign: {

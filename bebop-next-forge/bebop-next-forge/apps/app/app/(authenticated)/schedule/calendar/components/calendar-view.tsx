@@ -3,7 +3,8 @@
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
-import interactionPlugin from '@fullcalendar/interaction';
+import interactionPlugin, { DateClickArg, EventDragStopArg } from '@fullcalendar/interaction';
+import { EventClickArg } from '@fullcalendar/core';
 import { useState, useMemo } from 'react';
 import { Button } from '@repo/design-system/components/ui/button';
 import { Badge } from '@repo/design-system/components/ui/badge';
@@ -124,17 +125,17 @@ export const CalendarView = ({ schedules, destinations, campaigns }: CalendarVie
       }));
   }, [schedules, selectedPlatforms, selectedStatuses, selectedCampaigns]);
 
-  const handleDateClick = (dateInfo: { date: Date }) => {
+  const handleDateClick = (dateInfo: DateClickArg) => {
     setSelectedDate(new Date(dateInfo.date));
     setShowCreateModal(true);
   };
 
-  const handleEventClick = (eventInfo: { event: { extendedProps: { schedule: unknown } } }) => {
+  const handleEventClick = (eventInfo: EventClickArg) => {
     // Handle event click - could open edit modal
     console.log('Event clicked:', eventInfo.event.extendedProps.schedule);
   };
 
-  const handleEventDrop = (eventInfo: { event: { start: Date; id: string } }) => {
+  const handleEventDrop = (eventInfo: EventDragStopArg) => {
     // Handle drag and drop - will implement in next phase
     console.log('Event dropped:', eventInfo);
     // TODO: API call to update schedule

@@ -137,7 +137,7 @@ export const PublishingActivityFeed = ({ activities, onRefresh }: PublishingActi
                           >
                             {activity.destination.name}
                           </Badge>
-                          <StatusBadge status={statusConfig.badge} size="sm">
+                          <StatusBadge status={statusConfig.badge}>
                             {activity.status}
                           </StatusBadge>
                         </div>

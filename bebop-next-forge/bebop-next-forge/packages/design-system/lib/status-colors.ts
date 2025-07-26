@@ -58,10 +58,13 @@ export const platformColors = {
   MASTODON: statusColors.platform,
   WORDPRESS: statusColors.platform,
   GHOST: statusColors.custom,
+  MAILCHIMP: statusColors.platform,
   SENDGRID: statusColors.platform,
   TWITTER: statusColors.platform,
   LINKEDIN: statusColors.platform,
   FACEBOOK: statusColors.platform,
+  INSTAGRAM: statusColors.platform,
+  WEBHOOK: statusColors.custom,
   CUSTOM: statusColors.custom,
 } as const;
 

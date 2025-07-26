@@ -1,6 +1,5 @@
 'use client';
 
-import { Badge } from '@repo/design-system/components/ui/badge';
 import { Button } from '@repo/design-system/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/design-system/components/ui/tabs';
@@ -11,13 +10,11 @@ import type {
   Schedule, 
   Destination,
   ContentType,
-  ScheduleStatus 
 } from '@repo/database/types';
 import { 
   ArrowLeft, 
   Calendar, 
   FileText, 
-  Plus, 
   Settings,
   TrendingUp
 } from 'lucide-react';

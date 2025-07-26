@@ -26,8 +26,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/design-system/co
 import type { 
   Content, 
   Campaign, 
-  Schedule, 
-  Destination
+  Schedule
 } from '@repo/database/types';
 import { 
   ContentType, 

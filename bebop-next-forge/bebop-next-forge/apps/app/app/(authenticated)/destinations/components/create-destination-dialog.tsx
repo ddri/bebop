@@ -27,7 +27,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@repo/design-system/components/ui/select';
-import { Textarea } from '@repo/design-system/components/ui/textarea';
 import { Switch } from '@repo/design-system/components/ui/switch';
 import { Alert, AlertDescription } from '@repo/design-system/components/ui/alert';
 import { Badge } from '@repo/design-system/components/ui/badge';
@@ -42,8 +41,6 @@ import {
   ExternalLink, 
   Info, 
   Shield, 
-  Book, 
-  User, 
   Sparkles,
   AlertCircle 
 } from 'lucide-react';

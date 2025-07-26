@@ -18,7 +18,6 @@ import {
   TableRow,
 } from '@repo/design-system/components/ui/table';
 import { StatusBadge } from '@repo/design-system/components/ui/status-badge';
-import { Badge } from '@repo/design-system/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,

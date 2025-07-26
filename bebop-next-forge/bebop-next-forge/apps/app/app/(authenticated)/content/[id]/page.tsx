@@ -81,7 +81,18 @@ const ContentDetailPage = async ({ params }: Props) => {
   // Fetch user's campaigns for reassignment
   const campaigns = await database.campaign.findMany({
     where: { userId },
-    select: { id: true, name: true },
+    select: { 
+      id: true, 
+      name: true,
+      userId: true,
+      description: true,
+      status: true,
+      startDate: true,
+      endDate: true,
+      goals: true,
+      createdAt: true,
+      updatedAt: true
+    },
     orderBy: { name: 'asc' },
   });
 

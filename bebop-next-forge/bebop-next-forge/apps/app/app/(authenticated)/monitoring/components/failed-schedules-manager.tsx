@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useState } from 'react';
+import type { DestinationType } from '@repo/database/types';
 
 interface FailedSchedule {
   id: string;
@@ -127,7 +128,7 @@ export const FailedSchedulesManager = ({ failedActivities, onRetry }: FailedSche
                       <div className="flex items-center gap-2 mb-3">
                         <Badge 
                           variant="outline" 
-                          className={`text-xs ${getPlatformColor(schedule.destination.type)}`}
+                          className={`text-xs ${getPlatformColor(schedule.destination.type as DestinationType)}`}
                         >
                           {schedule.destination.name}
                         </Badge>

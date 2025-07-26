@@ -1,6 +1,6 @@
 'use client';
 
-import { OrganizationSwitcher, UserButton } from '@repo/auth/client';
+import { UserButton } from '@repo/auth/client';
 import { ModeToggle } from '@repo/design-system/components/mode-toggle';
 import { Button } from '@repo/design-system/components/ui/button';
 import {
@@ -8,13 +8,6 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@repo/design-system/components/ui/collapsible';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@repo/design-system/components/ui/dropdown-menu';
 import {
   Sidebar,
   SidebarContent,
@@ -36,24 +29,15 @@ import {
 import { cn } from '@repo/design-system/lib/utils';
 import { NotificationsTrigger } from '@repo/notifications/components/trigger';
 import {
-  AnchorIcon,
   BookOpenIcon,
-  BotIcon,
   CalendarIcon,
   ChevronRightIcon,
-  FolderIcon,
-  FrameIcon,
   LifeBuoyIcon,
-  MapIcon,
   MegaphoneIcon,
-  MoreHorizontalIcon,
   PenToolIcon,
   PieChartIcon,
   SendIcon,
   Settings2Icon,
-  ShareIcon,
-  SquareTerminalIcon,
-  Trash2Icon,
 } from 'lucide-react';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
