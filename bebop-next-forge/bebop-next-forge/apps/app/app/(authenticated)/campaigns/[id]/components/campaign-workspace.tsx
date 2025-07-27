@@ -23,6 +23,7 @@ import { useState } from 'react';
 import { CampaignContent } from './campaign-content';
 import { CampaignSchedule } from './campaign-schedule';
 import { CampaignOverview } from './campaign-overview';
+import { formatDate } from '@/lib/format-date';
 
 interface CampaignWorkspaceProps {
   campaign: Campaign & {
@@ -148,11 +149,11 @@ export const CampaignWorkspace = ({ campaign, destinations }: CampaignWorkspaceP
             </CardHeader>
             <CardContent>
               <div className="text-sm font-bold">
-                {campaign.startDate ? new Date(campaign.startDate).toLocaleDateString() : 'Not set'}
+                {campaign.startDate ? formatDate(campaign.startDate) : 'Not set'}
               </div>
               <p className="text-xs text-muted-foreground">
                 {campaign.endDate 
-                  ? `Ends ${new Date(campaign.endDate).toLocaleDateString()}`
+                  ? `Ends ${formatDate(campaign.endDate)}`
                   : 'No end date'
                 }
               </p>

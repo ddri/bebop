@@ -42,6 +42,7 @@ import {
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { CreateScheduleDialog } from '../../schedule/components/create-schedule-dialog';
+import { formatDate, formatTime } from '@/lib/format-date';
 
 interface ScheduledContentTableProps {
   schedules: (Schedule & {
@@ -266,13 +267,10 @@ export const ScheduledContentTable = ({
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-medium">
-                      {new Date(schedule.publishAt).toLocaleDateString()}
+                      {formatDate(schedule.publishAt)}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {new Date(schedule.publishAt).toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
+                      {formatTime(schedule.publishAt)}
                     </p>
                   </div>
                 </div>
@@ -339,13 +337,10 @@ export const ScheduledContentTable = ({
                       <TableCell>
                         <div>
                           <div className="font-medium">
-                            {new Date(schedule.publishAt).toLocaleDateString()}
+                            {formatDate(schedule.publishAt)}
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            {new Date(schedule.publishAt).toLocaleTimeString([], {
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}
+                            {formatTime(schedule.publishAt)}
                           </div>
                         </div>
                       </TableCell>
