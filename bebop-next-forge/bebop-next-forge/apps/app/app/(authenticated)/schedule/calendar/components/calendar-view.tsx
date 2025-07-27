@@ -3,9 +3,9 @@
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
-import interactionPlugin, { DateClickArg, EventDragStopArg } from '@fullcalendar/interaction';
-import { EventClickArg } from '@fullcalendar/core';
-import { useState, useMemo } from 'react';
+import interactionPlugin, { DateClickArg } from '@fullcalendar/interaction';
+import { EventClickArg, EventDropArg } from '@fullcalendar/core';
+import { useState, useMemo, useCallback, useTransition } from 'react';
 import { Button } from '@repo/design-system/components/ui/button';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import type { 
@@ -19,6 +19,8 @@ import { Calendar, Filter, Plus } from 'lucide-react';
 import { CalendarFilters } from './calendar-filters';
 import { ScheduleEventCard } from './schedule-event-card';
 import { CreateScheduleModal } from './create-schedule-modal';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 interface CalendarViewProps {
   schedules: (Schedule & {
@@ -84,6 +86,8 @@ export const CalendarView = ({ schedules, destinations, campaigns }: CalendarVie
   const [showFilters, setShowFilters] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   // Convert schedules to FullCalendar events
   const calendarEvents = useMemo(() => {
@@ -122,6 +126,7 @@ export const CalendarView = ({ schedules, destinations, campaigns }: CalendarVie
           excerpt: schedule.content.excerpt,
         },
         classNames: [`schedule-event-${schedule.status.toLowerCase()}`],
+        editable: schedule.status === 'PENDING' && new Date(schedule.publishAt) > new Date(),
       }));
   }, [schedules, selectedPlatforms, selectedStatuses, selectedCampaigns]);
 
@@ -135,11 +140,117 @@ export const CalendarView = ({ schedules, destinations, campaigns }: CalendarVie
     console.log('Event clicked:', eventInfo.event.extendedProps.schedule);
   };
 
-  const handleEventDrop = (eventInfo: EventDragStopArg) => {
-    // Handle drag and drop - will implement in next phase
-    console.log('Event dropped:', eventInfo);
-    // TODO: API call to update schedule
-  };
+  const handleEventDrop = useCallback(async (eventInfo: EventDropArg) => {
+    const scheduleId = eventInfo.event.id;
+    const newDate = eventInfo.event.start;
+    const oldDate = eventInfo.oldEvent.start;
+    const schedule = eventInfo.event.extendedProps.schedule;
+    
+    if (!newDate) {
+      toast.error('Invalid date');
+      eventInfo.revert();
+      return;
+    }
+
+    // Prevent moving to past dates
+    if (newDate < new Date()) {
+      toast.error('Cannot schedule content in the past');
+      eventInfo.revert();
+      return;
+    }
+
+    // Show confirmation if moving more than 7 days
+    const daysDiff = Math.abs((newDate.getTime() - (oldDate?.getTime() || 0)) / (1000 * 60 * 60 * 24));
+    if (daysDiff > 7) {
+      const confirmed = window.confirm(
+        `Are you sure you want to reschedule "${schedule.content.title}" to ${newDate.toLocaleDateString()}?`
+      );
+      if (!confirmed) {
+        eventInfo.revert();
+        return;
+      }
+    }
+
+    // Optimistically update UI
+    const toastId = toast.loading('Rescheduling content...');
+    
+    try {
+      const response = await fetch(`/api/schedule/${scheduleId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          publishAt: newDate.toISOString(),
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to update schedule');
+      }
+
+      toast.success('Content rescheduled successfully', { id: toastId });
+      
+      // Refresh the page to get updated data
+      startTransition(() => {
+        router.refresh();
+      });
+    } catch (error) {
+      console.error('Error updating schedule:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to reschedule content', { id: toastId });
+      // Revert the drag operation
+      eventInfo.revert();
+    }
+  }, [router]);
+
+  const handleEventResize = useCallback(async (eventInfo: { event: { id: string; start: Date | null }; revert: () => void }) => {
+    // For now, we'll just use the start time since we don't have duration in our schema
+    const scheduleId = eventInfo.event.id;
+    const newDate = eventInfo.event.start;
+    
+    if (!newDate) {
+      toast.error('Invalid date');
+      eventInfo.revert();
+      return;
+    }
+
+    // Prevent moving to past dates
+    if (newDate < new Date()) {
+      toast.error('Cannot schedule content in the past');
+      eventInfo.revert();
+      return;
+    }
+
+    const toastId = toast.loading('Updating schedule time...');
+    
+    try {
+      const response = await fetch(`/api/schedule/${scheduleId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          publishAt: newDate.toISOString(),
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to update schedule');
+      }
+
+      toast.success('Schedule time updated', { id: toastId });
+      
+      startTransition(() => {
+        router.refresh();
+      });
+    } catch (error) {
+      console.error('Error updating schedule:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to update schedule time', { id: toastId });
+      eventInfo.revert();
+    }
+  }, [router]);
 
   return (
     <div className="space-y-4">
@@ -206,10 +317,17 @@ export const CalendarView = ({ schedules, destinations, campaigns }: CalendarVie
             dateClick={handleDateClick}
             eventClick={handleEventClick}
             eventDrop={handleEventDrop}
+            eventResize={handleEventResize}
             height="auto"
             eventDisplay="block"
             dayMaxEvents={3}
             moreLinkClick="popover"
+            eventDurationEditable={false}
+            eventStartEditable={true}
+            eventConstraint={{
+              start: new Date().toISOString(),
+              end: '2100-01-01'
+            }}
             eventContent={(eventInfo) => (
               <ScheduleEventCard
                 title={eventInfo.event.title}
@@ -248,6 +366,20 @@ export const CalendarView = ({ schedules, destinations, campaigns }: CalendarVie
           border-width: 2px !important;
           font-size: 12px !important;
           padding: 2px 4px !important;
+          cursor: move !important;
+          transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+        }
+        
+        .fc-event:hover {
+          transform: translateY(-1px) !important;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+        }
+        
+        .fc-event-dragging {
+          opacity: 0.75 !important;
+          transform: scale(1.05) !important;
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+          z-index: 9999 !important;
         }
         
         .fc-event-title {
@@ -285,6 +417,24 @@ export const CalendarView = ({ schedules, destinations, campaigns }: CalendarVie
         
         .fc-daygrid-day:hover {
           background-color: #f8fafc !important;
+        }
+        
+        .fc-highlight {
+          background-color: #e0e7ff !important;
+          opacity: 0.3 !important;
+        }
+        
+        .fc-event-resizing {
+          opacity: 0.75 !important;
+        }
+        
+        .fc-event.schedule-event-published {
+          cursor: not-allowed !important;
+          opacity: 0.6 !important;
+        }
+        
+        .fc-event.schedule-event-failed {
+          cursor: pointer !important;
         }
       `}</style>
     </div>
