@@ -144,7 +144,21 @@ export class MastodonClient extends BasePlatformClient {
       }
 
       // Create status payload
-      const statusData: any = {
+      const statusData: {
+        status: string;
+        visibility: string;
+        media_ids?: string[];
+        sensitive?: boolean;
+        spoiler_text?: string;
+        language?: string;
+        poll?: {
+          options: string[];
+          expires_in: number;
+          multiple?: boolean;
+          hide_totals?: boolean;
+        };
+        scheduled_at?: string;
+      } = {
         status: statusText,
         visibility: mastodonConfig.visibility || 'public',
       };
@@ -220,7 +234,12 @@ export class MastodonClient extends BasePlatformClient {
 
       // Prepare update data (only some fields can be updated)
       const statusText = this.constructStatusText(content);
-      const updateData: any = {
+      const updateData: {
+        status: string;
+        sensitive?: boolean;
+        spoiler_text?: string;
+        language?: string;
+      } = {
         status: statusText,
       };
 

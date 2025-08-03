@@ -18,6 +18,8 @@ import type {
   BlueskyConfig,
   BlueskySession,
   BlueskyProfile,
+  BlueskyBlob,
+  BlueskyFacet,
   BlueskyCreatePostResponse,
   BlueskyUploadResponse,
   BlueskyThread,
@@ -273,13 +275,24 @@ export class BlueskyClient extends BasePlatformClient {
   }
 
   async createPost(text: string, options: {
-    images?: Array<{ blob: any; alt: string }>;
+    images?: Array<{ blob: BlueskyBlob; alt: string }>;
     reply?: { root: { uri: string; cid: string }; parent: { uri: string; cid: string } };
     langs?: string[];
   } = {}): Promise<BlueskyCreatePostResponse> {
     this.ensureAuthenticated();
 
-    const record: any = {
+    const record: {
+      $type: string;
+      text: string;
+      createdAt: string;
+      langs?: string[];
+      facets?: BlueskyFacet[];
+      embed?: {
+        $type: string;
+        images?: Array<{ blob: BlueskyBlob; alt: string }>;
+      };
+      reply?: { root: { uri: string; cid: string }; parent: { uri: string; cid: string } };
+    } = {
       $type: 'app.bsky.feed.post',
       text,
       createdAt: new Date().toISOString(),
@@ -324,7 +337,7 @@ export class BlueskyClient extends BasePlatformClient {
   private async publishSinglePost(content: AdaptedContent, config: BlueskyConfig): Promise<PublishResult> {
     try {
       const text = this.constructPostText(content);
-      const images: Array<{ blob: any; alt: string }> = [];
+      const images: Array<{ blob: BlueskyBlob; alt: string }> = [];
 
       // Handle image uploads
       if (content.media && config.includeImages !== false) {
@@ -481,8 +494,8 @@ export class BlueskyClient extends BasePlatformClient {
     return { posts };
   }
 
-  private detectFacets(text: string): any[] {
-    const facets: any[] = [];
+  private detectFacets(text: string): BlueskyFacet[] {
+    const facets: BlueskyFacet[] = [];
     
     // Detect mentions (@handle)
     const mentionRegex = /@([a-zA-Z0-9.-]+)/g;

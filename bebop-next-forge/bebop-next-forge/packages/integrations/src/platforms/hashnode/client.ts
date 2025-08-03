@@ -200,9 +200,36 @@ export class HashnodeClient extends BasePlatformClient {
       }
 
       // Create update input
-      const updateInput: any = {
+      const updateInput: {
+        id: string;
+        title: string;
+        contentMarkdown: string;
+        excerpt?: string;
+        tags?: Array<{ name: string; slug: string }>;
+        seriesId?: string;
+        subtitle?: string;
+        slug?: string;
+        coverImageOptions?: { coverImageURL: string };
+        metaDescription?: string;
+        ogImageUrl?: string;
+        publishAs?: string;
+        disableComments?: boolean;
+        originalArticleURL?: string;
+        settings?: {
+          enableTableOfContent?: boolean;
+          enableTableOfContents?: boolean;
+          isDelisted?: boolean;
+          isNewsletterActivated?: boolean;
+        };
+        metaTags?: {
+          title?: string;
+          description?: string;
+          image?: string;
+          ogImage?: string;
+        };
+      } = {
         id,
-        title: content.title,
+        title: content.title || 'Untitled',
         contentMarkdown: content.body,
       };
 
@@ -379,7 +406,7 @@ export class HashnodeClient extends BasePlatformClient {
         return [];
       }
 
-      return response.data.publication.series.edges.map((edge: any) => edge.node);
+      return response.data.publication.series.edges.map((edge: { node: any }) => edge.node);
     } catch (error) {
       throw new Error(`Failed to get publication series: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }

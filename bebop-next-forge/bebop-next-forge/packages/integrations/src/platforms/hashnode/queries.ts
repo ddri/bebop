@@ -337,7 +337,34 @@ export const createPublishPostInput = (data: {
   publishAs?: string;
   disableComments?: boolean;
 }) => {
-  const input: any = {
+  const input: {
+    title: string;
+    publicationId: string;
+    contentMarkdown: string;
+    excerpt?: string;
+    tags?: Array<{ name: string; slug: string }>;
+    seriesId?: string;
+    subtitle?: string;
+    slug?: string;
+    coverImageOptions?: { coverImageURL: string };
+    metaDescription?: string;
+    ogImageUrl?: string;
+    publishAs?: string;
+    disableComments?: boolean;
+    originalArticleURL?: string;
+    settings?: {
+      enableTableOfContent?: boolean;
+      enableTableOfContents?: boolean;
+      isDelisted?: boolean;
+      isNewsletterActivated?: boolean;
+    };
+    metaTags?: {
+      title?: string;
+      description?: string;
+      image?: string;
+      ogImage?: string;
+    };
+  } = {
     title: data.title,
     publicationId: data.publicationId,
     contentMarkdown: data.contentMarkdown,
