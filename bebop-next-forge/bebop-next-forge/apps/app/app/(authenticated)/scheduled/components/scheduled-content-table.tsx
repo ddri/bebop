@@ -329,7 +329,7 @@ export const ScheduledContentTable = ({
                     <TableHead>Destination</TableHead>
                     <TableHead>Publish Date</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead className="w-[70px]"></TableHead>
+                    <TableHead className="w-[70px]" />
                   </TableRow>
                 </TableHeader>
                 <TableBody>

@@ -47,7 +47,9 @@ const App = async ({
 
   // Determine page title based on filter
   const getPageTitle = () => {
-    if (!params.status) return 'All Campaigns';
+    if (!params.status) {
+      return 'All Campaigns';
+    }
     return `${params.status.charAt(0) + params.status.slice(1).toLowerCase()} Campaigns`;
   };
 

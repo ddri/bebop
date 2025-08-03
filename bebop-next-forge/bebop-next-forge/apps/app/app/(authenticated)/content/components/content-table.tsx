@@ -91,7 +91,7 @@ export const ContentTable = ({ content }: ContentTableProps) => {
               <TableHead>Status</TableHead>
               <TableHead>Campaign</TableHead>
               <TableHead>Created</TableHead>
-              <TableHead className="w-[70px]"></TableHead>
+              <TableHead className="w-[70px]" />
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -164,24 +164,24 @@ export const ContentTable = ({ content }: ContentTableProps) => {
                           <Link href={`/content/${item.id}`}>Edit</Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          onClick={() =>
-                            console.log('Duplicate content:', item.id)
-                          }
+                          onClick={() => {
+                            // TODO: Implement duplicate content functionality
+                          }}
                         >
                           Duplicate
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          onClick={() =>
-                            console.log('Archive content:', item.id)
-                          }
+                          onClick={() => {
+                            // TODO: Implement archive content functionality
+                          }}
                         >
                           Archive
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           className="text-red-600"
-                          onClick={() =>
-                            console.log('Delete content:', item.id)
-                          }
+                          onClick={() => {
+                            // TODO: Implement delete content functionality
+                          }}
                         >
                           Delete
                         </DropdownMenuItem>

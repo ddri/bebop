@@ -45,10 +45,6 @@ export class HashnodeClient extends BasePlatformClient {
   private accessToken?: string;
   private publicationId?: string;
 
-  constructor() {
-    super();
-  }
-
   async authenticate(credentials: PlatformCredentials): Promise<void> {
     try {
       // Validate credentials structure
@@ -256,23 +252,29 @@ export class HashnodeClient extends BasePlatformClient {
       };
 
       // Add optional fields
-      if (hashnodeConfig.subtitle)
+      if (hashnodeConfig.subtitle) {
         updateInput.subtitle = hashnodeConfig.subtitle;
-      if (content.tags)
+      }
+      if (content.tags) {
         updateInput.tags = content.tags.map((tag) => ({
           slug: tag.toLowerCase().replace(/[^a-z0-9]/g, ''),
           name: tag,
         }));
-      if (hashnodeConfig.coverImageUrl)
+      }
+      if (hashnodeConfig.coverImageUrl) {
         updateInput.coverImageOptions = {
           coverImageURL: hashnodeConfig.coverImageUrl,
         };
-      if (hashnodeConfig.canonicalUrl)
+      }
+      if (hashnodeConfig.canonicalUrl) {
         updateInput.originalArticleURL = hashnodeConfig.canonicalUrl;
-      if (hashnodeConfig.seriesId)
+      }
+      if (hashnodeConfig.seriesId) {
         updateInput.seriesId = hashnodeConfig.seriesId;
-      if (hashnodeConfig.disableComments !== undefined)
+      }
+      if (hashnodeConfig.disableComments !== undefined) {
         updateInput.disableComments = hashnodeConfig.disableComments;
+      }
 
       // Settings
       if (
@@ -280,12 +282,14 @@ export class HashnodeClient extends BasePlatformClient {
         hashnodeConfig.isNewsletterActivated !== undefined
       ) {
         updateInput.settings = {};
-        if (hashnodeConfig.enableTableOfContents !== undefined)
+        if (hashnodeConfig.enableTableOfContents !== undefined) {
           updateInput.settings.enableTableOfContents =
             hashnodeConfig.enableTableOfContents;
-        if (hashnodeConfig.isNewsletterActivated !== undefined)
+        }
+        if (hashnodeConfig.isNewsletterActivated !== undefined) {
           updateInput.settings.isNewsletterActivated =
             hashnodeConfig.isNewsletterActivated;
+        }
       }
 
       // Meta tags
@@ -295,12 +299,15 @@ export class HashnodeClient extends BasePlatformClient {
         hashnodeConfig.ogImageUrl
       ) {
         updateInput.metaTags = {};
-        if (hashnodeConfig.metaTitle)
+        if (hashnodeConfig.metaTitle) {
           updateInput.metaTags.title = hashnodeConfig.metaTitle;
-        if (hashnodeConfig.metaDescription)
+        }
+        if (hashnodeConfig.metaDescription) {
           updateInput.metaTags.description = hashnodeConfig.metaDescription;
-        if (hashnodeConfig.ogImageUrl)
+        }
+        if (hashnodeConfig.ogImageUrl) {
           updateInput.metaTags.image = hashnodeConfig.ogImageUrl;
+        }
       }
 
       const response = await this.makeGraphQLRequest<UpdatePostResponse>(

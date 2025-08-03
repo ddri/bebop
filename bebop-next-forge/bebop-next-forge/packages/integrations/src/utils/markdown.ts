@@ -122,7 +122,9 @@ export function extractFirstParagraph(markdown: string): string {
   // Split by double newlines
   const paragraphs = withoutHeaders.split(/\n\s*\n/).filter((p) => p.trim());
 
-  if (paragraphs.length === 0) return '';
+  if (paragraphs.length === 0) {
+    return '';
+  }
 
   // Find first meaningful paragraph
   for (const paragraph of paragraphs) {

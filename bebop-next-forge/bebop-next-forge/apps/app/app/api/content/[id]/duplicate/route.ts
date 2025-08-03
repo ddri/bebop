@@ -3,7 +3,7 @@ import { database } from '@repo/database';
 import { type NextRequest, NextResponse } from 'next/server';
 
 export async function POST(
-  request: NextRequest,
+  _request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -49,8 +49,7 @@ export async function POST(
     });
 
     return NextResponse.json(duplicatedContent);
-  } catch (error) {
-    console.error('Failed to duplicate content:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

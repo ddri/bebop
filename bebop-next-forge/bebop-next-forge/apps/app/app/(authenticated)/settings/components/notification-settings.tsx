@@ -68,11 +68,8 @@ export const NotificationSettings = () => {
       });
 
       if (response.ok) {
-        console.log('Notification settings saved successfully');
       }
-    } catch (error) {
-      console.error('Failed to save notification settings:', error);
-    }
+    } catch (_error) {}
   };
 
   return (

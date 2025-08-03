@@ -104,7 +104,7 @@ export const CampaignsTable = ({
               <TableHead>Start Date</TableHead>
               <TableHead>End Date</TableHead>
               <TableHead>Created</TableHead>
-              <TableHead className="w-[70px]"></TableHead>
+              <TableHead className="w-[70px]" />
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -186,24 +186,24 @@ export const CampaignsTable = ({
                           <Link href={`/campaigns/${campaign.id}`}>Edit</Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          onClick={() =>
-                            console.log('Duplicate campaign:', campaign.id)
-                          }
+                          onClick={() => {
+                            // TODO: Implement duplicate campaign functionality
+                          }}
                         >
                           Duplicate
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          onClick={() =>
-                            console.log('Archive campaign:', campaign.id)
-                          }
+                          onClick={() => {
+                            // TODO: Implement archive campaign functionality
+                          }}
                         >
                           Archive
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           className="text-red-600"
-                          onClick={() =>
-                            console.log('Delete campaign:', campaign.id)
-                          }
+                          onClick={() => {
+                            // TODO: Implement delete campaign functionality
+                          }}
                         >
                           Delete
                         </DropdownMenuItem>

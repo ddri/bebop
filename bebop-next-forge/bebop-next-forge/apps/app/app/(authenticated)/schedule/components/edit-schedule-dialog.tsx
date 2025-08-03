@@ -111,9 +111,7 @@ export const EditScheduleDialog = ({
         onClose();
         router.refresh();
       }
-    } catch (error) {
-      console.error('Failed to update schedule:', error);
-    }
+    } catch (_error) {}
   };
 
   // Get minimum datetime (now + 1 hour)
@@ -123,7 +121,9 @@ export const EditScheduleDialog = ({
     return now.toISOString().slice(0, 16);
   };
 
-  if (!schedule) return null;
+  if (!schedule) {
+    return null;
+  }
 
   return (
     <Dialog open={!!scheduleId} onOpenChange={() => onClose()}>

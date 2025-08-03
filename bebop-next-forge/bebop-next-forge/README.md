@@ -42,6 +42,7 @@ This is the **Next-Forge implementation** of Bebop, a campaign-centric content m
 - **Radix UI** primitives
 - **Lucide React** icons
 - **React Hook Form** for forms
+- **BlockNote** for rich text editing
 
 ### Development & Testing
 - **Vitest** for unit testing
@@ -153,7 +154,7 @@ bebop-next-forge/
 - **Progress Tracking**: Monitor campaign completion and performance
 
 ### Content Creation
-- **Rich Text Editor**: Markdown-based content creation with live preview
+- **Rich Text Editor**: BlockNote-based content creation with block-style editing
 - **Content Types**: Blog posts, social media posts, email content
 - **Draft Management**: Save, edit, and version control content
 - **Content Library**: Searchable repository of all content
@@ -383,6 +384,33 @@ The publishing system uses a cron-based queue with the following components:
 - Integration tests for platform integrations
 - E2E tests for user-facing features
 - Documentation updates for new features
+
+## 🔧 Architecture Decisions
+
+### Rich Text Editor: BlockNote vs Lexical
+
+**Decision: BlockNote** (January 2025)
+
+After thorough evaluation of BlockNote vs Lexical, we chose to continue with BlockNote for the following reasons:
+
+**Bundle Size Analysis:**
+- BlockNote (v0.35.0): 20 MB unpacked for React package
+- Lexical: 1.51 MB unpacked for React package
+- **Impact Mitigation**: Using lazy loading with Suspense boundaries reduces initial bundle impact
+
+**Decision Factors:**
+1. **Content Structure Alignment**: BlockNote's block-based architecture perfectly matches our content storage model
+2. **User Experience**: Notion-style editing provides superior UX for content creators
+3. **Implementation Speed**: "Batteries included" approach reduces development overhead
+4. **Existing Investment**: Calendar and content systems already optimized for BlockNote integration
+
+**Performance Strategy:**
+- ✅ Lazy loading implemented to defer BlockNote loading until needed
+- ✅ Bundle analysis shows contained impact due to code splitting
+- ✅ Content editing performance meets user expectations
+
+**Future Considerations**: 
+Re-evaluate Lexical if we need more advanced editing features or if bundle size becomes critical for initial page load performance.
 
 ## 📄 License
 

@@ -66,11 +66,8 @@ export const PublishingSettings = () => {
       });
 
       if (response.ok) {
-        console.log('Publishing settings saved successfully');
       }
-    } catch (error) {
-      console.error('Failed to save publishing settings:', error);
-    }
+    } catch (_error) {}
   };
 
   return (

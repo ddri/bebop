@@ -26,41 +26,35 @@ class SimpleScheduler implements SchedulerService {
 
   start() {
     if (this.task) {
-      console.log('Scheduler already running');
       return;
     }
 
     // Run every minute to check for pending schedules
     this.task = cron.schedule('* * * * *', async () => {
       if (this.isRunning) {
-        console.log('Previous check still running, skipping...');
         return;
       }
 
       try {
         this.isRunning = true;
         await this.checkPendingJobs();
-      } catch (error) {
-        console.error('Error checking pending jobs:', error);
+      } catch (_error) {
       } finally {
         this.isRunning = false;
       }
     });
-
-    console.log('📅 Publishing scheduler started');
   }
 
   stop() {
     if (this.task) {
       this.task.stop();
       this.task = null;
-      console.log('📅 Publishing scheduler stopped');
     }
   }
 
   async checkPendingJobs(): Promise<void> {
     const now = new Date();
-    const timestamp = now.toISOString();
+    const _timestamp = now.toISOString();
 
     // Find all schedules that are due to be published
     const pendingSchedules = await database.schedule.findMany({
@@ -77,27 +71,15 @@ class SimpleScheduler implements SchedulerService {
       },
     });
 
-    console.log(
-      `[${timestamp}] 📋 Scheduler check: Found ${pendingSchedules.length} schedules ready to publish`
-    );
-
     if (pendingSchedules.length === 0) {
-      console.log(`[${timestamp}] ✨ No schedules due for publishing`);
       return;
     }
 
     // Process each schedule
     for (const schedule of pendingSchedules) {
       try {
-        console.log(
-          `[${timestamp}] 🚀 Processing schedule ${schedule.id} - "${schedule.content.title}" → ${schedule.destination.name}`
-        );
         await this.processSchedule(schedule);
       } catch (error) {
-        console.error(
-          `[${timestamp}] ❌ Error processing schedule ${schedule.id}:`,
-          error
-        );
         await this.markScheduleFailed(schedule.id, String(error));
       }
     }
@@ -188,18 +170,9 @@ class SimpleScheduler implements SchedulerService {
           error: null,
         },
       });
-
-      console.log(
-        `✅ Published schedule ${id} to ${destination.name} (${destination.type})`
-      );
     } catch (error) {
       const errorMessage = String(error);
-      const timestamp = new Date().toISOString();
-
-      console.error(
-        `[${timestamp}] ❌ Publishing failed for schedule ${id} (attempt ${attempts + 1}/3):`,
-        errorMessage
-      );
+      const _timestamp = new Date().toISOString();
 
       // If this was the last attempt, mark as failed
       if (attempts + 1 >= 3) {
@@ -215,9 +188,6 @@ class SimpleScheduler implements SchedulerService {
             publishAt: retryAt,
           },
         });
-        console.log(
-          `[${timestamp}] ⏰ Will retry schedule ${id} at ${retryAt.toISOString()} (attempt ${attempts + 1}/3)`
-        );
       }
     }
   }
@@ -233,39 +203,24 @@ class SimpleScheduler implements SchedulerService {
         error: error,
       },
     });
-    console.log(`❌ Schedule ${scheduleId} failed: ${error}`);
   }
 
   private async publishToDestination(
     content: { title: string; body: string; excerpt?: string | null },
     destination: { name: string; type: string; config: unknown }
   ): Promise<{ url: string }> {
-    console.log(
-      `Publishing "${content.title}" to ${destination.name} (${destination.type})`
+    // Get the appropriate platform client
+    const client = await this.getPlatformClient(destination);
+
+    // Adapt content for the platform
+    const adaptedContent = await this.adaptContentForPlatform(
+      content,
+      destination
     );
 
-    try {
-      // Get the appropriate platform client
-      const client = await this.getPlatformClient(destination);
-
-      // Adapt content for the platform
-      const adaptedContent = await this.adaptContentForPlatform(
-        content,
-        destination
-      );
-
-      // Publish to the platform
-      const result = await client.publish(adaptedContent);
-
-      console.log(
-        `✅ Published successfully to ${destination.type}:`,
-        result.url
-      );
-      return result;
-    } catch (error) {
-      console.error(`❌ Failed to publish to ${destination.type}:`, error);
-      throw error;
-    }
+    // Publish to the platform
+    const result = await client.publish(adaptedContent);
+    return result;
   }
 
   private async getPlatformClient(destination: {
@@ -292,8 +247,6 @@ class SimpleScheduler implements SchedulerService {
 
         return {
           publish: async (content: Record<string, unknown>) => {
-            console.log('🚀 Publishing to Hashnode:', content.title);
-
             const adaptedContent = {
               title: String(content.title || ''),
               body: String(content.body || ''),
@@ -329,8 +282,6 @@ class SimpleScheduler implements SchedulerService {
 
         return {
           publish: async (content: Record<string, unknown>) => {
-            console.log('🚀 Publishing to Dev.to:', content.title);
-
             const adaptedContent = {
               title: String(content.title || ''),
               body: String(content.body || ''),
@@ -366,11 +317,6 @@ class SimpleScheduler implements SchedulerService {
 
         return {
           publish: async (content: Record<string, unknown>) => {
-            console.log(
-              '🚀 Publishing to Bluesky:',
-              String(content.text || '').substring(0, 50) + '...'
-            );
-
             const adaptedContent = {
               title: content.text
                 ? String(content.text)
@@ -410,11 +356,6 @@ class SimpleScheduler implements SchedulerService {
 
         return {
           publish: async (content: Record<string, unknown>) => {
-            console.log(
-              '🚀 Publishing to Mastodon:',
-              String(content.status || '').substring(0, 50) + '...'
-            );
-
             const adaptedContent = {
               title: content.status
                 ? String(content.status)
@@ -487,7 +428,7 @@ class SimpleScheduler implements SchedulerService {
         return {
           text:
             content.excerpt ||
-            this.truncateText(content.title + '\n\n' + content.body, 280),
+            this.truncateText(`${content.title}\n\n${content.body}`, 280),
         };
 
       case DestinationType.MASTODON:
@@ -495,7 +436,7 @@ class SimpleScheduler implements SchedulerService {
         return {
           status:
             content.excerpt ||
-            this.truncateText(content.title + '\n\n' + content.body, 500),
+            this.truncateText(`${content.title}\n\n${content.body}`, 500),
           visibility: 'public',
         };
 
@@ -517,8 +458,10 @@ class SimpleScheduler implements SchedulerService {
   }
 
   private truncateText(text: string, maxLength: number): string {
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength - 3) + '...';
+    if (text.length <= maxLength) {
+      return text;
+    }
+    return `${text.substring(0, maxLength - 3)}...`;
   }
 }
 

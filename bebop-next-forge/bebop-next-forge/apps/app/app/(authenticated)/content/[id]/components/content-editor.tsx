@@ -134,8 +134,7 @@ export const ContentEditor = ({ content, campaigns }: ContentEditorProps) => {
         router.refresh();
         // Could add toast notification here
       }
-    } catch (error) {
-      console.error('Failed to update content:', error);
+    } catch (_error) {
     } finally {
       setIsSaving(false);
     }
@@ -151,9 +150,7 @@ export const ContentEditor = ({ content, campaigns }: ContentEditorProps) => {
         const newContent = await response.json();
         router.push(`/content/${newContent.id}`);
       }
-    } catch (error) {
-      console.error('Failed to duplicate content:', error);
-    }
+    } catch (_error) {}
   };
 
   const handleArchive = async () => {
@@ -169,9 +166,7 @@ export const ContentEditor = ({ content, campaigns }: ContentEditorProps) => {
       if (response.ok) {
         router.push('/content');
       }
-    } catch (error) {
-      console.error('Failed to archive content:', error);
-    }
+    } catch (_error) {}
   };
 
   const handleDelete = async () => {
@@ -191,9 +186,7 @@ export const ContentEditor = ({ content, campaigns }: ContentEditorProps) => {
       if (response.ok) {
         router.push('/content');
       }
-    } catch (error) {
-      console.error('Failed to delete content:', error);
-    }
+    } catch (_error) {}
   };
 
   return (

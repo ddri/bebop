@@ -58,8 +58,7 @@ export async function PATCH(
     });
 
     return NextResponse.json(schedule);
-  } catch (error) {
-    console.error('Error updating schedule:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to update schedule' },
       { status: 500 }
@@ -68,7 +67,7 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -103,8 +102,7 @@ export async function DELETE(
     });
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error('Error deleting schedule:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to delete schedule' },
       { status: 500 }

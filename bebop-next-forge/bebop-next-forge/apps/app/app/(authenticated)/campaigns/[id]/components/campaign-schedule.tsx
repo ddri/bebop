@@ -75,7 +75,7 @@ export const CampaignSchedule = ({
     (s) => s.status === 'PENDING' && new Date(s.publishAt) > new Date()
   );
 
-  const recentSchedules = campaign.schedules.filter(
+  const _recentSchedules = campaign.schedules.filter(
     (s) => s.status === 'PUBLISHED' || s.status === 'FAILED'
   );
 
@@ -117,7 +117,7 @@ export const CampaignSchedule = ({
                         <TableHead>Destination</TableHead>
                         <TableHead>Publish Date</TableHead>
                         <TableHead>Status</TableHead>
-                        <TableHead className="w-[70px]"></TableHead>
+                        <TableHead className="w-[70px]" />
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -213,7 +213,7 @@ export const CampaignSchedule = ({
                       <TableHead>Destination</TableHead>
                       <TableHead>Publish Date</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead className="w-[70px]"></TableHead>
+                      <TableHead className="w-[70px]" />
                     </TableRow>
                   </TableHeader>
                   <TableBody>

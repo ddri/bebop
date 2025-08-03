@@ -47,8 +47,7 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json(destination);
-  } catch (error) {
-    console.error('Error creating destination:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to create destination' },
       { status: 500 }
@@ -74,8 +73,7 @@ export async function GET() {
     });
 
     return NextResponse.json(destinations);
-  } catch (error) {
-    console.error('Error fetching destinations:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to fetch destinations' },
       { status: 500 }

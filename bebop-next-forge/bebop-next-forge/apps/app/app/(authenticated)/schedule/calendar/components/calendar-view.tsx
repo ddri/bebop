@@ -1,15 +1,28 @@
 'use client';
 
-import type { EventClickArg, EventDropArg, DateClickArg } from '@fullcalendar/core';
+import type {
+  DateClickArg,
+  EventClickArg,
+  EventDropArg,
+} from '@fullcalendar/core';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Button } from '@repo/design-system/components/ui/button';
-import { Icons } from '../../../../../components/icons';
 import { useRouter } from 'next/navigation';
-import { useCallback, useMemo, useState, useTransition, lazy, Suspense } from 'react';
+import {
+  Suspense,
+  lazy,
+  useCallback,
+  useMemo,
+  useState,
+  useTransition,
+} from 'react';
 import { toast } from 'sonner';
+import { Icons } from '../../../../../components/icons';
 
 // Lazy load the FullCalendar component
-const LazyCalendar = lazy(() => import('./lazy-calendar').then(module => ({ default: module.LazyCalendar })));
+const LazyCalendar = lazy(() =>
+  import('./lazy-calendar').then((module) => ({ default: module.LazyCalendar }))
+);
 import type {
   CampaignStatus,
   ContentType,
@@ -21,7 +34,7 @@ import { CalendarFilters } from './calendar-filters';
 import { CreateScheduleModal } from './create-schedule-modal';
 import { EditScheduleModal } from './edit-schedule-modal';
 
-interface CalendarViewProps {
+export interface CalendarViewProps {
   schedules: (Schedule & {
     content: {
       id: string;
@@ -97,7 +110,7 @@ export const CalendarView = ({
   const [selectedSchedule, setSelectedSchedule] = useState<
     CalendarViewProps['schedules'][0] | null
   >(null);
-  const [isPending, startTransition] = useTransition();
+  const [_isPending, startTransition] = useTransition();
   const router = useRouter();
 
   // Convert schedules to FullCalendar events
@@ -228,7 +241,6 @@ export const CalendarView = ({
           router.refresh();
         });
       } catch (error) {
-        console.error('Error updating schedule:', error);
         toast.error(
           error instanceof Error
             ? error.message
@@ -288,7 +300,6 @@ export const CalendarView = ({
           router.refresh();
         });
       } catch (error) {
-        console.error('Error updating schedule:', error);
         toast.error(
           error instanceof Error
             ? error.message
@@ -352,12 +363,14 @@ export const CalendarView = ({
       {/* Calendar Container */}
       <div className="rounded-lg border bg-card">
         <div className="p-4">
-          <Suspense 
+          <Suspense
             fallback={
-              <div className="flex items-center justify-center h-96 bg-muted/20 rounded-lg">
-                <div className="text-center space-y-2">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-                  <p className="text-sm text-muted-foreground">Loading calendar...</p>
+              <div className="flex h-96 items-center justify-center rounded-lg bg-muted/20">
+                <div className="space-y-2 text-center">
+                  <div className="mx-auto h-8 w-8 animate-spin rounded-full border-primary border-b-2" />
+                  <p className="text-muted-foreground text-sm">
+                    Loading calendar...
+                  </p>
                 </div>
               </div>
             }

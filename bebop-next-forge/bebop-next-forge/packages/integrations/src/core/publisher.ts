@@ -16,8 +16,6 @@ export class Publisher {
   private clients: Map<DestinationType, PlatformClient> = new Map();
   private adapters: Map<DestinationType, ContentAdapter> = new Map();
 
-  constructor() {}
-
   // Register platform clients and adapters
   registerClient(platform: DestinationType, client: PlatformClient): void {
     this.clients.set(platform, client);

@@ -84,9 +84,7 @@ export const CreateContentDialog = ({
           const data = await response.json();
           setCampaigns(data);
         }
-      } catch (error) {
-        console.error('Failed to fetch campaigns:', error);
-      }
+      } catch (_error) {}
     };
 
     if (open) {
@@ -109,9 +107,7 @@ export const CreateContentDialog = ({
         form.reset();
         router.refresh();
       }
-    } catch (error) {
-      console.error('Failed to create content:', error);
-    }
+    } catch (_error) {}
   };
 
   const contentTypeLabels: Record<ContentType, string> = {

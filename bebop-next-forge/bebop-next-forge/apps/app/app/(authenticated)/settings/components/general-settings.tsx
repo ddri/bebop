@@ -67,12 +67,8 @@ export const GeneralSettings = () => {
       });
 
       if (response.ok) {
-        // Handle success
-        console.log('Settings saved successfully');
       }
-    } catch (error) {
-      console.error('Failed to save settings:', error);
-    }
+    } catch (_error) {}
   };
 
   const timezones = [

@@ -45,8 +45,7 @@ export const SchedulerMonitoringDashboard = () => {
         setHealth(data);
         setLastRefresh(new Date());
       }
-    } catch (error) {
-      console.error('Failed to fetch scheduler health:', error);
+    } catch (_error) {
     } finally {
       setIsLoading(false);
     }
@@ -64,9 +63,7 @@ export const SchedulerMonitoringDashboard = () => {
         // Refresh data after manual check
         setTimeout(() => fetchHealth(), 1000);
       }
-    } catch (error) {
-      console.error('Failed to trigger manual check:', error);
-    }
+    } catch (_error) {}
   };
 
   useEffect(() => {
@@ -92,12 +89,12 @@ export const SchedulerMonitoringDashboard = () => {
 
         <div className="flex-1 px-4 py-6 md:px-8">
           <div className="mb-8 grid gap-6 md:grid-cols-4">
-            {[...Array(4)].map((_, i) => (
+            {[...new Array(4)].map((_, i) => (
               <Card key={i}>
                 <CardContent className="p-6">
                   <div className="animate-pulse">
-                    <div className="mb-2 h-4 w-3/4 rounded bg-muted"></div>
-                    <div className="h-8 w-1/2 rounded bg-muted"></div>
+                    <div className="mb-2 h-4 w-3/4 rounded bg-muted" />
+                    <div className="h-8 w-1/2 rounded bg-muted" />
                   </div>
                 </CardContent>
               </Card>

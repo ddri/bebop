@@ -87,11 +87,11 @@ export class BlueskyAdapter extends BaseContentAdapter {
       }
 
       // Check for potential formatting issues
-      if (content.body && content.body.includes('```')) {
+      if (content.body?.includes('```')) {
         warnings.push('Code blocks will be displayed as plain text on Bluesky');
       }
 
-      if (content.body && content.body.includes('![')) {
+      if (content.body?.includes('![')) {
         warnings.push(
           'Markdown image syntax will be displayed as text. Use media attachments instead.'
         );
@@ -113,7 +113,7 @@ export class BlueskyAdapter extends BaseContentAdapter {
         errors,
         warnings,
       };
-    } catch (error) {
+    } catch (_error) {
       return {
         valid: false,
         errors: ['Content validation failed'],
@@ -203,7 +203,7 @@ export class BlueskyAdapter extends BaseContentAdapter {
     }
 
     // Truncate with ellipsis
-    return this.truncateText(text, maxLength - 3) + '...';
+    return `${this.truncateText(text, maxLength - 3)}...`;
   }
 
   /**
@@ -259,8 +259,12 @@ export class BlueskyAdapter extends BaseContentAdapter {
   }
 
   private createBlueskyText(title: string, body: string): string {
-    if (!title) return body;
-    if (!body) return title;
+    if (!title) {
+      return body;
+    }
+    if (!body) {
+      return title;
+    }
 
     // Combine title and body with appropriate spacing
     return `${title}\n\n${body}`;
@@ -287,7 +291,7 @@ export class BlueskyAdapter extends BaseContentAdapter {
 
   private buildBlueskyMetadata(
     content: ContentInput,
-    options: AdaptationOptions
+    _options: AdaptationOptions
   ): Record<string, unknown> {
     const metadata: Record<string, unknown> = {};
 
@@ -356,8 +360,7 @@ export class BlueskyAdapter extends BaseContentAdapter {
             sentencePost = sentence;
           } else {
             // Even single sentence is too long, hard cut
-            const truncated =
-              sentence.substring(0, BLUESKY_LIMITS.maxTextLength - 3) + '...';
+            const truncated = `${sentence.substring(0, BLUESKY_LIMITS.maxTextLength - 3)}...`;
             posts.push({ text: truncated, characterCount: truncated.length });
           }
         }

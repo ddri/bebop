@@ -2,49 +2,49 @@
 // Only import the icons we actually use
 
 import {
-  Calendar,
-  Plus,
-  MoreHorizontal,
-  FileText,
-  Target,
-  List,
-  Clock,
-  Zap,
-  User,
-  TrendingUp,
-  Shield,
-  Search as SearchIcon,
-  RefreshCw,
-  Link,
-  Filter,
-  Edit3,
-  Trash2,
-  Hash,
-  CheckCircle,
-  XCircle,
+  Activity,
   AlertCircle,
-  Settings,
+  Bell,
+  Calendar,
+  CheckCircle,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  CommandIcon,
+  Copy,
+  Delete,
+  Download,
+  Edit,
+  Edit3,
+  ExternalLink,
   Eye,
   EyeOff,
-  Copy,
-  Download,
-  Upload,
-  Mail,
-  Bell,
-  Home,
-  Menu,
-  X,
-  ChevronDown,
-  ChevronRight,
-  ChevronLeft,
-  ExternalLink,
-  Save,
-  Edit,
-  Delete,
+  FileText,
+  Filter,
   Globe,
-  Activity,
+  Hash,
+  Home,
+  Link,
+  List,
+  Mail,
+  Menu,
+  MoreHorizontal,
+  Plus,
+  RefreshCw,
+  Save,
+  Search as SearchIcon,
+  Settings,
+  Shield,
+  Target,
   Timer,
-  CommandIcon,
+  Trash2,
+  TrendingUp,
+  Upload,
+  User,
+  X,
+  XCircle,
+  Zap,
 } from 'lucide-react';
 
 // Export all commonly used icons from a single place
@@ -59,7 +59,7 @@ export const Icons = {
   chevronDown: ChevronDown,
   chevronRight: ChevronRight,
   chevronLeft: ChevronLeft,
-  
+
   // Content & Files
   fileText: FileText,
   edit: Edit,
@@ -68,7 +68,7 @@ export const Icons = {
   trash2: Trash2,
   copy: Copy,
   save: Save,
-  
+
   // Actions
   target: Target,
   list: List,
@@ -79,7 +79,7 @@ export const Icons = {
   externalLink: ExternalLink,
   upload: Upload,
   download: Download,
-  
+
   // Status & Feedback
   clock: Clock,
   checkCircle: CheckCircle,
@@ -87,21 +87,21 @@ export const Icons = {
   alertCircle: AlertCircle,
   activity: Activity,
   timer: Timer,
-  
+
   // User & Account
   user: User,
   eye: Eye,
   eyeOff: EyeOff,
   settings: Settings,
   shield: Shield,
-  
+
   // Communication
   mail: Mail,
   bell: Bell,
-  
+
   // Data & Analytics
   trendingUp: TrendingUp,
-  
+
   // Utility
   zap: Zap,
   hash: Hash,
@@ -122,6 +122,6 @@ interface IconProps {
 export const Icon = ({ name, className, size }: IconProps) => {
   const IconComponent = Icons[name];
   const sizeClass = size ? { width: size, height: size } : {};
-  
+
   return <IconComponent className={className} style={sizeClass} />;
 };

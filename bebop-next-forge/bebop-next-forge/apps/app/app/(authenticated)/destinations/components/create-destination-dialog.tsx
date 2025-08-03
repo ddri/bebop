@@ -132,10 +132,18 @@ export const CreateDestinationDialog = ({
         ...data.additionalConfig,
       };
 
-      if (data.apiKey) config.apiKey = data.apiKey;
-      if (data.apiSecret) config.apiSecret = data.apiSecret;
-      if (data.url) config.url = data.url;
-      if (data.username) config.username = data.username;
+      if (data.apiKey) {
+        config.apiKey = data.apiKey;
+      }
+      if (data.apiSecret) {
+        config.apiSecret = data.apiSecret;
+      }
+      if (data.url) {
+        config.url = data.url;
+      }
+      if (data.username) {
+        config.username = data.username;
+      }
 
       const url = isEditing
         ? `/api/destinations/${editingDestination.id}`
@@ -159,12 +167,7 @@ export const CreateDestinationDialog = ({
         onClose?.();
         router.refresh();
       }
-    } catch (error) {
-      console.error(
-        `Failed to ${isEditing ? 'update' : 'create'} destination:`,
-        error
-      );
-    }
+    } catch (_error) {}
   };
 
   const testConnection = async () => {

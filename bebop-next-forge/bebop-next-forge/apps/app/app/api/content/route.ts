@@ -59,8 +59,7 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json(content);
-  } catch (error) {
-    console.error('Error creating content:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to create content' },
       { status: 500 }
@@ -96,8 +95,7 @@ export async function GET() {
     });
 
     return NextResponse.json(content);
-  } catch (error) {
-    console.error('Error fetching content:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to fetch content' },
       { status: 500 }

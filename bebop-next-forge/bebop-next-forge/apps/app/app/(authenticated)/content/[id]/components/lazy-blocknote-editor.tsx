@@ -43,8 +43,7 @@ export const LazyBlockNoteEditor = ({
         // For now, convert to simple markdown
         const markdown = await editor.blocksToMarkdownLossy(editor.document);
         onChange(markdown);
-      } catch (error) {
-        console.error('Error converting content:', error);
+      } catch (_error) {
         // Fallback: extract plain text
         const textContent = editor.document
           .map((block: unknown) => {

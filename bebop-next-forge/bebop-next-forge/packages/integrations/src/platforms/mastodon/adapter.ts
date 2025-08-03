@@ -107,11 +107,11 @@ export class MastodonAdapter extends BaseContentAdapter {
       }
 
       // Check for potential formatting issues
-      if (content.body && content.body.includes('```')) {
+      if (content.body?.includes('```')) {
         warnings.push('Code blocks are not specially formatted on Mastodon');
       }
 
-      if (content.body && content.body.includes('![')) {
+      if (content.body?.includes('![')) {
         warnings.push(
           'Markdown image syntax will be displayed as text. Use media attachments instead.'
         );
@@ -129,7 +129,7 @@ export class MastodonAdapter extends BaseContentAdapter {
         errors,
         warnings,
       };
-    } catch (error) {
+    } catch (_error) {
       return {
         valid: false,
         errors: ['Content validation failed'],
@@ -296,11 +296,7 @@ export class MastodonAdapter extends BaseContentAdapter {
     // 1. Remove hashtags if present and try again
     const textWithoutHashtags = text.replace(/#[\w]+/g, '').trim();
     if (textWithoutHashtags.length <= maxLength) {
-      return (
-        textWithoutHashtags +
-        '\n\n' +
-        this.extractHashtags(content).slice(0, 3).join(' ')
-      );
+      return `${textWithoutHashtags}\n\n${this.extractHashtags(content).slice(0, 3).join(' ')}`;
     }
 
     // 2. Truncate body but keep title
@@ -313,12 +309,12 @@ export class MastodonAdapter extends BaseContentAdapter {
           this.preparePlainTextContent(content.body),
           remainingLength
         );
-        return titleWithBreak + truncatedBody + '...';
+        return `${titleWithBreak + truncatedBody}...`;
       }
     }
 
     // 3. Hard truncate with ellipsis
-    return this.truncateText(text, maxLength - 3) + '...';
+    return `${this.truncateText(text, maxLength - 3)}...`;
   }
 
   // Private helper methods
@@ -341,8 +337,12 @@ export class MastodonAdapter extends BaseContentAdapter {
   }
 
   private createStatusText(title: string, body: string): string {
-    if (!title) return body;
-    if (!body) return title;
+    if (!title) {
+      return body;
+    }
+    if (!body) {
+      return title;
+    }
 
     // Combine title and body with appropriate spacing
     return `${title}\n\n${body}`;
@@ -369,7 +369,7 @@ export class MastodonAdapter extends BaseContentAdapter {
 
   private buildMastodonMetadata(
     content: ContentInput,
-    options: AdaptationOptions
+    _options: AdaptationOptions
   ): Record<string, unknown> {
     const metadata: Record<string, unknown> = {};
 

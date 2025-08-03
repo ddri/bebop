@@ -30,10 +30,6 @@ export class DevtoClient extends BasePlatformClient {
 
   private apiKey?: string;
 
-  constructor() {
-    super();
-  }
-
   async authenticate(credentials: PlatformCredentials): Promise<void> {
     try {
       // Validate credentials structure
@@ -167,7 +163,7 @@ export class DevtoClient extends BasePlatformClient {
 
       return this.createSuccessResult(result.id.toString(), result.url, {
         article: result,
-        published: result.published_at ? true : false,
+        published: !!result.published_at,
         slug: result.slug,
       });
     } catch (error) {
@@ -226,7 +222,7 @@ export class DevtoClient extends BasePlatformClient {
 
       return this.createSuccessResult(result.id.toString(), result.url, {
         article: result,
-        published: result.published_at ? true : false,
+        published: !!result.published_at,
         slug: result.slug,
       });
     } catch (error) {

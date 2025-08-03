@@ -52,7 +52,9 @@ const typeLabels: Record<ContentType, string> = {
 };
 
 export const CampaignContent = ({ campaign }: CampaignContentProps) => {
-  const [selectedContent, setSelectedContent] = useState<Content | null>(null);
+  const [_selectedContent, _setSelectedContent] = useState<Content | null>(
+    null
+  );
 
   return (
     <div className="space-y-6">

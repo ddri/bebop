@@ -99,8 +99,7 @@ export const DestinationsTable = ({ destinations }: DestinationsTableProps) => {
       } else {
         alert('Failed to delete destination');
       }
-    } catch (error) {
-      console.error('Failed to delete destination:', error);
+    } catch (_error) {
       alert('Failed to delete destination');
     }
   };
@@ -122,8 +121,7 @@ export const DestinationsTable = ({ destinations }: DestinationsTableProps) => {
       } else {
         alert('Failed to update destination');
       }
-    } catch (error) {
-      console.error('Failed to update destination:', error);
+    } catch (_error) {
       alert('Failed to update destination');
     }
   };

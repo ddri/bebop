@@ -3,14 +3,14 @@
 import { getUsers } from '@/app/actions/users/get';
 import { searchUsers } from '@/app/actions/users/search';
 import { Room } from '@repo/collaboration/room';
-import type { ReactNode } from 'react';
+import React from 'react';
 
 export const CollaborationProvider = ({
   orgId,
   children,
 }: {
   orgId: string;
-  children: ReactNode;
+  children: React.ReactNode;
 }) => {
   const resolveUsers = async ({ userIds }: { userIds: string[] }) => {
     const response = await getUsers(userIds);

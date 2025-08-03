@@ -126,7 +126,7 @@ export class DevtoAdapter extends BaseContentAdapter {
         errors,
         warnings,
       };
-    } catch (error) {
+    } catch (_error) {
       return {
         valid: false,
         errors: ['Content validation failed'],
@@ -232,7 +232,7 @@ export class DevtoAdapter extends BaseContentAdapter {
       const match = title.match(pattern) || body.match(pattern);
       if (match) {
         // Extract potential series name
-        if (match[1] && isNaN(Number(match[1]))) {
+        if (match[1] && Number.isNaN(Number(match[1]))) {
           return `${match[1]} Tutorial Series`;
         }
         // If it's a numbered part, suggest a generic series name
@@ -287,7 +287,7 @@ export class DevtoAdapter extends BaseContentAdapter {
 
   private buildDevtoMetadata(
     content: ContentInput,
-    options: AdaptationOptions
+    _options: AdaptationOptions
   ): Record<string, unknown> {
     const metadata: Record<string, unknown> = {};
 

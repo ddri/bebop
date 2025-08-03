@@ -24,8 +24,6 @@ export abstract class BasePlatformClient implements PlatformClient {
   protected credentials?: PlatformCredentials;
   protected isAuthenticated = false;
 
-  constructor() {}
-
   // Abstract methods that must be implemented by platform-specific clients
   abstract authenticate(credentials: PlatformCredentials): Promise<void>;
   abstract validateCredentials(
@@ -146,7 +144,7 @@ export abstract class BasePlatformClient implements PlatformClient {
   ): Promise<T> {
     try {
       return (await response.json()) as T;
-    } catch (error) {
+    } catch (_error) {
       throw new Error('Failed to parse JSON response');
     }
   }

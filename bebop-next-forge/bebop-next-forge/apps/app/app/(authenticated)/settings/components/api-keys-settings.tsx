@@ -68,7 +68,7 @@ const typeColors: Record<DestinationType, string> = {
 
 export const ApiKeysSettings = ({ destinations }: ApiKeysSettingsProps) => {
   const [showKeys, setShowKeys] = useState<Record<string, boolean>>({});
-  const [editingDestination, setEditingDestination] = useState<string | null>(
+  const [_editingDestination, setEditingDestination] = useState<string | null>(
     null
   );
   const router = useRouter();
@@ -81,7 +81,9 @@ export const ApiKeysSettings = ({ destinations }: ApiKeysSettingsProps) => {
   };
 
   const maskApiKey = (key: string) => {
-    if (!key) return 'Not configured';
+    if (!key) {
+      return 'Not configured';
+    }
     return (
       key.slice(0, 4) + '•'.repeat(Math.max(0, key.length - 8)) + key.slice(-4)
     );
@@ -98,13 +100,15 @@ export const ApiKeysSettings = ({ destinations }: ApiKeysSettingsProps) => {
       } else {
         alert('Connection test failed. Please check your credentials.');
       }
-    } catch (error) {
+    } catch (_error) {
       alert('Connection test failed. Please check your credentials.');
     }
   };
 
   const deleteDestination = async (destinationId: string) => {
-    if (!confirm('Are you sure you want to delete this destination?')) return;
+    if (!confirm('Are you sure you want to delete this destination?')) {
+      return;
+    }
 
     try {
       const response = await fetch(`/api/destinations/${destinationId}`, {
@@ -114,9 +118,7 @@ export const ApiKeysSettings = ({ destinations }: ApiKeysSettingsProps) => {
       if (response.ok) {
         router.refresh();
       }
-    } catch (error) {
-      console.error('Failed to delete destination:', error);
-    }
+    } catch (_error) {}
   };
 
   return (

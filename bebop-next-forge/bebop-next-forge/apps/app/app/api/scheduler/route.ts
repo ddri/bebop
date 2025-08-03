@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     const { action, scheduleId } = await request.json();
 
     switch (action) {
-      case 'publishNow':
+      case 'publishNow': {
         if (!scheduleId) {
           return NextResponse.json(
             { error: 'scheduleId is required for publishNow action' },
@@ -20,8 +20,9 @@ export async function POST(request: NextRequest) {
           success: true,
           message: 'Published successfully',
         });
+      }
 
-      case 'retry':
+      case 'retry': {
         if (!scheduleId) {
           return NextResponse.json(
             { error: 'scheduleId is required for retry action' },
@@ -30,8 +31,9 @@ export async function POST(request: NextRequest) {
         }
         await scheduler.retryFailed(scheduleId);
         return NextResponse.json({ success: true, message: 'Retry initiated' });
+      }
 
-      case 'retrySchedule':
+      case 'retrySchedule': {
         if (!scheduleId) {
           return NextResponse.json(
             { error: 'scheduleId is required for retrySchedule action' },
@@ -43,8 +45,9 @@ export async function POST(request: NextRequest) {
           success: true,
           message: 'Schedule retry initiated',
         });
+      }
 
-      case 'cancelSchedule':
+      case 'cancelSchedule': {
         if (!scheduleId) {
           return NextResponse.json(
             { error: 'scheduleId is required for cancelSchedule action' },
@@ -64,13 +67,15 @@ export async function POST(request: NextRequest) {
           success: true,
           message: 'Schedule cancelled',
         });
+      }
 
-      case 'checkPending':
+      case 'checkPending': {
         await scheduler.checkPendingJobs();
         return NextResponse.json({
           success: true,
           message: 'Checked pending jobs',
         });
+      }
 
       default:
         return NextResponse.json(
@@ -82,7 +87,6 @@ export async function POST(request: NextRequest) {
         );
     }
   } catch (error) {
-    console.error('Scheduler API error:', error);
     return NextResponse.json({ error: String(error) }, { status: 500 });
   }
 }
@@ -166,7 +170,6 @@ export async function GET(request: NextRequest) {
       health: 'GET /api/scheduler?action=health',
     });
   } catch (error) {
-    console.error('Scheduler GET error:', error);
     return NextResponse.json(
       {
         error: 'Health check failed',

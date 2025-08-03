@@ -104,7 +104,7 @@ export class HashnodeAdapter extends BaseContentAdapter {
         errors,
         warnings,
       };
-    } catch (error) {
+    } catch (_error) {
       return {
         valid: false,
         errors: ['Content validation failed'],
@@ -226,7 +226,7 @@ export class HashnodeAdapter extends BaseContentAdapter {
 
   private buildHashnodeMetadata(
     content: ContentInput,
-    options: AdaptationOptions
+    _options: AdaptationOptions
   ): Record<string, unknown> {
     const metadata: Record<string, unknown> = {};
 

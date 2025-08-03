@@ -66,8 +66,7 @@ export const FailedSchedulesManager = ({
         // Refresh data after retry
         setTimeout(() => onRetry(), 1000);
       }
-    } catch (error) {
-      console.error('Failed to retry schedule:', error);
+    } catch (_error) {
     } finally {
       setRetryingIds((prev) => {
         const newSet = new Set(prev);
@@ -92,9 +91,7 @@ export const FailedSchedulesManager = ({
         // Refresh data after cancellation
         setTimeout(() => onRetry(), 1000);
       }
-    } catch (error) {
-      console.error('Failed to cancel schedule:', error);
-    }
+    } catch (_error) {}
   };
 
   return (

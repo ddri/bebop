@@ -87,9 +87,7 @@ export const CreateCampaignDialog = ({
         form.reset();
         router.refresh();
       }
-    } catch (error) {
-      console.error('Failed to create campaign:', error);
-    }
+    } catch (_error) {}
   };
 
   return (

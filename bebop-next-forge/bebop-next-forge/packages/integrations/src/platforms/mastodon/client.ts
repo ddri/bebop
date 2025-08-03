@@ -33,10 +33,6 @@ export class MastodonClient extends BasePlatformClient {
   private instanceUrl?: string;
   private instanceConfig?: MastodonInstance;
 
-  constructor() {
-    super();
-  }
-
   async authenticate(credentials: PlatformCredentials): Promise<void> {
     try {
       // Validate credentials structure
@@ -364,10 +360,10 @@ export class MastodonClient extends BasePlatformClient {
         rateLimit: MASTODON_LIMITS.rateLimit,
         features: {
           maxCharacters:
-            this.instanceConfig!.configuration.statuses.max_characters,
+            this.instanceConfig?.configuration.statuses.max_characters,
           maxMediaAttachments:
-            this.instanceConfig!.configuration.statuses.max_media_attachments,
-          maxPollOptions: this.instanceConfig!.configuration.polls.max_options,
+            this.instanceConfig?.configuration.statuses.max_media_attachments,
+          maxPollOptions: this.instanceConfig?.configuration.polls.max_options,
           supportsScheduling: true,
           supportsPolls: true,
           supportsSensitiveContent: true,
@@ -558,7 +554,7 @@ export class MastodonClient extends BasePlatformClient {
         );
         this.instanceConfig =
           await this.parseJsonResponse<MastodonInstance>(response);
-      } catch (fallbackError) {
+      } catch (_fallbackError) {
         throw new Error(
           `Failed to load instance configuration: ${error instanceof Error ? error.message : 'Unknown error'}`
         );

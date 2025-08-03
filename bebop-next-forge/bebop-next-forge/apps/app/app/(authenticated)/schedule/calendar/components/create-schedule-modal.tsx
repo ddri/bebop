@@ -71,15 +71,6 @@ export const CreateScheduleModal = ({
     setIsSubmitting(true);
 
     try {
-      // TODO: Implement API call to create schedule
-      console.log('Creating schedule:', {
-        title,
-        content,
-        destinationId: selectedDestination,
-        campaignId: selectedCampaign,
-        publishAt: new Date(scheduledDate),
-      });
-
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
@@ -90,8 +81,7 @@ export const CreateScheduleModal = ({
       setSelectedCampaign('');
       setScheduledDate('');
       onClose();
-    } catch (error) {
-      console.error('Failed to create schedule:', error);
+    } catch (_error) {
     } finally {
       setIsSubmitting(false);
     }

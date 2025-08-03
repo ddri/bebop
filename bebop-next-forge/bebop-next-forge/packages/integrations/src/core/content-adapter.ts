@@ -35,7 +35,9 @@ export abstract class BaseContentAdapter implements ContentAdapter {
   }
 
   optimizeTags(tags: string[], platform: DestinationType): string[] {
-    if (!tags?.length) return [];
+    if (!tags?.length) {
+      return [];
+    }
 
     // Clean and normalize tags
     const cleanTags = tags
@@ -62,7 +64,9 @@ export abstract class BaseContentAdapter implements ContentAdapter {
     maxLength: number,
     suffix = '...'
   ): string {
-    if (text.length <= maxLength) return text;
+    if (text.length <= maxLength) {
+      return text;
+    }
 
     const truncated = text.slice(0, maxLength - suffix.length);
     const lastSpace = truncated.lastIndexOf(' ');
@@ -82,7 +86,9 @@ export abstract class BaseContentAdapter implements ContentAdapter {
     // Split by double newlines (paragraph breaks)
     const paragraphs = withoutHeaders.split(/\n\s*\n/).filter((p) => p.trim());
 
-    if (paragraphs.length === 0) return '';
+    if (paragraphs.length === 0) {
+      return '';
+    }
 
     // Get first meaningful paragraph
     for (const paragraph of paragraphs) {
@@ -183,7 +189,9 @@ export abstract class BaseContentAdapter implements ContentAdapter {
 
     for (const sentence of sentences) {
       const cleanSentence = sentence.trim();
-      if (!cleanSentence) continue;
+      if (!cleanSentence) {
+        continue;
+      }
 
       // Check if adding this sentence would exceed the limit
       const potential = currentThread

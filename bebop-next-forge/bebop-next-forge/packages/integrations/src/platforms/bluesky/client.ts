@@ -36,10 +36,6 @@ export class BlueskyClient extends BasePlatformClient {
   private session?: BlueskySession;
   private serviceEndpoint: string = BLUESKY_API_ENDPOINT;
 
-  constructor() {
-    super();
-  }
-
   async authenticate(credentials: PlatformCredentials): Promise<void> {
     try {
       // Validate credentials structure
@@ -166,9 +162,8 @@ export class BlueskyClient extends BasePlatformClient {
 
       if (shouldCreateThread) {
         return await this.publishThread(content, blueskyConfig);
-      } else {
-        return await this.publishSinglePost(content, blueskyConfig);
       }
+      return await this.publishSinglePost(content, blueskyConfig);
     } catch (error) {
       this.handleApiError(error, 'Publishing');
     }
@@ -176,8 +171,8 @@ export class BlueskyClient extends BasePlatformClient {
 
   async update(
     id: string,
-    content: AdaptedContent,
-    config?: PlatformConfig
+    _content: AdaptedContent,
+    _config?: PlatformConfig
   ): Promise<PublishResult> {
     // Bluesky doesn't support editing posts
     return this.createErrorResult(
@@ -198,7 +193,7 @@ export class BlueskyClient extends BasePlatformClient {
         {
           method: 'POST',
           headers: {
-            Authorization: `Bearer ${this.session!.accessJwt}`,
+            Authorization: `Bearer ${this.session?.accessJwt}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
@@ -229,10 +224,10 @@ export class BlueskyClient extends BasePlatformClient {
     try {
       // Get profile info
       const response = await this.makeRequest(
-        `${this.serviceEndpoint}/xrpc/app.bsky.actor.getProfile?actor=${this.session!.did}`,
+        `${this.serviceEndpoint}/xrpc/app.bsky.actor.getProfile?actor=${this.session?.did}`,
         {
           headers: {
-            Authorization: `Bearer ${this.session!.accessJwt}`,
+            Authorization: `Bearer ${this.session?.accessJwt}`,
           },
         }
       );
@@ -308,7 +303,7 @@ export class BlueskyClient extends BasePlatformClient {
         {
           method: 'POST',
           headers: {
-            Authorization: `Bearer ${this.session!.accessJwt}`,
+            Authorization: `Bearer ${this.session?.accessJwt}`,
             'Content-Type': mimeType,
           },
           body: imageData,
@@ -379,11 +374,11 @@ export class BlueskyClient extends BasePlatformClient {
       {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${this.session!.accessJwt}`,
+          Authorization: `Bearer ${this.session?.accessJwt}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          repo: this.session!.did,
+          repo: this.session?.did,
           collection: 'app.bsky.feed.post',
           record,
         }),
@@ -399,102 +394,94 @@ export class BlueskyClient extends BasePlatformClient {
     content: AdaptedContent,
     config: BlueskyConfig
   ): Promise<PublishResult> {
-    try {
-      const text = this.constructPostText(content);
-      const images: Array<{ blob: BlueskyBlob; alt: string }> = [];
+    const text = this.constructPostText(content);
+    const images: Array<{ blob: BlueskyBlob; alt: string }> = [];
 
-      // Handle image uploads
-      if (content.media && config.includeImages !== false) {
-        for (const media of content.media.slice(
-          0,
-          BLUESKY_LIMITS.maxImagesPerPost
-        )) {
-          if (media.type === 'image') {
-            // Note: In a real implementation, you'd fetch the image data from media.url
-            // For now, we'll skip this step as it requires additional image processing
-            // const imageData = await fetch(media.url).then(r => r.arrayBuffer());
-            // const uploadResult = await this.uploadImage(Buffer.from(imageData), 'image/jpeg');
-            // images.push({ blob: uploadResult.blob, alt: media.altText || '' });
-          }
+    // Handle image uploads
+    if (content.media && config.includeImages !== false) {
+      for (const media of content.media.slice(
+        0,
+        BLUESKY_LIMITS.maxImagesPerPost
+      )) {
+        if (media.type === 'image') {
+          // Note: In a real implementation, you'd fetch the image data from media.url
+          // For now, we'll skip this step as it requires additional image processing
+          // const imageData = await fetch(media.url).then(r => r.arrayBuffer());
+          // const uploadResult = await this.uploadImage(Buffer.from(imageData), 'image/jpeg');
+          // images.push({ blob: uploadResult.blob, alt: media.altText || '' });
         }
       }
-
-      const postResult = await this.createPost(text, {
-        images: images.length > 0 ? images : undefined,
-        langs: config.languages,
-      });
-
-      const postUri = `at://${this.session!.did}/app.bsky.feed.post/${postResult.cid}`;
-      const postUrl = `https://bsky.app/profile/${this.session!.handle}/post/${postResult.cid}`;
-
-      return this.createSuccessResult(postResult.uri, postUrl, {
-        post: postResult,
-        handle: this.session!.handle,
-        did: this.session!.did,
-      });
-    } catch (error) {
-      throw error;
     }
+
+    const postResult = await this.createPost(text, {
+      images: images.length > 0 ? images : undefined,
+      langs: config.languages,
+    });
+
+    const _postUri = `at://${this.session?.did}/app.bsky.feed.post/${postResult.cid}`;
+    const postUrl = `https://bsky.app/profile/${this.session?.handle}/post/${postResult.cid}`;
+
+    return this.createSuccessResult(postResult.uri, postUrl, {
+      post: postResult,
+      handle: this.session?.handle,
+      did: this.session?.did,
+    });
   }
 
   private async publishThread(
     content: AdaptedContent,
     config: BlueskyConfig
   ): Promise<PublishResult> {
-    try {
-      const thread = this.splitIntoThread(content);
-      const posts: BlueskyCreatePostResponse[] = [];
-      let rootPost: { uri: string; cid: string } | undefined;
+    const thread = this.splitIntoThread(content);
+    const posts: BlueskyCreatePostResponse[] = [];
+    let rootPost: { uri: string; cid: string } | undefined;
 
-      for (let i = 0; i < thread.posts.length; i++) {
-        const threadPost = thread.posts[i];
-        const isFirst = i === 0;
-        const isLast = i === thread.posts.length - 1;
+    for (let i = 0; i < thread.posts.length; i++) {
+      const threadPost = thread.posts[i];
+      const isFirst = i === 0;
+      const isLast = i === thread.posts.length - 1;
 
-        let reply:
-          | {
-              root: { uri: string; cid: string };
-              parent: { uri: string; cid: string };
-            }
-          | undefined;
+      let reply:
+        | {
+            root: { uri: string; cid: string };
+            parent: { uri: string; cid: string };
+          }
+        | undefined;
 
-        if (!isFirst && rootPost) {
-          const parentPost = posts[i - 1];
-          reply = {
-            root: rootPost,
-            parent: { uri: parentPost.uri, cid: parentPost.cid },
-          };
-        }
-
-        const postResult = await this.createPost(threadPost.text, {
-          reply,
-          langs: config.languages,
-        });
-
-        posts.push(postResult);
-
-        if (isFirst) {
-          rootPost = { uri: postResult.uri, cid: postResult.cid };
-        }
-
-        // Small delay between posts to avoid rate limits
-        if (!isLast) {
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-        }
+      if (!isFirst && rootPost) {
+        const parentPost = posts[i - 1];
+        reply = {
+          root: rootPost,
+          parent: { uri: parentPost.uri, cid: parentPost.cid },
+        };
       }
 
-      const rootUrl = `https://bsky.app/profile/${this.session!.handle}/post/${posts[0].cid}`;
-
-      return this.createSuccessResult(posts[0].uri, rootUrl, {
-        thread: posts,
-        rootPost: posts[0],
-        threadLength: posts.length,
-        handle: this.session!.handle,
-        did: this.session!.did,
+      const postResult = await this.createPost(threadPost.text, {
+        reply,
+        langs: config.languages,
       });
-    } catch (error) {
-      throw error;
+
+      posts.push(postResult);
+
+      if (isFirst) {
+        rootPost = { uri: postResult.uri, cid: postResult.cid };
+      }
+
+      // Small delay between posts to avoid rate limits
+      if (!isLast) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
     }
+
+    const rootUrl = `https://bsky.app/profile/${this.session?.handle}/post/${posts[0].cid}`;
+
+    return this.createSuccessResult(posts[0].uri, rootUrl, {
+      thread: posts,
+      rootPost: posts[0],
+      threadLength: posts.length,
+      handle: this.session?.handle,
+      did: this.session?.did,
+    });
   }
 
   private constructPostText(content: AdaptedContent): string {
@@ -553,8 +540,7 @@ export class BlueskyClient extends BasePlatformClient {
           } else {
             // Even single sentence is too long, hard cut
             posts.push({
-              text:
-                sentence.substring(0, BLUESKY_LIMITS.maxTextLength - 3) + '...',
+              text: `${sentence.substring(0, BLUESKY_LIMITS.maxTextLength - 3)}...`,
             });
           }
         }

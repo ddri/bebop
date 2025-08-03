@@ -86,7 +86,7 @@ const STATUS_OPTIONS: {
   { value: 'CANCELLED', label: 'Cancelled', icon: AlertCircle },
 ];
 
-const STATUS_COLORS: Record<ScheduleStatus, string> = {
+const _STATUS_COLORS: Record<ScheduleStatus, string> = {
   PENDING: 'default',
   PUBLISHED: 'success',
   FAILED: 'destructive',
@@ -172,7 +172,6 @@ export const EditScheduleModal = ({
       onUpdate?.();
       onClose();
     } catch (error) {
-      console.error('Error updating schedule:', error);
       toast.error(
         error instanceof Error ? error.message : 'Failed to update schedule',
         { id: toastId }
@@ -213,7 +212,6 @@ export const EditScheduleModal = ({
       onUpdate?.();
       onClose();
     } catch (error) {
-      console.error('Error deleting schedule:', error);
       toast.error(
         error instanceof Error ? error.message : 'Failed to delete schedule',
         { id: toastId }

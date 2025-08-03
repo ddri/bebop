@@ -36,8 +36,7 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json(campaign);
-  } catch (error) {
-    console.error('Error creating campaign:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to create campaign' },
       { status: 500 }
@@ -63,8 +62,7 @@ export async function GET() {
     });
 
     return NextResponse.json(campaigns);
-  } catch (error) {
-    console.error('Error fetching campaigns:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to fetch campaigns' },
       { status: 500 }

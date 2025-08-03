@@ -64,8 +64,7 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json(schedule);
-  } catch (error) {
-    console.error('Error creating schedule:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to create schedule' },
       { status: 500 }
@@ -115,8 +114,7 @@ export async function GET() {
     });
 
     return NextResponse.json(schedules);
-  } catch (error) {
-    console.error('Error fetching schedules:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to fetch schedules' },
       { status: 500 }

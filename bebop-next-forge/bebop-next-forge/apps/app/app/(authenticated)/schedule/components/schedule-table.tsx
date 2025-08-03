@@ -112,8 +112,9 @@ export const ScheduleTable = ({ schedules }: ScheduleTableProps) => {
   };
 
   const handleCancel = async (scheduleId: string) => {
-    if (!confirm('Are you sure you want to cancel this scheduled post?'))
+    if (!confirm('Are you sure you want to cancel this scheduled post?')) {
       return;
+    }
 
     try {
       const response = await fetch(`/api/schedule/${scheduleId}`, {
@@ -129,9 +130,7 @@ export const ScheduleTable = ({ schedules }: ScheduleTableProps) => {
       if (response.ok) {
         router.refresh();
       }
-    } catch (error) {
-      console.error('Failed to cancel schedule:', error);
-    }
+    } catch (_error) {}
   };
 
   const handleDelete = async (scheduleId: string) => {
@@ -139,8 +138,9 @@ export const ScheduleTable = ({ schedules }: ScheduleTableProps) => {
       !confirm(
         'Are you sure you want to delete this schedule? This action cannot be undone.'
       )
-    )
+    ) {
       return;
+    }
 
     try {
       const response = await fetch(`/api/schedule/${scheduleId}`, {
@@ -150,9 +150,7 @@ export const ScheduleTable = ({ schedules }: ScheduleTableProps) => {
       if (response.ok) {
         router.refresh();
       }
-    } catch (error) {
-      console.error('Failed to delete schedule:', error);
-    }
+    } catch (_error) {}
   };
 
   return (
@@ -181,7 +179,7 @@ export const ScheduleTable = ({ schedules }: ScheduleTableProps) => {
               <TableHead>Publish Date</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Campaign</TableHead>
-              <TableHead className="w-[70px]"></TableHead>
+              <TableHead className="w-[70px]" />
             </TableRow>
           </TableHeader>
           <TableBody>

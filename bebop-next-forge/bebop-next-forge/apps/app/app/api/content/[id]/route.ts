@@ -14,7 +14,7 @@ const updateContentSchema = z.object({
 });
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -59,8 +59,7 @@ export async function GET(
     }
 
     return NextResponse.json(content);
-  } catch (error) {
-    console.error('Failed to fetch content:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -135,8 +134,6 @@ export async function PUT(
         { status: 400 }
       );
     }
-
-    console.error('Failed to update content:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -145,7 +142,7 @@ export async function PUT(
 }
 
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -181,8 +178,7 @@ export async function DELETE(
     });
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error('Failed to delete content:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

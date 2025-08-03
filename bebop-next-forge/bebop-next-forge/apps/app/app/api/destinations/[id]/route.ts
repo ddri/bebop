@@ -65,8 +65,7 @@ export async function PATCH(
     });
 
     return NextResponse.json(destination);
-  } catch (error) {
-    console.error('Error updating destination:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to update destination' },
       { status: 500 }
@@ -75,7 +74,7 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -109,8 +108,7 @@ export async function DELETE(
     });
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error('Error deleting destination:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to delete destination' },
       { status: 500 }

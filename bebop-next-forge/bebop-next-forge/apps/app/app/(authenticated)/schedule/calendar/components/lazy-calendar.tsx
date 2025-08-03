@@ -1,18 +1,50 @@
 'use client';
 
-import type { EventClickArg, EventDropArg, DateClickArg } from '@fullcalendar/core';
-import FullCalendar from '@fullcalendar/react';
+import type {
+  DateClickArg,
+  EventClickArg,
+  EventDropArg,
+} from '@fullcalendar/core';
+import type { CalendarViewProps } from './calendar-view';
 import dayGridPlugin from '@fullcalendar/daygrid';
-import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
+import FullCalendar from '@fullcalendar/react';
+import timeGridPlugin from '@fullcalendar/timegrid';
 import { ScheduleEventCard } from './schedule-event-card';
 
+interface CalendarEvent {
+  id: string;
+  title: string;
+  start: string;
+  backgroundColor: string;
+  borderColor: string;
+  textColor: string;
+  extendedProps: {
+    schedule: CalendarViewProps['schedules'][0];
+    platform: string;
+    status: string;
+    campaignName: string;
+    destinationName: string;
+    excerpt: string | null;
+  };
+  classNames: string[];
+  editable: boolean;
+}
+
+interface EventResizeInfo {
+  event: {
+    id: string;
+    start: Date | null;
+  };
+  revert: () => void;
+}
+
 interface LazyCalendarProps {
-  calendarEvents: any[];
+  calendarEvents: CalendarEvent[];
   handleDateClick: (dateInfo: DateClickArg) => void;
   handleEventClick: (eventInfo: EventClickArg) => void;
   handleEventDrop: (eventInfo: EventDropArg) => void;
-  handleEventResize: (eventInfo: any) => void;
+  handleEventResize: (eventInfo: EventResizeInfo) => void;
 }
 
 export const LazyCalendar = ({
@@ -58,9 +90,7 @@ export const LazyCalendar = ({
         />
       )}
       eventClassNames={(arg) => {
-        return [
-          `platform-${arg.event.extendedProps.platform.toLowerCase()}`,
-        ];
+        return [`platform-${arg.event.extendedProps.platform.toLowerCase()}`];
       }}
     />
   );

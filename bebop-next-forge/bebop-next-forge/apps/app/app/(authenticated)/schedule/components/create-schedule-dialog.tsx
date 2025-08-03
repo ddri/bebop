@@ -112,9 +112,7 @@ export const CreateScheduleDialog = ({
             destinationsData.filter((d: { isActive: boolean }) => d.isActive)
           );
         }
-      } catch (error) {
-        console.error('Failed to fetch data:', error);
-      }
+      } catch (_error) {}
     };
 
     if (open) {
@@ -140,9 +138,7 @@ export const CreateScheduleDialog = ({
         form.reset();
         router.refresh();
       }
-    } catch (error) {
-      console.error('Failed to create schedule:', error);
-    }
+    } catch (_error) {}
   };
 
   // Get minimum datetime (now + 1 hour)

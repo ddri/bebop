@@ -4,7 +4,9 @@
 
 export function formatDate(date: string | Date): string {
   const d = new Date(date);
-  if (isNaN(d.getTime())) return 'Invalid date';
+  if (Number.isNaN(d.getTime())) {
+    return 'Invalid date';
+  }
 
   // Use a consistent format that works on both server and client
   const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -16,7 +18,9 @@ export function formatDate(date: string | Date): string {
 
 export function formatDateTime(date: string | Date): string {
   const d = new Date(date);
-  if (isNaN(d.getTime())) return 'Invalid date';
+  if (Number.isNaN(d.getTime())) {
+    return 'Invalid date';
+  }
 
   const dateStr = formatDate(d);
   const hours = d.getHours();
@@ -29,7 +33,9 @@ export function formatDateTime(date: string | Date): string {
 
 export function formatTime(date: string | Date): string {
   const d = new Date(date);
-  if (isNaN(d.getTime())) return 'Invalid time';
+  if (Number.isNaN(d.getTime())) {
+    return 'Invalid time';
+  }
 
   const hours = d.getHours();
   const minutes = String(d.getMinutes()).padStart(2, '0');
