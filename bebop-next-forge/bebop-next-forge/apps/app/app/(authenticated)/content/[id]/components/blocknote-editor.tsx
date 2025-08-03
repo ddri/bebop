@@ -1,11 +1,13 @@
 'use client';
 
-import { BlockNoteView } from '@blocknote/mantine';
-import { useCreateBlockNote } from '@blocknote/react';
-import '@blocknote/core/fonts/inter.css';
-import '@blocknote/mantine/style.css';
-import { useTheme } from 'next-themes';
-import { useEffect, useState } from 'react';
+import { lazy, Suspense } from 'react';
+
+// Lazy load the BlockNote editor
+const LazyBlockNoteEditor = lazy(() => 
+  import('./lazy-blocknote-editor').then(module => ({ 
+    default: module.LazyBlockNoteEditor 
+  }))
+);
 
 interface BlockNoteEditorWrapperProps {
   initialContent?: string;
@@ -20,76 +22,25 @@ export const BlockNoteEditorWrapper = ({
   className = '',
   placeholder = 'Start writing...',
 }: BlockNoteEditorWrapperProps) => {
-  const { theme, systemTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  // Create the editor instance with simple initial content
-  const editor = useCreateBlockNote({
-    initialContent: initialContent
-      ? [{ type: 'paragraph', content: initialContent }]
-      : [{ type: 'paragraph', content: '' }],
-    placeholders: {
-      default: placeholder,
-      heading: 'Heading',
-      bulletListItem: 'Bullet point',
-      numberedListItem: 'Numbered point',
-    },
-  });
-
-  // Handle content changes - convert BlockNote to simple string
-  const handleChange = async () => {
-    if (onChange) {
-      try {
-        // For now, convert to simple markdown
-        const markdown = await editor.blocksToMarkdownLossy(editor.document);
-        onChange(markdown);
-      } catch (error) {
-        console.error('Error converting content:', error);
-        // Fallback: extract plain text
-        const textContent = editor.document
-          .map((block: unknown) => {
-            const blockObj = block as { content?: unknown[] };
-            if (blockObj.content && Array.isArray(blockObj.content)) {
-              return blockObj.content
-                .map((item: unknown) => {
-                  const itemObj = item as { text?: string };
-                  return itemObj.text || '';
-                })
-                .join('');
-            }
-            return '';
-          })
-          .join('\n');
-        onChange(textContent);
-      }
-    }
-  };
-
-  // Wait for hydration to avoid SSR issues
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
-    return (
-      <div className={`rounded-md border ${className}`}>
-        <div className="p-4 text-muted-foreground">Loading editor...</div>
-      </div>
-    );
-  }
-
-  // Determine theme for BlockNote
-  const currentTheme = theme === 'system' ? systemTheme : theme;
-  const blockNoteTheme = currentTheme === 'dark' ? 'dark' : 'light';
-
   return (
-    <div className={`overflow-hidden rounded-md border ${className}`}>
-      <BlockNoteView
-        editor={editor}
-        onChange={handleChange}
-        theme={blockNoteTheme}
-        className="min-h-[400px]"
+    <Suspense 
+      fallback={
+        <div className={`rounded-md border ${className}`}>
+          <div className="flex items-center justify-center min-h-[400px] bg-muted/20">
+            <div className="text-center space-y-2">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+              <p className="text-sm text-muted-foreground">Loading editor...</p>
+            </div>
+          </div>
+        </div>
+      }
+    >
+      <LazyBlockNoteEditor
+        initialContent={initialContent}
+        onChange={onChange}
+        className={className}
+        placeholder={placeholder}
       />
-    </div>
+    </Suspense>
   );
 };

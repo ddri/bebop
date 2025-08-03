@@ -1,12 +1,15 @@
 'use client';
 
-import type { EventClickArg, EventDropArg } from '@fullcalendar/core';
-import dayGridPlugin from '@fullcalendar/daygrid';
-import interactionPlugin, {
-  type DateClickArg,
-} from '@fullcalendar/interaction';
-import FullCalendar from '@fullcalendar/react';
-import timeGridPlugin from '@fullcalendar/timegrid';
+import type { EventClickArg, EventDropArg, DateClickArg } from '@fullcalendar/core';
+import { Badge } from '@repo/design-system/components/ui/badge';
+import { Button } from '@repo/design-system/components/ui/button';
+import { Icons } from '../../../../../components/icons';
+import { useRouter } from 'next/navigation';
+import { useCallback, useMemo, useState, useTransition, lazy, Suspense } from 'react';
+import { toast } from 'sonner';
+
+// Lazy load the FullCalendar component
+const LazyCalendar = lazy(() => import('./lazy-calendar').then(module => ({ default: module.LazyCalendar })));
 import type {
   CampaignStatus,
   ContentType,
@@ -14,16 +17,9 @@ import type {
   Schedule,
   ScheduleStatus,
 } from '@repo/database/types';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Calendar, Filter, Plus } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useCallback, useMemo, useState, useTransition } from 'react';
-import { toast } from 'sonner';
 import { CalendarFilters } from './calendar-filters';
 import { CreateScheduleModal } from './create-schedule-modal';
 import { EditScheduleModal } from './edit-schedule-modal';
-import { ScheduleEventCard } from './schedule-event-card';
 
 interface CalendarViewProps {
   schedules: (Schedule & {
@@ -310,7 +306,7 @@ export const CalendarView = ({
       {/* Calendar Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Calendar className="h-5 w-5" />
+          <Icons.calendar className="h-5 w-5" />
           <h2 className="font-semibold text-lg">Content Calendar</h2>
           <Badge variant="secondary" className="ml-2">
             {calendarEvents.length} scheduled
@@ -324,7 +320,7 @@ export const CalendarView = ({
             onClick={() => setShowFilters(!showFilters)}
             className="gap-2"
           >
-            <Filter className="h-4 w-4" />
+            <Icons.filter className="h-4 w-4" />
             Filters
           </Button>
 
@@ -333,7 +329,7 @@ export const CalendarView = ({
             onClick={() => setShowCreateModal(true)}
             className="gap-2"
           >
-            <Plus className="h-4 w-4" />
+            <Icons.plus className="h-4 w-4" />
             Schedule Content
           </Button>
         </div>
@@ -356,47 +352,24 @@ export const CalendarView = ({
       {/* Calendar Container */}
       <div className="rounded-lg border bg-card">
         <div className="p-4">
-          <FullCalendar
-            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-            initialView="dayGridMonth"
-            headerToolbar={{
-              left: 'prev,next today',
-              center: 'title',
-              right: 'dayGridMonth,timeGridWeek,timeGridDay',
-            }}
-            events={calendarEvents}
-            editable={true}
-            droppable={true}
-            dateClick={handleDateClick}
-            eventClick={handleEventClick}
-            eventDrop={handleEventDrop}
-            eventResize={handleEventResize}
-            height="auto"
-            eventDisplay="block"
-            dayMaxEvents={3}
-            moreLinkClick="popover"
-            eventDurationEditable={false}
-            eventStartEditable={true}
-            eventConstraint={{
-              start: new Date().toISOString(),
-              end: '2100-01-01',
-            }}
-            eventContent={(eventInfo) => (
-              <ScheduleEventCard
-                title={eventInfo.event.title}
-                platform={eventInfo.event.extendedProps.platform}
-                status={eventInfo.event.extendedProps.status}
-                destinationName={eventInfo.event.extendedProps.destinationName}
-                time={eventInfo.event.start}
-              />
-            )}
-            // Custom styling
-            eventClassNames={(arg) => {
-              return [
-                `platform-${arg.event.extendedProps.platform.toLowerCase()}`,
-              ];
-            }}
-          />
+          <Suspense 
+            fallback={
+              <div className="flex items-center justify-center h-96 bg-muted/20 rounded-lg">
+                <div className="text-center space-y-2">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                  <p className="text-sm text-muted-foreground">Loading calendar...</p>
+                </div>
+              </div>
+            }
+          >
+            <LazyCalendar
+              calendarEvents={calendarEvents}
+              handleDateClick={handleDateClick}
+              handleEventClick={handleEventClick}
+              handleEventDrop={handleEventDrop}
+              handleEventResize={handleEventResize}
+            />
+          </Suspense>
         </div>
       </div>
 
