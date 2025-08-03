@@ -1,14 +1,18 @@
 import type { DestinationType } from '@repo/database/types';
 import { BaseContentAdapter } from '../../core/content-adapter';
-import type {
-  ContentInput,
-  AdaptedContent,
-  AdaptationOptions,
-  ValidationResult,
-  MediaAttachment,
-} from '../../types/platform';
 import { DevToContentSchema } from '../../types/content';
-import { extractTableOfContents, extractImages, extractFirstParagraph, stripMarkdown } from '../../utils/markdown';
+import type {
+  AdaptationOptions,
+  AdaptedContent,
+  ContentInput,
+  MediaAttachment,
+  ValidationResult,
+} from '../../types/platform';
+import {
+  extractFirstParagraph,
+  extractImages,
+  stripMarkdown,
+} from '../../utils/markdown';
 
 /**
  * Content adapter for Dev.to platform
@@ -17,19 +21,26 @@ import { extractTableOfContents, extractImages, extractFirstParagraph, stripMark
 export class DevtoAdapter extends BaseContentAdapter {
   readonly platform: DestinationType = 'DEVTO';
 
-  async adaptContent(content: ContentInput, options: AdaptationOptions): Promise<AdaptedContent> {
+  async adaptContent(
+    content: ContentInput,
+    options: AdaptationOptions
+  ): Promise<AdaptedContent> {
     try {
       // Extract basic content
       const title = content.title;
       const body = this.prepareMarkdownContent(content.body);
-      const excerpt = content.excerpt || this.extractFirstParagraph(content.body);
-      
+      const excerpt =
+        content.excerpt || this.extractFirstParagraph(content.body);
+
       // Process tags (Dev.to allows max 4 tags)
-      const tags = this.optimizeTags(content.metadata?.tags as string[] || [], this.platform);
-      
+      const tags = this.optimizeTags(
+        (content.metadata?.tags as string[]) || [],
+        this.platform
+      );
+
       // Extract and process media
       const media = await this.extractAndOptimizeMedia(content.body);
-      
+
       // Build Dev.to-specific metadata
       const metadata = this.buildDevtoMetadata(content, options);
 
@@ -44,7 +55,9 @@ export class DevtoAdapter extends BaseContentAdapter {
 
       return adaptedContent;
     } catch (error) {
-      throw new Error(`Failed to adapt content for Dev.to: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to adapt content for Dev.to: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -52,7 +65,7 @@ export class DevtoAdapter extends BaseContentAdapter {
     try {
       // Use Zod schema for validation
       DevToContentSchema.parse(content);
-      
+
       const errors: string[] = [];
       const warnings: string[] = [];
 
@@ -67,31 +80,43 @@ export class DevtoAdapter extends BaseContentAdapter {
 
       // Check for potential SEO issues
       if (content.title && content.title.length < 10) {
-        warnings.push('Title is very short, consider making it more descriptive');
+        warnings.push(
+          'Title is very short, consider making it more descriptive'
+        );
       }
 
       if (content.excerpt && content.excerpt.length > 160) {
-        warnings.push('Excerpt is longer than typical meta description length (160 chars)');
+        warnings.push(
+          'Excerpt is longer than typical meta description length (160 chars)'
+        );
       }
 
       // Dev.to specific validations
       if (content.body && content.body.length > 100000) {
-        warnings.push('Article is very long (>100k characters). Consider breaking it into a series.');
+        warnings.push(
+          'Article is very long (>100k characters). Consider breaking it into a series.'
+        );
       }
 
       // Check for markdown issues
       if (content.body.includes('```') && !content.body.includes('```\n')) {
-        warnings.push('Code blocks might not render correctly - ensure proper markdown formatting');
+        warnings.push(
+          'Code blocks might not render correctly - ensure proper markdown formatting'
+        );
       }
 
       // Tag format warnings
       if (content.tags) {
-        content.tags.forEach(tag => {
+        content.tags.forEach((tag) => {
           if (tag.length > 30) {
-            warnings.push(`Tag "${tag}" is longer than 30 characters and may be truncated`);
+            warnings.push(
+              `Tag "${tag}" is longer than 30 characters and may be truncated`
+            );
           }
           if (!/^[a-zA-Z0-9\s-]+$/.test(tag)) {
-            warnings.push(`Tag "${tag}" contains special characters that may be modified`);
+            warnings.push(
+              `Tag "${tag}" contains special characters that may be modified`
+            );
           }
         });
       }
@@ -134,10 +159,10 @@ export class DevtoAdapter extends BaseContentAdapter {
   generateSocialTeaser(content: ContentInput): string {
     const title = content.title;
     const excerpt = this.extractFirstParagraph(content.body);
-    
+
     // Create a compelling teaser combining title and excerpt
     const teaser = `${title}\n\n${this.truncateText(excerpt, 200)}`;
-    
+
     return this.truncateText(teaser, 280); // Twitter-friendly length
   }
 
@@ -147,8 +172,8 @@ export class DevtoAdapter extends BaseContentAdapter {
   optimizeDevtoTags(tags: string[]): string[] {
     return tags
       .slice(0, 4) // Dev.to limit
-      .map(tag => this.cleanDevtoTag(tag))
-      .filter(tag => tag.length > 0);
+      .map((tag) => this.cleanDevtoTag(tag))
+      .filter((tag) => tag.length > 0);
   }
 
   /**
@@ -178,7 +203,7 @@ export class DevtoAdapter extends BaseContentAdapter {
     };
 
     Object.entries(techKeywords).forEach(([tag, keywords]) => {
-      if (keywords.some(keyword => body.includes(keyword))) {
+      if (keywords.some((keyword) => body.includes(keyword))) {
         suggestions.push(tag);
       }
     });
@@ -240,23 +265,30 @@ export class DevtoAdapter extends BaseContentAdapter {
     cleaned = cleaned.replace(/<!--\s*(.*?)\s*-->/g, '<!-- $1 -->');
 
     // Ensure proper callout formatting (Dev.to supports {% callout %} syntax)
-    cleaned = cleaned.replace(/^\s*>\s*\*\*(Note|Warning|Tip|Info):\*\*\s*(.*)/gm, 
-      '{% callout %}\n**$1:** $2\n{% endcallout %}');
+    cleaned = cleaned.replace(
+      /^\s*>\s*\*\*(Note|Warning|Tip|Info):\*\*\s*(.*)/gm,
+      '{% callout %}\n**$1:** $2\n{% endcallout %}'
+    );
 
     return cleaned.trim();
   }
 
-  private async extractAndOptimizeMedia(markdown: string): Promise<MediaAttachment[]> {
+  private async extractAndOptimizeMedia(
+    markdown: string
+  ): Promise<MediaAttachment[]> {
     const images = extractImages(markdown);
-    
-    return images.map(img => ({
+
+    return images.map((img) => ({
       url: img.url,
       altText: img.alt || 'Image',
       type: 'image' as const,
     }));
   }
 
-  private buildDevtoMetadata(content: ContentInput, options: AdaptationOptions): Record<string, unknown> {
+  private buildDevtoMetadata(
+    content: ContentInput,
+    options: AdaptationOptions
+  ): Record<string, unknown> {
     const metadata: Record<string, unknown> = {};
 
     // Extract metadata from content metadata

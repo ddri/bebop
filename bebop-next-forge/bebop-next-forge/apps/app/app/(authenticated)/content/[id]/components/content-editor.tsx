@@ -1,9 +1,16 @@
 'use client';
 
-import { Button } from '@repo/design-system/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
-import { StatusBadge } from '@repo/design-system/components/ui/status-badge';
+import { zodResolver } from '@hookform/resolvers/zod';
+import type { Campaign, Content, Schedule } from '@repo/database/types';
+import { ContentStatus, ContentType } from '@repo/database/types';
 import { Badge } from '@repo/design-system/components/ui/badge';
+import { Button } from '@repo/design-system/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@repo/design-system/components/ui/card';
 import {
   Form,
   FormControl,
@@ -21,32 +28,28 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@repo/design-system/components/ui/select';
+import { StatusBadge } from '@repo/design-system/components/ui/status-badge';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@repo/design-system/components/ui/tabs';
 import { Textarea } from '@repo/design-system/components/ui/textarea';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/design-system/components/ui/tabs';
-import type { 
-  Content, 
-  Campaign, 
-  Schedule
-} from '@repo/database/types';
-import { 
-  ContentType, 
-  ContentStatus 
-} from '@repo/database/types';
-import { 
-  ArrowLeft, 
-  Save, 
-  Calendar, 
-  FileText, 
-  Settings,
-  Copy,
+import {
   Archive,
-  Trash2
+  ArrowLeft,
+  Calendar,
+  Copy,
+  FileText,
+  Save,
+  Settings,
+  Trash2,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { BlockNoteEditorWrapper } from './blocknote-editor';
 
@@ -78,7 +81,10 @@ interface ContentEditorProps {
   campaigns: Campaign[];
 }
 
-const statusMapping: Record<ContentStatus, 'draft' | 'ready' | 'published' | 'archived'> = {
+const statusMapping: Record<
+  ContentStatus,
+  'draft' | 'ready' | 'published' | 'archived'
+> = {
   DRAFT: 'draft',
   READY: 'ready',
   PUBLISHED: 'published',
@@ -169,7 +175,11 @@ export const ContentEditor = ({ content, campaigns }: ContentEditorProps) => {
   };
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this content? This action cannot be undone.')) {
+    if (
+      !confirm(
+        'Are you sure you want to delete this content? This action cannot be undone.'
+      )
+    ) {
       return;
     }
 
@@ -187,56 +197,55 @@ export const ContentEditor = ({ content, campaigns }: ContentEditorProps) => {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex h-full flex-col">
       {/* Header */}
       <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="flex items-center gap-4 h-16 px-4 md:px-8">
+        <div className="flex h-16 items-center gap-4 px-4 md:px-8">
           <Button variant="ghost" size="icon" asChild>
             <Link href="/content">
               <ArrowLeft className="h-4 w-4" />
             </Link>
           </Button>
-          
+
           <div className="flex-1">
             <div className="flex items-center gap-3">
-              <h1 className="text-xl font-semibold">{content.title}</h1>
+              <h1 className="font-semibold text-xl">{content.title}</h1>
               <StatusBadge status={statusMapping[content.status]}>
                 {content.status}
               </StatusBadge>
-              <Badge variant="outline">
-                {typeLabels[content.type]}
-              </Badge>
+              <Badge variant="outline">{typeLabels[content.type]}</Badge>
             </div>
-            <p className="text-sm text-muted-foreground mt-1">
-              {content.campaign.name} • Created {new Date(content.createdAt).toLocaleDateString()}
+            <p className="mt-1 text-muted-foreground text-sm">
+              {content.campaign.name} • Created{' '}
+              {new Date(content.createdAt).toLocaleDateString()}
             </p>
           </div>
 
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={handleDuplicate}>
-              <Copy className="h-4 w-4 mr-2" />
+              <Copy className="mr-2 h-4 w-4" />
               Duplicate
             </Button>
             <Button variant="outline" size="sm" onClick={handleArchive}>
-              <Archive className="h-4 w-4 mr-2" />
+              <Archive className="mr-2 h-4 w-4" />
               Archive
             </Button>
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               onClick={handleDelete}
               className="text-red-600 hover:text-red-700"
             >
-              <Trash2 className="h-4 w-4 mr-2" />
+              <Trash2 className="mr-2 h-4 w-4" />
               Delete
             </Button>
-            <Button 
-              type="submit" 
-              form="content-form" 
+            <Button
+              type="submit"
+              form="content-form"
               disabled={isSaving}
               size="sm"
             >
-              <Save className="h-4 w-4 mr-2" />
+              <Save className="mr-2 h-4 w-4" />
               {isSaving ? 'Saving...' : 'Save'}
             </Button>
           </div>
@@ -244,20 +253,30 @@ export const ContentEditor = ({ content, campaigns }: ContentEditorProps) => {
       </div>
 
       {/* Main Content */}
-      <div className="px-4 md:px-8 py-6 flex-1">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <div className="flex-1 px-4 py-6 md:px-8">
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="space-y-6"
+        >
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="edit">Edit Content</TabsTrigger>
-            <TabsTrigger value="schedule">Schedule ({content.schedules.length})</TabsTrigger>
+            <TabsTrigger value="schedule">
+              Schedule ({content.schedules.length})
+            </TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
 
           <TabsContent value="edit" className="space-y-6">
             <Form {...form}>
-              <form id="content-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <form
+                id="content-form"
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-6"
+              >
                 <div className="grid gap-6 lg:grid-cols-3">
                   {/* Main Content Editor */}
-                  <div className="lg:col-span-2 space-y-6">
+                  <div className="space-y-6 lg:col-span-2">
                     <Card>
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2">
@@ -273,7 +292,10 @@ export const ContentEditor = ({ content, campaigns }: ContentEditorProps) => {
                             <FormItem>
                               <FormLabel>Title</FormLabel>
                               <FormControl>
-                                <Input placeholder="Content title..." {...field} />
+                                <Input
+                                  placeholder="Content title..."
+                                  {...field}
+                                />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -294,7 +316,8 @@ export const ContentEditor = ({ content, campaigns }: ContentEditorProps) => {
                                 />
                               </FormControl>
                               <FormDescription>
-                                A short summary displayed in previews and social media.
+                                A short summary displayed in previews and social
+                                media.
                               </FormDescription>
                               <FormMessage />
                             </FormItem>
@@ -339,18 +362,23 @@ export const ContentEditor = ({ content, campaigns }: ContentEditorProps) => {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Content Type</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <Select
+                                onValueChange={field.onChange}
+                                defaultValue={field.value}
+                              >
                                 <FormControl>
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select type" />
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  {Object.entries(typeLabels).map(([value, label]) => (
-                                    <SelectItem key={value} value={value}>
-                                      {label}
-                                    </SelectItem>
-                                  ))}
+                                  {Object.entries(typeLabels).map(
+                                    ([value, label]) => (
+                                      <SelectItem key={value} value={value}>
+                                        {label}
+                                      </SelectItem>
+                                    )
+                                  )}
                                 </SelectContent>
                               </Select>
                               <FormMessage />
@@ -364,17 +392,28 @@ export const ContentEditor = ({ content, campaigns }: ContentEditorProps) => {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Status</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <Select
+                                onValueChange={field.onChange}
+                                defaultValue={field.value}
+                              >
                                 <FormControl>
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select status" />
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  <SelectItem value={ContentStatus.DRAFT}>Draft</SelectItem>
-                                  <SelectItem value={ContentStatus.READY}>Ready</SelectItem>
-                                  <SelectItem value={ContentStatus.PUBLISHED}>Published</SelectItem>
-                                  <SelectItem value={ContentStatus.ARCHIVED}>Archived</SelectItem>
+                                  <SelectItem value={ContentStatus.DRAFT}>
+                                    Draft
+                                  </SelectItem>
+                                  <SelectItem value={ContentStatus.READY}>
+                                    Ready
+                                  </SelectItem>
+                                  <SelectItem value={ContentStatus.PUBLISHED}>
+                                    Published
+                                  </SelectItem>
+                                  <SelectItem value={ContentStatus.ARCHIVED}>
+                                    Archived
+                                  </SelectItem>
                                 </SelectContent>
                               </Select>
                               <FormMessage />
@@ -388,7 +427,10 @@ export const ContentEditor = ({ content, campaigns }: ContentEditorProps) => {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Campaign</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <Select
+                                onValueChange={field.onChange}
+                                defaultValue={field.value}
+                              >
                                 <FormControl>
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select campaign" />
@@ -396,7 +438,10 @@ export const ContentEditor = ({ content, campaigns }: ContentEditorProps) => {
                                 </FormControl>
                                 <SelectContent>
                                   {campaigns.map((campaign) => (
-                                    <SelectItem key={campaign.id} value={campaign.id}>
+                                    <SelectItem
+                                      key={campaign.id}
+                                      value={campaign.id}
+                                    >
                                       {campaign.name}
                                     </SelectItem>
                                   ))}
@@ -425,11 +470,15 @@ export const ContentEditor = ({ content, campaigns }: ContentEditorProps) => {
                         </div>
                         <div className="flex justify-between">
                           <span>Created</span>
-                          <span>{new Date(content.createdAt).toLocaleDateString()}</span>
+                          <span>
+                            {new Date(content.createdAt).toLocaleDateString()}
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span>Last Modified</span>
-                          <span>{new Date(content.updatedAt).toLocaleDateString()}</span>
+                          <span>
+                            {new Date(content.updatedAt).toLocaleDateString()}
+                          </span>
                         </div>
                       </CardContent>
                     </Card>
@@ -451,30 +500,41 @@ export const ContentEditor = ({ content, campaigns }: ContentEditorProps) => {
                 {content.schedules.length > 0 ? (
                   <div className="space-y-4">
                     {content.schedules.map((schedule) => (
-                      <div key={schedule.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div
+                        key={schedule.id}
+                        className="flex items-center justify-between rounded-lg border p-4"
+                      >
                         <div>
-                          <div className="font-medium">{schedule.destination.name}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {schedule.destination.type} • {new Date(schedule.publishAt).toLocaleString()}
+                          <div className="font-medium">
+                            {schedule.destination.name}
+                          </div>
+                          <div className="text-muted-foreground text-sm">
+                            {schedule.destination.type} •{' '}
+                            {new Date(schedule.publishAt).toLocaleString()}
                           </div>
                         </div>
-                        <StatusBadge status={statusMapping[schedule.status as ContentStatus] || 'draft'}>
+                        <StatusBadge
+                          status={
+                            statusMapping[schedule.status as ContentStatus] ||
+                            'draft'
+                          }
+                        >
                           {schedule.status}
                         </StatusBadge>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-8">
-                    <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">No schedules yet</h3>
-                    <p className="text-sm text-muted-foreground mb-4">
+                  <div className="py-8 text-center">
+                    <Calendar className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                    <h3 className="mb-2 font-semibold text-lg">
+                      No schedules yet
+                    </h3>
+                    <p className="mb-4 text-muted-foreground text-sm">
                       This content hasn&apos;t been scheduled for publishing.
                     </p>
                     <Button asChild>
-                      <Link href="/schedule">
-                        Schedule Content
-                      </Link>
+                      <Link href="/schedule">Schedule Content</Link>
                     </Button>
                   </div>
                 )}
@@ -489,13 +549,18 @@ export const ContentEditor = ({ content, campaigns }: ContentEditorProps) => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium">Content ID</label>
-                  <p className="text-sm text-muted-foreground font-mono">{content.id}</p>
+                  <label className="font-medium text-sm">Content ID</label>
+                  <p className="font-mono text-muted-foreground text-sm">
+                    {content.id}
+                  </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium">URL Slug</label>
-                  <p className="text-sm text-muted-foreground">
-                    {content.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}
+                  <label className="font-medium text-sm">URL Slug</label>
+                  <p className="text-muted-foreground text-sm">
+                    {content.title
+                      .toLowerCase()
+                      .replace(/[^a-z0-9]+/g, '-')
+                      .replace(/(^-|-$)/g, '')}
                   </p>
                 </div>
               </CardContent>

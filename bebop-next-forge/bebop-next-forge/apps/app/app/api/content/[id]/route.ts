@@ -1,7 +1,7 @@
 import { auth } from '@repo/auth/server';
 import { database } from '@repo/database';
-import { ContentType, ContentStatus } from '@repo/database/types';
-import { NextRequest, NextResponse } from 'next/server';
+import { ContentStatus, ContentType } from '@repo/database/types';
+import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
 const updateContentSchema = z.object({
@@ -26,11 +26,11 @@ export async function GET(
     }
 
     const content = await database.content.findFirst({
-      where: { 
+      where: {
         id,
         campaign: {
-          userId
-        }
+          userId,
+        },
       },
       include: {
         campaign: {
@@ -61,7 +61,10 @@ export async function GET(
     return NextResponse.json(content);
   } catch (error) {
     console.error('Failed to fetch content:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }
 
@@ -82,11 +85,11 @@ export async function PUT(
 
     // Check if content exists and belongs to user
     const existingContent = await database.content.findFirst({
-      where: { 
+      where: {
         id,
         campaign: {
-          userId
-        }
+          userId,
+        },
       },
     });
 
@@ -101,7 +104,10 @@ export async function PUT(
       });
 
       if (!campaign) {
-        return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
+        return NextResponse.json(
+          { error: 'Campaign not found' },
+          { status: 404 }
+        );
       }
     }
 
@@ -124,11 +130,17 @@ export async function PUT(
     return NextResponse.json(updatedContent);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Invalid data', details: error.errors }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Invalid data', details: error.errors },
+        { status: 400 }
+      );
     }
 
     console.error('Failed to update content:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }
 
@@ -146,11 +158,11 @@ export async function DELETE(
 
     // Check if content exists and belongs to user
     const existingContent = await database.content.findFirst({
-      where: { 
+      where: {
         id,
         campaign: {
-          userId
-        }
+          userId,
+        },
       },
     });
 
@@ -171,6 +183,9 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Failed to delete content:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }

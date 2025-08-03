@@ -2,8 +2,8 @@ import { auth } from '@repo/auth/server';
 import { database } from '@repo/database';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { AnalyticsDashboard } from './components/analytics-dashboard';
 import { Header } from '../components/header';
+import { AnalyticsDashboard } from './components/analytics-dashboard';
 
 const title = 'Analytics';
 const description = 'Track your content marketing performance';
@@ -54,32 +54,45 @@ const AnalyticsPage = async () => {
   // Calculate stats
   const stats = {
     totalCampaigns: campaigns.length,
-    activeCampaigns: campaigns.filter(c => c.status === 'ACTIVE').length,
+    activeCampaigns: campaigns.filter((c) => c.status === 'ACTIVE').length,
     totalContent: content.length,
-    publishedContent: content.filter(c => c.status === 'PUBLISHED').length,
+    publishedContent: content.filter((c) => c.status === 'PUBLISHED').length,
     totalSchedules: schedules.length,
-    publishedSchedules: schedules.filter(s => s.status === 'PUBLISHED').length,
-    activeDestinations: destinations.filter(d => d.isActive).length,
-    
+    publishedSchedules: schedules.filter((s) => s.status === 'PUBLISHED')
+      .length,
+    activeDestinations: destinations.filter((d) => d.isActive).length,
+
     // Content by type
-    contentByType: content.reduce((acc, c) => {
-      acc[c.type] = (acc[c.type] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>),
-    
+    contentByType: content.reduce(
+      (acc, c) => {
+        acc[c.type] = (acc[c.type] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    ),
+
     // Campaigns by status
-    campaignsByStatus: campaigns.reduce((acc, c) => {
-      acc[c.status] = (acc[c.status] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>),
-    
+    campaignsByStatus: campaigns.reduce(
+      (acc, c) => {
+        acc[c.status] = (acc[c.status] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    ),
+
     // Recent activity
     recentContent: content
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      )
       .slice(0, 5),
-    
+
     recentSchedules: schedules
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      )
       .slice(0, 5),
   };
 

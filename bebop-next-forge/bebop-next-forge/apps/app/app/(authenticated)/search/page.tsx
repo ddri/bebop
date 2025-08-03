@@ -65,27 +65,39 @@ const SearchPage = async ({ searchParams }: SearchPageProperties) => {
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         {campaigns.length > 0 && (
           <div>
-            <h2 className="text-lg font-semibold mb-4">Campaigns</h2>
+            <h2 className="mb-4 font-semibold text-lg">Campaigns</h2>
             <div className="grid auto-rows-min gap-4 md:grid-cols-3">
               {campaigns.map((campaign) => (
-                <div key={campaign.id} className="aspect-video rounded-xl bg-muted/50 p-4">
+                <div
+                  key={campaign.id}
+                  className="aspect-video rounded-xl bg-muted/50 p-4"
+                >
                   <h3 className="font-medium">{campaign.name}</h3>
-                  <p className="text-sm text-muted-foreground mt-2">{campaign.description}</p>
+                  <p className="mt-2 text-muted-foreground text-sm">
+                    {campaign.description}
+                  </p>
                 </div>
               ))}
             </div>
           </div>
         )}
-        
+
         {content.length > 0 && (
           <div>
-            <h2 className="text-lg font-semibold mb-4">Content</h2>
+            <h2 className="mb-4 font-semibold text-lg">Content</h2>
             <div className="grid auto-rows-min gap-4 md:grid-cols-3">
               {content.map((item) => (
-                <div key={item.id} className="aspect-video rounded-xl bg-muted/50 p-4">
+                <div
+                  key={item.id}
+                  className="aspect-video rounded-xl bg-muted/50 p-4"
+                >
                   <h3 className="font-medium">{item.title}</h3>
-                  <p className="text-sm text-muted-foreground mt-1">{item.campaign.name}</p>
-                  <p className="text-xs text-muted-foreground mt-2 line-clamp-2">{item.body}</p>
+                  <p className="mt-1 text-muted-foreground text-sm">
+                    {item.campaign.name}
+                  </p>
+                  <p className="mt-2 line-clamp-2 text-muted-foreground text-xs">
+                    {item.body}
+                  </p>
                 </div>
               ))}
             </div>
@@ -93,8 +105,10 @@ const SearchPage = async ({ searchParams }: SearchPageProperties) => {
         )}
 
         {campaigns.length === 0 && content.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">No results found for &quot;{q}&quot;</p>
+          <div className="py-12 text-center">
+            <p className="text-muted-foreground">
+              No results found for &quot;{q}&quot;
+            </p>
           </div>
         )}
       </div>

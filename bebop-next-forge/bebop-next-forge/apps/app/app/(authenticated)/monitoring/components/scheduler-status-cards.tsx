@@ -1,13 +1,13 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
-import { 
+import { Card, CardContent } from '@repo/design-system/components/ui/card';
+import {
   Activity,
   AlertTriangle,
   CheckCircle,
   Clock,
   Timer,
-  TrendingUp
+  TrendingUp,
 } from 'lucide-react';
 
 interface SchedulerStatusCardsProps {
@@ -21,7 +21,10 @@ interface SchedulerStatusCardsProps {
   lastUpdate?: string;
 }
 
-export const SchedulerStatusCards = ({ statistics, lastUpdate }: SchedulerStatusCardsProps) => {
+export const SchedulerStatusCards = ({
+  statistics,
+  lastUpdate,
+}: SchedulerStatusCardsProps) => {
   const cards = [
     {
       title: 'Pending',
@@ -57,9 +60,10 @@ export const SchedulerStatusCards = ({ statistics, lastUpdate }: SchedulerStatus
     },
   ];
 
-  const successRate = statistics.total > 0 
-    ? ((statistics.published / statistics.total) * 100).toFixed(1)
-    : '0';
+  const successRate =
+    statistics.total > 0
+      ? ((statistics.published / statistics.total) * 100).toFixed(1)
+      : '0';
 
   return (
     <div className="space-y-6">
@@ -72,13 +76,11 @@ export const SchedulerStatusCards = ({ statistics, lastUpdate }: SchedulerStatus
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">
+                    <p className="font-medium text-muted-foreground text-sm">
                       {card.title}
                     </p>
-                    <p className="text-3xl font-bold">
-                      {card.value}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="font-bold text-3xl">{card.value}</p>
+                    <p className="mt-1 text-muted-foreground text-xs">
                       {card.description}
                     </p>
                   </div>
@@ -98,17 +100,15 @@ export const SchedulerStatusCards = ({ statistics, lastUpdate }: SchedulerStatus
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">
+                <p className="font-medium text-muted-foreground text-sm">
                   Total Schedules
                 </p>
-                <p className="text-2xl font-bold">
-                  {statistics.total}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="font-bold text-2xl">{statistics.total}</p>
+                <p className="mt-1 text-muted-foreground text-xs">
                   All time total
                 </p>
               </div>
-              <div className="rounded-full p-3 bg-gray-50 dark:bg-gray-950/30">
+              <div className="rounded-full bg-gray-50 p-3 dark:bg-gray-950/30">
                 <TrendingUp className="h-5 w-5 text-gray-600" />
               </div>
             </div>
@@ -119,30 +119,32 @@ export const SchedulerStatusCards = ({ statistics, lastUpdate }: SchedulerStatus
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">
+                <p className="font-medium text-muted-foreground text-sm">
                   Success Rate
                 </p>
-                <p className="text-2xl font-bold">
-                  {successRate}%
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="font-bold text-2xl">{successRate}%</p>
+                <p className="mt-1 text-muted-foreground text-xs">
                   Published vs total
                 </p>
               </div>
-              <div className={`rounded-full p-3 ${
-                parseFloat(successRate) >= 90 
-                  ? 'bg-green-50 dark:bg-green-950/30' 
-                  : parseFloat(successRate) >= 70 
-                  ? 'bg-yellow-50 dark:bg-yellow-950/30' 
-                  : 'bg-red-50 dark:bg-red-950/30'
-              }`}>
-                <CheckCircle className={`h-5 w-5 ${
-                  parseFloat(successRate) >= 90 
-                    ? 'text-green-600' 
-                    : parseFloat(successRate) >= 70 
-                    ? 'text-yellow-600' 
-                    : 'text-red-600'
-                }`} />
+              <div
+                className={`rounded-full p-3 ${
+                  Number.parseFloat(successRate) >= 90
+                    ? 'bg-green-50 dark:bg-green-950/30'
+                    : Number.parseFloat(successRate) >= 70
+                      ? 'bg-yellow-50 dark:bg-yellow-950/30'
+                      : 'bg-red-50 dark:bg-red-950/30'
+                }`}
+              >
+                <CheckCircle
+                  className={`h-5 w-5 ${
+                    Number.parseFloat(successRate) >= 90
+                      ? 'text-green-600'
+                      : Number.parseFloat(successRate) >= 70
+                        ? 'text-yellow-600'
+                        : 'text-red-600'
+                  }`}
+                />
               </div>
             </div>
           </CardContent>
@@ -152,26 +154,34 @@ export const SchedulerStatusCards = ({ statistics, lastUpdate }: SchedulerStatus
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">
+                <p className="font-medium text-muted-foreground text-sm">
                   Queue Status
                 </p>
-                <p className="text-2xl font-bold">
-                  {statistics.pending + statistics.publishing > 0 ? 'Active' : 'Idle'}
+                <p className="font-bold text-2xl">
+                  {statistics.pending + statistics.publishing > 0
+                    ? 'Active'
+                    : 'Idle'}
                 </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {lastUpdate ? `Updated ${new Date(lastUpdate).toLocaleTimeString()}` : 'Status unknown'}
+                <p className="mt-1 text-muted-foreground text-xs">
+                  {lastUpdate
+                    ? `Updated ${new Date(lastUpdate).toLocaleTimeString()}`
+                    : 'Status unknown'}
                 </p>
               </div>
-              <div className={`rounded-full p-3 ${
-                statistics.pending + statistics.publishing > 0 
-                  ? 'bg-blue-50 dark:bg-blue-950/30' 
-                  : 'bg-gray-50 dark:bg-gray-950/30'
-              }`}>
-                <Timer className={`h-5 w-5 ${
-                  statistics.pending + statistics.publishing > 0 
-                    ? 'text-blue-600' 
-                    : 'text-gray-600'
-                }`} />
+              <div
+                className={`rounded-full p-3 ${
+                  statistics.pending + statistics.publishing > 0
+                    ? 'bg-blue-50 dark:bg-blue-950/30'
+                    : 'bg-gray-50 dark:bg-gray-950/30'
+                }`}
+              >
+                <Timer
+                  className={`h-5 w-5 ${
+                    statistics.pending + statistics.publishing > 0
+                      ? 'text-blue-600'
+                      : 'text-gray-600'
+                  }`}
+                />
               </div>
             </div>
           </CardContent>

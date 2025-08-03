@@ -313,7 +313,7 @@ export const REMOVE_POST_FROM_SERIES_MUTATION = `
 
 // Helper function to create tags input
 export const createTagsInput = (tags: string[]) => {
-  return tags.map(tag => ({
+  return tags.map((tag) => ({
     slug: tag.toLowerCase().replace(/[^a-z0-9]/g, ''),
     name: tag,
   }));
@@ -406,11 +406,11 @@ export const createPublishPostInput = (data: {
     data.isNewsletterActivated !== undefined
   ) {
     input.settings = {};
-    
+
     if (data.enableTableOfContents !== undefined) {
       input.settings.enableTableOfContents = data.enableTableOfContents;
     }
-    
+
     if (data.isNewsletterActivated !== undefined) {
       input.settings.isNewsletterActivated = data.isNewsletterActivated;
     }
@@ -419,15 +419,15 @@ export const createPublishPostInput = (data: {
   // Meta tags object
   if (data.metaTitle || data.metaDescription || data.ogImageUrl) {
     input.metaTags = {};
-    
+
     if (data.metaTitle) {
       input.metaTags.title = data.metaTitle;
     }
-    
+
     if (data.metaDescription) {
       input.metaTags.description = data.metaDescription;
     }
-    
+
     if (data.ogImageUrl) {
       input.metaTags.image = data.ogImageUrl;
     }

@@ -1,27 +1,31 @@
 'use client';
 
-import { Button } from '@repo/design-system/components/ui/button';
+import type {
+  CampaignStatus,
+  DestinationType,
+  ScheduleStatus,
+} from '@repo/database/types';
 import { Badge } from '@repo/design-system/components/ui/badge';
+import { Button } from '@repo/design-system/components/ui/button';
 import { Checkbox } from '@repo/design-system/components/ui/checkbox';
 import { Label } from '@repo/design-system/components/ui/label';
-import type { DestinationType, ScheduleStatus, CampaignStatus } from '@repo/database/types';
-import { 
-  Hash, 
-  FileCode, 
-  MessageCircle, 
-  Megaphone,
-  Twitter,
-  Linkedin,
-  Facebook,
-  Instagram,
-  Globe,
-  Mail,
-  Settings,
-  X,
-  Clock,
+import {
   CheckCircle,
-  XCircle,
+  Clock,
+  Facebook,
+  FileCode,
+  Globe,
+  Hash,
+  Instagram,
+  Linkedin,
+  Mail,
+  Megaphone,
+  MessageCircle,
+  Settings,
   Target,
+  Twitter,
+  X,
+  XCircle,
 } from 'lucide-react';
 
 interface CalendarFiltersProps {
@@ -93,7 +97,6 @@ const STATUS_NAMES = {
   CANCELLED: 'Cancelled',
 } as const;
 
-
 export const CalendarFilters = ({
   destinations,
   campaigns,
@@ -106,12 +109,12 @@ export const CalendarFilters = ({
 }: CalendarFiltersProps) => {
   // Get unique platforms from destinations
   const uniquePlatforms = Array.from(
-    new Set(destinations.map(dest => dest.type))
+    new Set(destinations.map((dest) => dest.type))
   );
 
   const handlePlatformToggle = (platform: DestinationType) => {
     if (selectedPlatforms.includes(platform)) {
-      setSelectedPlatforms(selectedPlatforms.filter(p => p !== platform));
+      setSelectedPlatforms(selectedPlatforms.filter((p) => p !== platform));
     } else {
       setSelectedPlatforms([...selectedPlatforms, platform]);
     }
@@ -119,7 +122,7 @@ export const CalendarFilters = ({
 
   const handleStatusToggle = (status: ScheduleStatus) => {
     if (selectedStatuses.includes(status)) {
-      setSelectedStatuses(selectedStatuses.filter(s => s !== status));
+      setSelectedStatuses(selectedStatuses.filter((s) => s !== status));
     } else {
       setSelectedStatuses([...selectedStatuses, status]);
     }
@@ -127,7 +130,7 @@ export const CalendarFilters = ({
 
   const handleCampaignToggle = (campaignId: string) => {
     if (selectedCampaigns.includes(campaignId)) {
-      setSelectedCampaigns(selectedCampaigns.filter(c => c !== campaignId));
+      setSelectedCampaigns(selectedCampaigns.filter((c) => c !== campaignId));
     } else {
       setSelectedCampaigns([...selectedCampaigns, campaignId]);
     }
@@ -139,32 +142,37 @@ export const CalendarFilters = ({
     setSelectedCampaigns([]);
   };
 
-  const hasActiveFilters = selectedPlatforms.length > 0 || 
-                         selectedStatuses.length > 0 || 
-                         selectedCampaigns.length > 0;
+  const hasActiveFilters =
+    selectedPlatforms.length > 0 ||
+    selectedStatuses.length > 0 ||
+    selectedCampaigns.length > 0;
 
   return (
-    <div className="rounded-lg border bg-card p-4 space-y-4">
+    <div className="space-y-4 rounded-lg border bg-card p-4">
       <div className="flex items-center justify-between">
         <h3 className="font-medium">Filters</h3>
         {hasActiveFilters && (
           <Button variant="ghost" size="sm" onClick={clearAllFilters}>
-            <X className="h-4 w-4 mr-1" />
+            <X className="mr-1 h-4 w-4" />
             Clear All
           </Button>
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         {/* Platform Filters */}
         <div className="space-y-3">
-          <Label className="text-sm font-medium">Platforms</Label>
+          <Label className="font-medium text-sm">Platforms</Label>
           <div className="space-y-2">
             {uniquePlatforms.map((platform) => {
-              const PlatformIcon = PLATFORM_ICONS[platform as keyof typeof PLATFORM_ICONS] || Settings;
-              const platformName = PLATFORM_NAMES[platform as keyof typeof PLATFORM_NAMES] || platform;
+              const PlatformIcon =
+                PLATFORM_ICONS[platform as keyof typeof PLATFORM_ICONS] ||
+                Settings;
+              const platformName =
+                PLATFORM_NAMES[platform as keyof typeof PLATFORM_NAMES] ||
+                platform;
               const isSelected = selectedPlatforms.includes(platform);
-              
+
               return (
                 <div key={platform} className="flex items-center space-x-2">
                   <Checkbox
@@ -174,7 +182,7 @@ export const CalendarFilters = ({
                   />
                   <Label
                     htmlFor={`platform-${platform}`}
-                    className="flex items-center gap-2 text-sm cursor-pointer"
+                    className="flex cursor-pointer items-center gap-2 text-sm"
                   >
                     <PlatformIcon className="h-4 w-4" />
                     {platformName}
@@ -187,13 +195,21 @@ export const CalendarFilters = ({
 
         {/* Status Filters */}
         <div className="space-y-3">
-          <Label className="text-sm font-medium">Status</Label>
+          <Label className="font-medium text-sm">Status</Label>
           <div className="space-y-2">
-            {(['PENDING', 'PUBLISHING', 'PUBLISHED', 'FAILED', 'CANCELLED'] as ScheduleStatus[]).map((status) => {
+            {(
+              [
+                'PENDING',
+                'PUBLISHING',
+                'PUBLISHED',
+                'FAILED',
+                'CANCELLED',
+              ] as ScheduleStatus[]
+            ).map((status) => {
               const StatusIcon = STATUS_ICONS[status];
               const statusName = STATUS_NAMES[status];
               const isSelected = selectedStatuses.includes(status);
-              
+
               return (
                 <div key={status} className="flex items-center space-x-2">
                   <Checkbox
@@ -203,7 +219,7 @@ export const CalendarFilters = ({
                   />
                   <Label
                     htmlFor={`status-${status}`}
-                    className="flex items-center gap-2 text-sm cursor-pointer"
+                    className="flex cursor-pointer items-center gap-2 text-sm"
                   >
                     <StatusIcon className="h-4 w-4" />
                     {statusName}
@@ -216,11 +232,11 @@ export const CalendarFilters = ({
 
         {/* Campaign Filters */}
         <div className="space-y-3">
-          <Label className="text-sm font-medium">Campaigns</Label>
-          <div className="space-y-2 max-h-32 overflow-y-auto">
+          <Label className="font-medium text-sm">Campaigns</Label>
+          <div className="max-h-32 space-y-2 overflow-y-auto">
             {campaigns.map((campaign) => {
               const isSelected = selectedCampaigns.includes(campaign.id);
-              
+
               return (
                 <div key={campaign.id} className="flex items-center space-x-2">
                   <Checkbox
@@ -230,7 +246,7 @@ export const CalendarFilters = ({
                   />
                   <Label
                     htmlFor={`campaign-${campaign.id}`}
-                    className="flex items-center gap-2 text-sm cursor-pointer"
+                    className="flex cursor-pointer items-center gap-2 text-sm"
                   >
                     <Target className="h-4 w-4" />
                     <span className="truncate">{campaign.name}</span>
@@ -244,13 +260,14 @@ export const CalendarFilters = ({
 
       {/* Active Filters Summary */}
       {hasActiveFilters && (
-        <div className="pt-3 border-t">
+        <div className="border-t pt-3">
           <div className="flex flex-wrap gap-2">
             {selectedPlatforms.map((platform) => (
               <Badge key={platform} variant="secondary" className="gap-1">
-                {PLATFORM_NAMES[platform as keyof typeof PLATFORM_NAMES] || platform}
-                <X 
-                  className="h-3 w-3 cursor-pointer" 
+                {PLATFORM_NAMES[platform as keyof typeof PLATFORM_NAMES] ||
+                  platform}
+                <X
+                  className="h-3 w-3 cursor-pointer"
                   onClick={() => handlePlatformToggle(platform)}
                 />
               </Badge>
@@ -258,19 +275,19 @@ export const CalendarFilters = ({
             {selectedStatuses.map((status) => (
               <Badge key={status} variant="secondary" className="gap-1">
                 {STATUS_NAMES[status]}
-                <X 
-                  className="h-3 w-3 cursor-pointer" 
+                <X
+                  className="h-3 w-3 cursor-pointer"
                   onClick={() => handleStatusToggle(status)}
                 />
               </Badge>
             ))}
             {selectedCampaigns.map((campaignId) => {
-              const campaign = campaigns.find(c => c.id === campaignId);
+              const campaign = campaigns.find((c) => c.id === campaignId);
               return campaign ? (
                 <Badge key={campaignId} variant="secondary" className="gap-1">
                   {campaign.name}
-                  <X 
-                    className="h-3 w-3 cursor-pointer" 
+                  <X
+                    className="h-3 w-3 cursor-pointer"
                     onClick={() => handleCampaignToggle(campaignId)}
                   />
                 </Badge>

@@ -1,33 +1,28 @@
 'use client';
 
-import { Button } from '@repo/design-system/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@repo/design-system/components/ui/form';
-import { Input } from '@repo/design-system/components/ui/input';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { 
-  Eye, 
-  EyeOff, 
-  Globe, 
-  Mail, 
-  MessageSquare, 
-  Settings, 
-  Trash2,
-  Edit,
-  CheckCircle,
-  AlertCircle
-} from 'lucide-react';
 import type { Destination, DestinationType } from '@repo/database/types';
-import { useState } from 'react';
+import { Badge } from '@repo/design-system/components/ui/badge';
+import { Button } from '@repo/design-system/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@repo/design-system/components/ui/card';
+import {
+  AlertCircle,
+  CheckCircle,
+  Edit,
+  Eye,
+  EyeOff,
+  Globe,
+  Mail,
+  MessageSquare,
+  Settings,
+  Trash2,
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 interface ApiKeysSettingsProps {
   destinations: Destination[];
@@ -73,19 +68,23 @@ const typeColors: Record<DestinationType, string> = {
 
 export const ApiKeysSettings = ({ destinations }: ApiKeysSettingsProps) => {
   const [showKeys, setShowKeys] = useState<Record<string, boolean>>({});
-  const [editingDestination, setEditingDestination] = useState<string | null>(null);
+  const [editingDestination, setEditingDestination] = useState<string | null>(
+    null
+  );
   const router = useRouter();
 
   const toggleKeyVisibility = (destinationId: string) => {
-    setShowKeys(prev => ({
+    setShowKeys((prev) => ({
       ...prev,
-      [destinationId]: !prev[destinationId]
+      [destinationId]: !prev[destinationId],
     }));
   };
 
   const maskApiKey = (key: string) => {
     if (!key) return 'Not configured';
-    return key.slice(0, 4) + '•'.repeat(Math.max(0, key.length - 8)) + key.slice(-4);
+    return (
+      key.slice(0, 4) + '•'.repeat(Math.max(0, key.length - 8)) + key.slice(-4)
+    );
   };
 
   const testConnection = async (destinationId: string) => {
@@ -93,7 +92,7 @@ export const ApiKeysSettings = ({ destinations }: ApiKeysSettingsProps) => {
       const response = await fetch(`/api/destinations/${destinationId}/test`, {
         method: 'POST',
       });
-      
+
       if (response.ok) {
         alert('Connection test successful!');
       } else {
@@ -125,19 +124,20 @@ export const ApiKeysSettings = ({ destinations }: ApiKeysSettingsProps) => {
       <Card>
         <CardHeader>
           <CardTitle>API Keys & Integrations</CardTitle>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             Manage your publishing destination credentials and API keys
           </p>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {destinations.length === 0 ? (
-              <div className="text-center py-8">
-                <Settings className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <div className="py-8 text-center">
+                <Settings className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
                 <p className="text-muted-foreground">
-                  No destinations configured yet. Add destinations to manage API keys.
+                  No destinations configured yet. Add destinations to manage API
+                  keys.
                 </p>
-                <Button 
+                <Button
                   className="mt-4"
                   onClick={() => router.push('/destinations')}
                 >
@@ -146,19 +146,22 @@ export const ApiKeysSettings = ({ destinations }: ApiKeysSettingsProps) => {
               </div>
             ) : (
               destinations.map((destination) => (
-                <Card key={destination.id} className="border-l-4 border-l-primary/20">
+                <Card
+                  key={destination.id}
+                  className="border-l-4 border-l-primary/20"
+                >
                   <CardContent className="pt-4">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
                         {typeIcons[destination.type]}
                         <div>
-                          <h3 className="font-semibold flex items-center gap-2">
+                          <h3 className="flex items-center gap-2 font-semibold">
                             {destination.name}
                             <Badge className={typeColors[destination.type]}>
                               {destination.type}
                             </Badge>
                           </h3>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-muted-foreground text-sm">
                             {destination.isActive ? (
                               <span className="flex items-center gap-1">
                                 <CheckCircle className="h-3 w-3 text-green-500" />
@@ -173,7 +176,7 @@ export const ApiKeysSettings = ({ destinations }: ApiKeysSettingsProps) => {
                           </p>
                         </div>
                       </div>
-                      
+
                       <div className="flex items-center gap-2">
                         <Button
                           variant="outline"
@@ -200,29 +203,39 @@ export const ApiKeysSettings = ({ destinations }: ApiKeysSettingsProps) => {
                     </div>
 
                     <div className="mt-4 space-y-3">
-                      {destination.config && typeof destination.config === 'object' && (
-                        Object.entries(destination.config as Record<string, unknown>).map(([key, value]) => (
-                          <div key={key} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                      {destination.config &&
+                        typeof destination.config === 'object' &&
+                        Object.entries(
+                          destination.config as Record<string, unknown>
+                        ).map(([key, value]) => (
+                          <div
+                            key={key}
+                            className="flex items-center justify-between rounded-lg bg-muted/50 p-3"
+                          >
                             <div>
-                              <p className="text-sm font-medium capitalize">
+                              <p className="font-medium text-sm capitalize">
                                 {key.replace(/([A-Z])/g, ' $1').trim()}
                               </p>
-                              <p className="text-xs text-muted-foreground">
-                                {key.toLowerCase().includes('key') || key.toLowerCase().includes('secret') || key.toLowerCase().includes('token') ? (
-                                  showKeys[destination.id] 
+                              <p className="text-muted-foreground text-xs">
+                                {key.toLowerCase().includes('key') ||
+                                key.toLowerCase().includes('secret') ||
+                                key.toLowerCase().includes('token')
+                                  ? showKeys[destination.id]
                                     ? String(value)
                                     : maskApiKey(String(value))
-                                ) : (
-                                  String(value)
-                                )}
+                                  : String(value)}
                               </p>
                             </div>
-                            
-                            {(key.toLowerCase().includes('key') || key.toLowerCase().includes('secret') || key.toLowerCase().includes('token')) && (
+
+                            {(key.toLowerCase().includes('key') ||
+                              key.toLowerCase().includes('secret') ||
+                              key.toLowerCase().includes('token')) && (
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => toggleKeyVisibility(destination.id)}
+                                onClick={() =>
+                                  toggleKeyVisibility(destination.id)
+                                }
                               >
                                 {showKeys[destination.id] ? (
                                   <EyeOff className="h-4 w-4" />
@@ -232,15 +245,16 @@ export const ApiKeysSettings = ({ destinations }: ApiKeysSettingsProps) => {
                               </Button>
                             )}
                           </div>
-                        ))
-                      )}
+                        ))}
                     </div>
 
-                    <div className="mt-4 text-xs text-muted-foreground">
-                      Created: {new Date(destination.createdAt).toLocaleDateString()}
+                    <div className="mt-4 text-muted-foreground text-xs">
+                      Created:{' '}
+                      {new Date(destination.createdAt).toLocaleDateString()}
                       {destination.updatedAt !== destination.createdAt && (
                         <span className="ml-2">
-                          • Updated: {new Date(destination.updatedAt).toLocaleDateString()}
+                          • Updated:{' '}
+                          {new Date(destination.updatedAt).toLocaleDateString()}
                         </span>
                       )}
                     </div>
@@ -258,28 +272,24 @@ export const ApiKeysSettings = ({ destinations }: ApiKeysSettingsProps) => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 border rounded-lg">
+            <div className="flex items-center justify-between rounded-lg border p-3">
               <div>
                 <p className="font-medium">API Access Token</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   Personal access token for external integrations
                 </p>
               </div>
-              <Button variant="outline">
-                Generate Token
-              </Button>
+              <Button variant="outline">Generate Token</Button>
             </div>
 
-            <div className="flex items-center justify-between p-3 border rounded-lg">
+            <div className="flex items-center justify-between rounded-lg border p-3">
               <div>
                 <p className="font-medium">Webhook Secret</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   Secret key for webhook verification
                 </p>
               </div>
-              <Button variant="outline">
-                Regenerate Secret
-              </Button>
+              <Button variant="outline">Regenerate Secret</Button>
             </div>
           </div>
         </CardContent>

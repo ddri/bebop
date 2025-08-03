@@ -1,7 +1,13 @@
 'use client';
 
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@repo/design-system/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@repo/design-system/components/ui/card';
 import {
   Form,
   FormControl,
@@ -20,7 +26,6 @@ import {
   SelectValue,
 } from '@repo/design-system/components/ui/select';
 import { Switch } from '@repo/design-system/components/ui/switch';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -107,14 +112,15 @@ export const NotificationSettings = () => {
                   <FormItem>
                     <FormLabel>Notification Email</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="email" 
-                        placeholder="notifications@example.com" 
-                        {...field} 
+                      <Input
+                        type="email"
+                        placeholder="notifications@example.com"
+                        {...field}
                       />
                     </FormControl>
                     <FormDescription>
-                      Email address for notifications (leave empty to use account email)
+                      Email address for notifications (leave empty to use
+                      account email)
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -250,7 +256,10 @@ export const NotificationSettings = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Digest Day</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select day" />

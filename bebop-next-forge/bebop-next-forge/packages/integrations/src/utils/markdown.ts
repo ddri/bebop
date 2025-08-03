@@ -12,7 +12,10 @@ export interface MarkdownToHtmlOptions {
  * Convert markdown to HTML (basic implementation)
  * For production, consider using a library like markdown-it or remark
  */
-export function markdownToHtml(markdown: string, options: MarkdownToHtmlOptions = {}): string {
+export function markdownToHtml(
+  markdown: string,
+  options: MarkdownToHtmlOptions = {}
+): string {
   let html = markdown;
 
   // Convert headers
@@ -29,10 +32,13 @@ export function markdownToHtml(markdown: string, options: MarkdownToHtmlOptions 
   html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
 
   // Convert images (unless disabled)
-  if (!options.removeImages) {
-    html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img alt="$1" src="$2" />');
-  } else {
+  if (options.removeImages) {
     html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '');
+  } else {
+    html = html.replace(
+      /!\[([^\]]*)\]\(([^)]+)\)/g,
+      '<img alt="$1" src="$2" />'
+    );
   }
 
   // Convert code blocks
@@ -49,32 +55,36 @@ export function markdownToHtml(markdown: string, options: MarkdownToHtmlOptions 
  * Strip all markdown formatting and return plain text
  */
 export function stripMarkdown(markdown: string): string {
-  return markdown
-    // Remove code blocks
-    .replace(/```[\s\S]*?```/g, '')
-    .replace(/`[^`]*`/g, '')
-    // Remove images
-    .replace(/!\[([^\]]*)\]\([^)]+\)/g, '$1')
-    // Remove links but keep text
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-    // Remove bold/italic
-    .replace(/\*\*\*(.*?)\*\*\*/g, '$1')
-    .replace(/\*\*(.*?)\*\*/g, '$1')
-    .replace(/\*(.*?)\*/g, '$1')
-    // Remove headers
-    .replace(/^#{1,6}\s+/gm, '')
-    // Remove horizontal rules
-    .replace(/^[-*_]{3,}$/gm, '')
-    // Clean up whitespace
-    .replace(/\n\s*\n/g, '\n')
-    .replace(/\s+/g, ' ')
-    .trim();
+  return (
+    markdown
+      // Remove code blocks
+      .replace(/```[\s\S]*?```/g, '')
+      .replace(/`[^`]*`/g, '')
+      // Remove images
+      .replace(/!\[([^\]]*)\]\([^)]+\)/g, '$1')
+      // Remove links but keep text
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+      // Remove bold/italic
+      .replace(/\*\*\*(.*?)\*\*\*/g, '$1')
+      .replace(/\*\*(.*?)\*\*/g, '$1')
+      .replace(/\*(.*?)\*/g, '$1')
+      // Remove headers
+      .replace(/^#{1,6}\s+/gm, '')
+      // Remove horizontal rules
+      .replace(/^[-*_]{3,}$/gm, '')
+      // Clean up whitespace
+      .replace(/\n\s*\n/g, '\n')
+      .replace(/\s+/g, ' ')
+      .trim()
+  );
 }
 
 /**
  * Extract table of contents from markdown headers
  */
-export function extractTableOfContents(markdown: string): Array<{ level: number; text: string; slug: string }> {
+export function extractTableOfContents(
+  markdown: string
+): Array<{ level: number; text: string; slug: string }> {
   const headers: Array<{ level: number; text: string; slug: string }> = [];
   const headerRegex = /^(#{1,6})\s+(.+)$/gm;
   let match;
@@ -83,7 +93,7 @@ export function extractTableOfContents(markdown: string): Array<{ level: number;
     const level = match[1].length;
     const text = match[2].trim();
     const slug = createSlug(text);
-    
+
     headers.push({ level, text, slug });
   }
 
@@ -108,12 +118,12 @@ export function createSlug(text: string): string {
 export function extractFirstParagraph(markdown: string): string {
   // Remove headers first
   const withoutHeaders = markdown.replace(/^#{1,6}\s+.+$/gm, '');
-  
+
   // Split by double newlines
-  const paragraphs = withoutHeaders.split(/\n\s*\n/).filter(p => p.trim());
-  
+  const paragraphs = withoutHeaders.split(/\n\s*\n/).filter((p) => p.trim());
+
   if (paragraphs.length === 0) return '';
-  
+
   // Find first meaningful paragraph
   for (const paragraph of paragraphs) {
     const cleaned = stripMarkdown(paragraph.trim());
@@ -121,14 +131,16 @@ export function extractFirstParagraph(markdown: string): string {
       return cleaned;
     }
   }
-  
+
   return stripMarkdown(paragraphs[0].trim());
 }
 
 /**
  * Extract all images from markdown content
  */
-export function extractImages(markdown: string): Array<{ alt: string; url: string }> {
+export function extractImages(
+  markdown: string
+): Array<{ alt: string; url: string }> {
   const images: Array<{ alt: string; url: string }> = [];
   const imageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
   let match;
@@ -146,7 +158,9 @@ export function extractImages(markdown: string): Array<{ alt: string; url: strin
 /**
  * Extract all links from markdown content
  */
-export function extractLinks(markdown: string): Array<{ text: string; url: string }> {
+export function extractLinks(
+  markdown: string
+): Array<{ text: string; url: string }> {
   const links: Array<{ text: string; url: string }> = [];
   const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
   let match;
@@ -166,13 +180,16 @@ export function extractLinks(markdown: string): Array<{ text: string; url: strin
  */
 export function countWords(markdown: string): number {
   const text = stripMarkdown(markdown);
-  return text.split(/\s+/).filter(word => word.length > 0).length;
+  return text.split(/\s+/).filter((word) => word.length > 0).length;
 }
 
 /**
  * Estimate reading time in minutes
  */
-export function estimateReadingTime(markdown: string, wordsPerMinute = 200): number {
+export function estimateReadingTime(
+  markdown: string,
+  wordsPerMinute = 200
+): number {
   const wordCount = countWords(markdown);
   return Math.ceil(wordCount / wordsPerMinute);
 }

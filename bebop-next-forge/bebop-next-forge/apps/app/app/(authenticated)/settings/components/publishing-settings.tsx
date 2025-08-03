@@ -1,7 +1,13 @@
 'use client';
 
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@repo/design-system/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@repo/design-system/components/ui/card';
 import {
   Form,
   FormControl,
@@ -12,16 +18,8 @@ import {
   FormMessage,
 } from '@repo/design-system/components/ui/form';
 import { Input } from '@repo/design-system/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@repo/design-system/components/ui/select';
 import { Switch } from '@repo/design-system/components/ui/switch';
 import { Textarea } from '@repo/design-system/components/ui/textarea';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -94,7 +92,8 @@ export const PublishingSettings = () => {
                       <Input type="time" {...field} />
                     </FormControl>
                     <FormDescription>
-                      Default time for scheduling content when no specific time is set.
+                      Default time for scheduling content when no specific time
+                      is set.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -125,7 +124,7 @@ export const PublishingSettings = () => {
       <Card>
         <CardHeader>
           <CardTitle>UTM Parameters</CardTitle>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             Default UTM parameters for tracking content performance
           </p>
         </CardHeader>

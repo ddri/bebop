@@ -1,12 +1,12 @@
 import { auth } from '@repo/auth/server';
 import { database } from '@repo/database';
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
-import { CalendarView } from './components/calendar-view';
-import { Header } from '../../components/header';
 import { Button } from '@repo/design-system/components/ui/button';
 import { Calendar, List } from 'lucide-react';
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import { Header } from '../../components/header';
+import { CalendarView } from './components/calendar-view';
 
 const title = 'Calendar';
 const description = 'Visual calendar view of your content publishing schedule';
@@ -90,7 +90,7 @@ const CalendarPage = async () => {
         {/* View Toggle */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <h2 className="text-lg font-semibold">Calendar View</h2>
+            <h2 className="font-semibold text-lg">Calendar View</h2>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" asChild>
@@ -107,8 +107,8 @@ const CalendarPage = async () => {
             </Button>
           </div>
         </div>
-        
-        <CalendarView 
+
+        <CalendarView
           schedules={schedules}
           destinations={destinations}
           campaigns={campaigns}

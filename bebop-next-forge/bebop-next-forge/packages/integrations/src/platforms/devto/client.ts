@@ -1,31 +1,24 @@
 import type { DestinationType } from '@repo/database/types';
 import { BasePlatformClient } from '../../core/platform-client';
 import type {
-  PlatformCredentials,
-  PlatformConfig,
-  PlatformMetadata,
   AdaptedContent,
+  PlatformConfig,
+  PlatformCredentials,
+  PlatformMetadata,
   PublishResult,
   ValidationResult,
 } from '../../types/platform';
-import {
-  AuthenticationError,
-  ValidationError,
-  PublishingError,
-} from '../../types/platform';
+import { AuthenticationError, ValidationError } from '../../types/platform';
 import type {
-  DevtoCredentials,
-  DevtoConfig,
   DevtoArticle,
-  DevtoUser,
   DevtoArticleRequest,
-  DevtoMetadata,
+  DevtoConfig,
+  DevtoUser,
 } from './types';
 import {
-  DevtoCredentialsSchema,
-  DevtoConfigSchema,
-  DevtoArticleInputSchema,
   DEVTO_API_ENDPOINT,
+  DevtoConfigSchema,
+  DevtoCredentialsSchema,
 } from './types';
 
 /**
@@ -34,7 +27,7 @@ import {
  */
 export class DevtoClient extends BasePlatformClient {
   readonly platform: DestinationType = 'DEVTO';
-  
+
   private apiKey?: string;
 
   constructor() {
@@ -45,7 +38,10 @@ export class DevtoClient extends BasePlatformClient {
     try {
       // Validate credentials structure
       if (credentials.type !== 'api-key') {
-        throw new AuthenticationError(this.platform, 'Dev.to requires API key authentication');
+        throw new AuthenticationError(
+          this.platform,
+          'Dev.to requires API key authentication'
+        );
       }
 
       const parsedCredentials = DevtoCredentialsSchema.parse(credentials.data);
@@ -53,7 +49,7 @@ export class DevtoClient extends BasePlatformClient {
 
       // Test authentication by fetching user info
       await this.validateToken();
-      
+
       this.credentials = credentials;
       this.isAuthenticated = true;
     } catch (error) {
@@ -61,11 +57,16 @@ export class DevtoClient extends BasePlatformClient {
       if (error instanceof ValidationError) {
         throw error;
       }
-      throw new AuthenticationError(this.platform, 'Failed to authenticate with Dev.to');
+      throw new AuthenticationError(
+        this.platform,
+        'Failed to authenticate with Dev.to'
+      );
     }
   }
 
-  async validateCredentials(credentials: PlatformCredentials): Promise<ValidationResult> {
+  async validateCredentials(
+    credentials: PlatformCredentials
+  ): Promise<ValidationResult> {
     try {
       if (credentials.type !== 'api-key') {
         return {
@@ -76,19 +77,24 @@ export class DevtoClient extends BasePlatformClient {
       }
 
       DevtoCredentialsSchema.parse(credentials.data);
-      
+
       // Test the API key by making a simple API call
       const tempApiKey = credentials.data.apiKey;
-      const response = await this.makeRequest(`${DEVTO_API_ENDPOINT}/users/me`, {
-        headers: {
-          'api-key': tempApiKey,
-        },
-      });
-      
+      const response = await this.makeRequest(
+        `${DEVTO_API_ENDPOINT}/users/me`,
+        {
+          headers: {
+            'api-key': tempApiKey,
+          },
+        }
+      );
+
       if (!response.ok) {
         return {
           valid: false,
-          errors: [`API request failed: ${response.status} ${response.statusText}`],
+          errors: [
+            `API request failed: ${response.status} ${response.statusText}`,
+          ],
           warnings: [],
         };
       }
@@ -101,23 +107,32 @@ export class DevtoClient extends BasePlatformClient {
     } catch (error) {
       return {
         valid: false,
-        errors: [error instanceof Error ? error.message : 'Invalid credentials'],
+        errors: [
+          error instanceof Error ? error.message : 'Invalid credentials',
+        ],
         warnings: [],
       };
     }
   }
 
-  async publish(content: AdaptedContent, config?: PlatformConfig): Promise<PublishResult> {
+  async publish(
+    content: AdaptedContent,
+    config?: PlatformConfig
+  ): Promise<PublishResult> {
     this.ensureAuthenticated();
 
     try {
       // Validate and parse configuration
-      const devtoConfig = config ? DevtoConfigSchema.parse(config) : ({} as DevtoConfig);
-      
+      const devtoConfig = config
+        ? DevtoConfigSchema.parse(config)
+        : ({} as DevtoConfig);
+
       // Validate content
       const validation = this.validateContent(content);
       if (!validation.valid) {
-        return this.createErrorResult(`Content validation failed: ${validation.errors.join(', ')}`);
+        return this.createErrorResult(
+          `Content validation failed: ${validation.errors.join(', ')}`
+        );
       }
 
       // Create article payload
@@ -136,41 +151,48 @@ export class DevtoClient extends BasePlatformClient {
       };
 
       // Make API request
-      const response = await this.makeRequest(`${DEVTO_API_ENDPOINT}/articles`, {
-        method: 'POST',
-        headers: {
-          'api-key': this.apiKey!,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(articleData),
-      });
+      const response = await this.makeRequest(
+        `${DEVTO_API_ENDPOINT}/articles`,
+        {
+          method: 'POST',
+          headers: {
+            'api-key': this.apiKey!,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(articleData),
+        }
+      );
 
       const result = await this.parseJsonResponse<DevtoArticle>(response);
 
-      return this.createSuccessResult(
-        result.id.toString(),
-        result.url,
-        {
-          article: result,
-          published: result.published_at ? true : false,
-          slug: result.slug,
-        }
-      );
+      return this.createSuccessResult(result.id.toString(), result.url, {
+        article: result,
+        published: result.published_at ? true : false,
+        slug: result.slug,
+      });
     } catch (error) {
       this.handleApiError(error, 'Publishing');
     }
   }
 
-  async update(id: string, content: AdaptedContent, config?: PlatformConfig): Promise<PublishResult> {
+  async update(
+    id: string,
+    content: AdaptedContent,
+    config?: PlatformConfig
+  ): Promise<PublishResult> {
     this.ensureAuthenticated();
 
     try {
-      const devtoConfig = config ? DevtoConfigSchema.parse(config) : ({} as DevtoConfig);
+      const devtoConfig = config
+        ? DevtoConfigSchema.parse(config)
+        : ({} as DevtoConfig);
 
       // Validate content
       const validation = this.validateContent(content);
       if (!validation.valid) {
-        return this.createErrorResult(`Content validation failed: ${validation.errors.join(', ')}`);
+        return this.createErrorResult(
+          `Content validation failed: ${validation.errors.join(', ')}`
+        );
       }
 
       // Create update payload
@@ -188,26 +210,25 @@ export class DevtoClient extends BasePlatformClient {
         },
       };
 
-      const response = await this.makeRequest(`${DEVTO_API_ENDPOINT}/articles/${id}`, {
-        method: 'PUT',
-        headers: {
-          'api-key': this.apiKey!,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(articleData),
-      });
+      const response = await this.makeRequest(
+        `${DEVTO_API_ENDPOINT}/articles/${id}`,
+        {
+          method: 'PUT',
+          headers: {
+            'api-key': this.apiKey!,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(articleData),
+        }
+      );
 
       const result = await this.parseJsonResponse<DevtoArticle>(response);
 
-      return this.createSuccessResult(
-        result.id.toString(),
-        result.url,
-        {
-          article: result,
-          published: result.published_at ? true : false,
-          slug: result.slug,
-        }
-      );
+      return this.createSuccessResult(result.id.toString(), result.url, {
+        article: result,
+        published: result.published_at ? true : false,
+        slug: result.slug,
+      });
     } catch (error) {
       this.handleApiError(error, 'Updating');
     }
@@ -233,11 +254,14 @@ export class DevtoClient extends BasePlatformClient {
 
     try {
       // Get user info
-      const userResponse = await this.makeRequest(`${DEVTO_API_ENDPOINT}/users/me`, {
-        headers: {
-          'api-key': this.apiKey!,
-        },
-      });
+      const userResponse = await this.makeRequest(
+        `${DEVTO_API_ENDPOINT}/users/me`,
+        {
+          headers: {
+            'api-key': this.apiKey!,
+          },
+        }
+      );
 
       const user = await this.parseJsonResponse<DevtoUser>(userResponse);
 
@@ -257,7 +281,9 @@ export class DevtoClient extends BasePlatformClient {
         },
       };
     } catch (error) {
-      throw new Error(`Failed to get Dev.to metadata: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to get Dev.to metadata: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -281,7 +307,9 @@ export class DevtoClient extends BasePlatformClient {
 
     // Body length recommendation (Dev.to doesn't have strict limits but this is practical)
     if (content.body && content.body.length > 100000) {
-      warnings.push('Article is very long (>100k characters). Consider breaking it into a series.');
+      warnings.push(
+        'Article is very long (>100k characters). Consider breaking it into a series.'
+      );
     }
 
     // Tag validations
@@ -291,12 +319,16 @@ export class DevtoClient extends BasePlatformClient {
 
     // Tag format warnings
     if (content.tags) {
-      content.tags.forEach(tag => {
+      content.tags.forEach((tag) => {
         if (tag.length > 30) {
-          warnings.push(`Tag "${tag}" is longer than 30 characters and may be truncated`);
+          warnings.push(
+            `Tag "${tag}" is longer than 30 characters and may be truncated`
+          );
         }
         if (!/^[a-zA-Z0-9\s-]+$/.test(tag)) {
-          warnings.push(`Tag "${tag}" contains special characters that may be modified`);
+          warnings.push(
+            `Tag "${tag}" contains special characters that may be modified`
+          );
         }
       });
     }
@@ -324,7 +356,9 @@ export class DevtoClient extends BasePlatformClient {
 
       return await this.parseJsonResponse<DevtoArticle[]>(response);
     } catch (error) {
-      throw new Error(`Failed to get articles: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to get articles: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -332,19 +366,28 @@ export class DevtoClient extends BasePlatformClient {
     this.ensureAuthenticated();
 
     try {
-      const response = await this.makeRequest(`${DEVTO_API_ENDPOINT}/articles/${id}`, {
-        headers: {
-          'api-key': this.apiKey!,
-        },
-      });
+      const response = await this.makeRequest(
+        `${DEVTO_API_ENDPOINT}/articles/${id}`,
+        {
+          headers: {
+            'api-key': this.apiKey!,
+          },
+        }
+      );
 
       return await this.parseJsonResponse<DevtoArticle>(response);
     } catch (error) {
-      throw new Error(`Failed to get article: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to get article: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
-  async getPublishedArticles(username?: string, page = 1, perPage = 30): Promise<DevtoArticle[]> {
+  async getPublishedArticles(
+    username?: string,
+    page = 1,
+    perPage = 30
+  ): Promise<DevtoArticle[]> {
     try {
       const url = username
         ? `${DEVTO_API_ENDPOINT}/articles?username=${username}&page=${page}&per_page=${perPage}`
@@ -358,7 +401,9 @@ export class DevtoClient extends BasePlatformClient {
       const response = await this.makeRequest(url, { headers });
       return await this.parseJsonResponse<DevtoArticle[]>(response);
     } catch (error) {
-      throw new Error(`Failed to get published articles: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to get published articles: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -369,11 +414,14 @@ export class DevtoClient extends BasePlatformClient {
     }
 
     try {
-      const response = await this.makeRequest(`${DEVTO_API_ENDPOINT}/users/me`, {
-        headers: {
-          'api-key': this.apiKey,
-        },
-      });
+      const response = await this.makeRequest(
+        `${DEVTO_API_ENDPOINT}/users/me`,
+        {
+          headers: {
+            'api-key': this.apiKey,
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new AuthenticationError(

@@ -1,20 +1,20 @@
 'use client';
 
 import type { DestinationType, ScheduleStatus } from '@repo/database/types';
-import { 
-  Hash, 
-  FileCode, 
-  MessageCircle, 
-  Megaphone,
-  Twitter,
-  Linkedin,
-  Facebook,
-  Instagram,
-  Globe,
-  Mail,
-  Settings,
-  Clock,
+import {
   CheckCircle,
+  Clock,
+  Facebook,
+  FileCode,
+  Globe,
+  Hash,
+  Instagram,
+  Linkedin,
+  Mail,
+  Megaphone,
+  MessageCircle,
+  Settings,
+  Twitter,
   XCircle,
 } from 'lucide-react';
 
@@ -74,46 +74,46 @@ export const ScheduleEventCard = ({
   destinationName,
   time,
 }: ScheduleEventCardProps) => {
-  const PlatformIcon = PLATFORM_ICONS[platform as keyof typeof PLATFORM_ICONS] || Settings;
+  const PlatformIcon =
+    PLATFORM_ICONS[platform as keyof typeof PLATFORM_ICONS] || Settings;
   const StatusIcon = STATUS_ICONS[status as keyof typeof STATUS_ICONS] || Clock;
-  const platformName = PLATFORM_NAMES[platform as keyof typeof PLATFORM_NAMES] || platform;
-  
-  const timeString = time ? time.toLocaleTimeString('en-US', { 
-    hour: 'numeric', 
-    minute: '2-digit',
-    hour12: true 
-  }) : '';
+  const platformName =
+    PLATFORM_NAMES[platform as keyof typeof PLATFORM_NAMES] || platform;
+
+  const timeString = time
+    ? time.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      })
+    : '';
 
   return (
-    <div className="flex flex-col gap-1 p-1 text-xs text-white">
+    <div className="flex flex-col gap-1 p-1 text-white text-xs">
       {/* Main content */}
       <div className="flex items-start gap-1">
-        <PlatformIcon className="h-3 w-3 mt-0.5 flex-shrink-0" />
-        <div className="flex-1 min-w-0">
-          <div className="font-medium truncate" title={title}>
+        <PlatformIcon className="mt-0.5 h-3 w-3 flex-shrink-0" />
+        <div className="min-w-0 flex-1">
+          <div className="truncate font-medium" title={title}>
             {title}
           </div>
-          {timeString && (
-            <div className="opacity-90 text-xs">
-              {timeString}
-            </div>
-          )}
+          {timeString && <div className="text-xs opacity-90">{timeString}</div>}
         </div>
         <StatusIcon className="h-3 w-3 flex-shrink-0 opacity-80" />
       </div>
-      
+
       {/* Platform and destination info */}
       <div className="flex items-center justify-between text-xs opacity-90">
         <span className="truncate" title={destinationName}>
           {platformName}
         </span>
         {status === 'FAILED' && (
-          <span className="text-xs bg-red-500 bg-opacity-30 px-1 rounded">
+          <span className="rounded bg-red-500 bg-opacity-30 px-1 text-xs">
             Failed
           </span>
         )}
         {status === 'CANCELLED' && (
-          <span className="text-xs bg-gray-500 bg-opacity-30 px-1 rounded">
+          <span className="rounded bg-gray-500 bg-opacity-30 px-1 text-xs">
             Cancelled
           </span>
         )}

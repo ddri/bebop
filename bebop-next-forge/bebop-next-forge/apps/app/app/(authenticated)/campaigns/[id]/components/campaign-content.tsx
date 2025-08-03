@@ -1,18 +1,28 @@
 'use client';
 
+import type {
+  Campaign,
+  Content,
+  ContentStatus,
+  ContentType,
+} from '@repo/database/types';
 import { Button } from '@repo/design-system/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
-import { StatusBadge } from '@repo/design-system/components/ui/status-badge';
-import type { Campaign, Content, ContentStatus, ContentType } from '@repo/database/types';
-import { FileText, Plus, Calendar, MoreHorizontal } from 'lucide-react';
-import { useState } from 'react';
-import { CreateContentDialog } from '../../../content/components/create-content-dialog';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@repo/design-system/components/ui/card';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@repo/design-system/components/ui/dropdown-menu';
+import { StatusBadge } from '@repo/design-system/components/ui/status-badge';
+import { Calendar, FileText, MoreHorizontal, Plus } from 'lucide-react';
+import { useState } from 'react';
+import { CreateContentDialog } from '../../../content/components/create-content-dialog';
 
 interface CampaignContentProps {
   campaign: Campaign & {
@@ -20,7 +30,10 @@ interface CampaignContentProps {
   };
 }
 
-const statusMapping: Record<ContentStatus, 'draft' | 'ready' | 'published' | 'archived'> = {
+const statusMapping: Record<
+  ContentStatus,
+  'draft' | 'ready' | 'published' | 'archived'
+> = {
   DRAFT: 'draft',
   READY: 'ready',
   PUBLISHED: 'published',
@@ -46,14 +59,14 @@ export const CampaignContent = ({ campaign }: CampaignContentProps) => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold">Campaign Content</h2>
-          <p className="text-sm text-muted-foreground">
+          <h2 className="font-semibold text-lg">Campaign Content</h2>
+          <p className="text-muted-foreground text-sm">
             Create and manage content for {campaign.name}
           </p>
         </div>
         <CreateContentDialog defaultCampaignId={campaign.id}>
           <Button>
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="mr-2 h-4 w-4" />
             Create Content
           </Button>
         </CreateContentDialog>
@@ -63,18 +76,21 @@ export const CampaignContent = ({ campaign }: CampaignContentProps) => {
       {campaign.content.length > 0 ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {campaign.content.map((content) => (
-            <Card key={content.id} className="hover:shadow-md transition-shadow">
+            <Card
+              key={content.id}
+              className="transition-shadow hover:shadow-md"
+            >
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <CardTitle className="text-base line-clamp-2">
+                    <CardTitle className="line-clamp-2 text-base">
                       {content.title}
                     </CardTitle>
-                    <div className="flex items-center gap-2 mt-2">
+                    <div className="mt-2 flex items-center gap-2">
                       <StatusBadge status={statusMapping[content.status]}>
                         {content.status}
                       </StatusBadge>
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-muted-foreground text-xs">
                         {typeLabels[content.type]}
                       </span>
                     </div>
@@ -88,11 +104,13 @@ export const CampaignContent = ({ campaign }: CampaignContentProps) => {
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem>Edit</DropdownMenuItem>
                       <DropdownMenuItem>
-                        <Calendar className="h-4 w-4 mr-2" />
+                        <Calendar className="mr-2 h-4 w-4" />
                         Schedule
                       </DropdownMenuItem>
                       <DropdownMenuItem>Duplicate</DropdownMenuItem>
-                      <DropdownMenuItem className="text-red-600">Delete</DropdownMenuItem>
+                      <DropdownMenuItem className="text-red-600">
+                        Delete
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -100,14 +118,19 @@ export const CampaignContent = ({ campaign }: CampaignContentProps) => {
               <CardContent className="pt-0">
                 <div className="space-y-3">
                   {content.excerpt && (
-                    <p className="text-sm text-muted-foreground line-clamp-3">
+                    <p className="line-clamp-3 text-muted-foreground text-sm">
                       {content.excerpt}
                     </p>
                   )}
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span>Created {new Date(content.createdAt).toLocaleDateString()}</span>
+                  <div className="flex items-center justify-between text-muted-foreground text-xs">
+                    <span>
+                      Created {new Date(content.createdAt).toLocaleDateString()}
+                    </span>
                     {content.updatedAt !== content.createdAt && (
-                      <span>Updated {new Date(content.updatedAt).toLocaleDateString()}</span>
+                      <span>
+                        Updated{' '}
+                        {new Date(content.updatedAt).toLocaleDateString()}
+                      </span>
                     )}
                   </div>
                 </div>
@@ -119,15 +142,15 @@ export const CampaignContent = ({ campaign }: CampaignContentProps) => {
         /* Empty State */
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <FileText className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No content yet</h3>
-            <p className="text-sm text-muted-foreground mb-4 text-center max-w-md">
-              Start creating content for your {campaign.name} campaign. You can create blog posts, 
-              social media content, emails, and more.
+            <FileText className="mb-4 h-12 w-12 text-muted-foreground" />
+            <h3 className="mb-2 font-semibold text-lg">No content yet</h3>
+            <p className="mb-4 max-w-md text-center text-muted-foreground text-sm">
+              Start creating content for your {campaign.name} campaign. You can
+              create blog posts, social media content, emails, and more.
             </p>
             <CreateContentDialog defaultCampaignId={campaign.id}>
               <Button>
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className="mr-2 h-4 w-4" />
                 Create Your First Content
               </Button>
             </CreateContentDialog>

@@ -1,7 +1,13 @@
 #!/usr/bin/env tsx
 
 import { database } from '@repo/database';
-import { ContentType, ContentStatus, CampaignStatus, DestinationType, ScheduleStatus } from '@repo/database/types';
+import {
+  CampaignStatus,
+  ContentStatus,
+  ContentType,
+  DestinationType,
+  ScheduleStatus,
+} from '@repo/database/types';
 
 async function createTestData() {
   console.log('🚀 Creating comprehensive scheduler test data...\n');
@@ -15,26 +21,26 @@ async function createTestData() {
     await database.schedule.deleteMany({
       where: {
         campaign: {
-          userId: testUserId
-        }
-      }
+          userId: testUserId,
+        },
+      },
     });
     await database.content.deleteMany({
       where: {
         campaign: {
-          userId: testUserId
-        }
-      }
+          userId: testUserId,
+        },
+      },
     });
     await database.destination.deleteMany({
       where: {
-        userId: testUserId
-      }
+        userId: testUserId,
+      },
     });
     await database.campaign.deleteMany({
       where: {
-        userId: testUserId
-      }
+        userId: testUserId,
+      },
     });
 
     // 2. Create test campaign
@@ -59,7 +65,7 @@ async function createTestData() {
           type: DestinationType.HASHNODE,
           config: {
             publicationId: 'test-publication',
-            apiToken: 'test-token'
+            apiToken: 'test-token',
           },
           isActive: true,
         },
@@ -70,7 +76,7 @@ async function createTestData() {
           name: 'Test Dev.to Profile',
           type: DestinationType.DEVTO,
           config: {
-            apiKey: 'test-api-key'
+            apiKey: 'test-api-key',
           },
           isActive: true,
         },
@@ -82,7 +88,7 @@ async function createTestData() {
           type: DestinationType.BLUESKY,
           config: {
             identifier: 'test.bsky.social',
-            password: 'test-password'
+            password: 'test-password',
           },
           isActive: true,
         },
@@ -94,7 +100,7 @@ async function createTestData() {
           type: DestinationType.MASTODON,
           config: {
             instanceUrl: 'https://mastodon.social',
-            accessToken: 'test-access-token'
+            accessToken: 'test-access-token',
           },
           isActive: true,
         },
@@ -146,7 +152,7 @@ async function createTestData() {
 
     // 5. Create test schedules with different scenarios
     console.log('\n⏰ Creating test schedules...');
-    
+
     const now = new Date();
     const in1Minute = new Date(now.getTime() + 1 * 60 * 1000);
     const in5Minutes = new Date(now.getTime() + 5 * 60 * 1000);
@@ -172,7 +178,7 @@ async function createTestData() {
           status: ScheduleStatus.PENDING,
         },
       }),
-      
+
       // Future publishing - should wait
       database.schedule.create({
         data: {
@@ -207,9 +213,11 @@ async function createTestData() {
 
     console.log('\n📅 Created schedules:');
     schedules.forEach((sched, i) => {
-      const dest = destinations.find(d => d.id === sched.destinationId);
-      const contentItem = content.find(c => c.id === sched.contentId);
-      console.log(`  ${i + 1}. "${contentItem?.title}" → ${dest?.name} at ${sched.publishAt.toISOString()}`);
+      const dest = destinations.find((d) => d.id === sched.destinationId);
+      const contentItem = content.find((c) => c.id === sched.contentId);
+      console.log(
+        `  ${i + 1}. "${contentItem?.title}" → ${dest?.name} at ${sched.publishAt.toISOString()}`
+      );
     });
 
     console.log('\n✅ Test data created successfully!');
@@ -235,11 +243,10 @@ async function createTestData() {
 
     return {
       campaignId: campaign.id,
-      destinationIds: destinations.map(d => d.id),
-      contentIds: content.map(c => c.id),
-      scheduleIds: schedules.map(s => s.id),
+      destinationIds: destinations.map((d) => d.id),
+      contentIds: content.map((c) => c.id),
+      scheduleIds: schedules.map((s) => s.id),
     };
-
   } catch (error) {
     console.error('❌ Error creating test data:', error);
     throw error;
@@ -248,38 +255,41 @@ async function createTestData() {
 
 async function monitorSchedules() {
   console.log('\n🔍 Current schedule status:');
-  
+
   const schedules = await database.schedule.findMany({
     where: {
       campaign: {
-        userId: 'test_scheduler_user'
-      }
+        userId: 'test_scheduler_user',
+      },
     },
     include: {
       content: {
         select: {
-          title: true
-        }
+          title: true,
+        },
       },
       destination: {
         select: {
           name: true,
-          type: true
-        }
-      }
+          type: true,
+        },
+      },
     },
     orderBy: {
-      publishAt: 'asc'
-    }
+      publishAt: 'asc',
+    },
   });
 
   schedules.forEach((schedule, i) => {
     const timeUntil = schedule.publishAt.getTime() - Date.now();
-    const timeStr = timeUntil > 0 
-      ? `in ${Math.round(timeUntil / (60 * 1000))} minutes`
-      : `${Math.round(Math.abs(timeUntil) / (60 * 1000))} minutes ago`;
-    
-    console.log(`  ${i + 1}. [${schedule.status}] "${schedule.content.title}" → ${schedule.destination.name} (${timeStr})`);
+    const timeStr =
+      timeUntil > 0
+        ? `in ${Math.round(timeUntil / (60 * 1000))} minutes`
+        : `${Math.round(Math.abs(timeUntil) / (60 * 1000))} minutes ago`;
+
+    console.log(
+      `  ${i + 1}. [${schedule.status}] "${schedule.content.title}" → ${schedule.destination.name} (${timeStr})`
+    );
     if (schedule.error) {
       console.log(`     Error: ${schedule.error}`);
     }
@@ -292,17 +302,16 @@ async function monitorSchedules() {
 // Main execution
 async function main() {
   console.log('🧪 Bebop Scheduler Comprehensive Test\n');
-  
+
   try {
     const testData = await createTestData();
-    
+
     // Monitor initial state
     await monitorSchedules();
-    
+
     console.log('\n⏰ Scheduler should be running automatically...');
     console.log('💡 Watch the server console for publishing activity');
     console.log('🔄 Run this script again to check progress');
-    
   } catch (error) {
     console.error('❌ Test failed:', error);
     process.exit(1);

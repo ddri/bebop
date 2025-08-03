@@ -14,7 +14,7 @@ export async function PATCH(
 ) {
   try {
     const { userId } = await auth();
-    
+
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -34,11 +34,17 @@ export async function PATCH(
     });
 
     if (!existingSchedule) {
-      return NextResponse.json({ error: 'Schedule not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Schedule not found' },
+        { status: 404 }
+      );
     }
 
     // Update the schedule
-    const updateData: { publishAt?: Date; status?: 'PENDING' | 'PUBLISHED' | 'FAILED' | 'CANCELLED' } = {};
+    const updateData: {
+      publishAt?: Date;
+      status?: 'PENDING' | 'PUBLISHED' | 'FAILED' | 'CANCELLED';
+    } = {};
     if (data.publishAt) {
       updateData.publishAt = new Date(data.publishAt);
     }
@@ -67,7 +73,7 @@ export async function DELETE(
 ) {
   try {
     const { userId } = await auth();
-    
+
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -85,7 +91,10 @@ export async function DELETE(
     });
 
     if (!existingSchedule) {
-      return NextResponse.json({ error: 'Schedule not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Schedule not found' },
+        { status: 404 }
+      );
     }
 
     // Delete the schedule

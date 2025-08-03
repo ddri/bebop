@@ -221,8 +221,8 @@ export const GlobalSidebar = ({ children }: GlobalSidebarProperties) => {
                 )}
               >
                 <div className="flex items-center gap-2 px-2 py-1">
-                  <div className="h-6 w-6 bg-primary rounded-full" />
-                  <span className="text-sm font-medium">Personal</span>
+                  <div className="h-6 w-6 rounded-full bg-primary" />
+                  <span className="font-medium text-sm">Personal</span>
                 </div>
               </div>
             </SidebarMenuItem>

@@ -1,7 +1,20 @@
 'use client';
 
-import { useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
+import type {
+  CampaignStatus,
+  ContentType,
+  DestinationType,
+  Schedule,
+  ScheduleStatus,
+} from '@repo/database/types';
+import { Badge } from '@repo/design-system/components/ui/badge';
+import { Button } from '@repo/design-system/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@repo/design-system/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -10,24 +23,32 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@repo/design-system/components/ui/dialog';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Label } from '@repo/design-system/components/ui/label';
 import { Input } from '@repo/design-system/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@repo/design-system/components/ui/select';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
-import { Separator } from '@repo/design-system/components/ui/separator';
+import { Label } from '@repo/design-system/components/ui/label';
 import { ScrollArea } from '@repo/design-system/components/ui/scroll-area';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@repo/design-system/components/ui/select';
+import { Separator } from '@repo/design-system/components/ui/separator';
 import { format } from 'date-fns';
+import {
+  AlertCircle,
+  Calendar,
+  CheckCircle,
+  Clock,
+  Edit3,
+  FileText,
+  Hash,
+  Trash2,
+  XCircle,
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
-import { Calendar, Clock, FileText, Hash, Trash2, Edit3, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
-import type { 
-  Schedule, 
-  ScheduleStatus, 
-  ContentType, 
-  DestinationType,
-  CampaignStatus
-} from '@repo/database/types';
 
 interface EditScheduleModalProps {
   isOpen: boolean;
@@ -54,7 +75,11 @@ interface EditScheduleModalProps {
   onUpdate?: () => void;
 }
 
-const STATUS_OPTIONS: { value: ScheduleStatus; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+const STATUS_OPTIONS: {
+  value: ScheduleStatus;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+}[] = [
   { value: 'PENDING', label: 'Pending', icon: Clock },
   { value: 'PUBLISHED', label: 'Published', icon: CheckCircle },
   { value: 'FAILED', label: 'Failed', icon: XCircle },
@@ -101,18 +126,25 @@ const formatDestinationType = (type: DestinationType): string => {
   return typeMap[type] || type;
 };
 
-export const EditScheduleModal = ({ isOpen, onClose, schedule, onUpdate }: EditScheduleModalProps) => {
+export const EditScheduleModal = ({
+  isOpen,
+  onClose,
+  schedule,
+  onUpdate,
+}: EditScheduleModalProps) => {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isDeleting, setIsDeleting] = useState(false);
-  
+
   // Form state
-  const [publishAt, setPublishAt] = useState(format(new Date(schedule.publishAt), "yyyy-MM-dd'T'HH:mm"));
+  const [publishAt, setPublishAt] = useState(
+    format(new Date(schedule.publishAt), "yyyy-MM-dd'T'HH:mm")
+  );
   const [status, setStatus] = useState<ScheduleStatus>(schedule.status);
 
   const handleUpdate = async () => {
     const toastId = toast.loading('Updating schedule...');
-    
+
     try {
       const response = await fetch(`/api/schedule/${schedule.id}`, {
         method: 'PATCH',
@@ -131,28 +163,33 @@ export const EditScheduleModal = ({ isOpen, onClose, schedule, onUpdate }: EditS
       }
 
       toast.success('Schedule updated successfully', { id: toastId });
-      
+
       // Refresh data
       startTransition(() => {
         router.refresh();
       });
-      
+
       onUpdate?.();
       onClose();
     } catch (error) {
       console.error('Error updating schedule:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to update schedule', { id: toastId });
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to update schedule',
+        { id: toastId }
+      );
     }
   };
 
   const handleDelete = async () => {
-    if (!window.confirm('Are you sure you want to delete this scheduled post?')) {
+    if (
+      !window.confirm('Are you sure you want to delete this scheduled post?')
+    ) {
       return;
     }
 
     setIsDeleting(true);
     const toastId = toast.loading('Deleting schedule...');
-    
+
     try {
       const response = await fetch(`/api/schedule/${schedule.id}`, {
         method: 'DELETE',
@@ -167,27 +204,31 @@ export const EditScheduleModal = ({ isOpen, onClose, schedule, onUpdate }: EditS
       }
 
       toast.success('Schedule deleted successfully', { id: toastId });
-      
+
       // Refresh data
       startTransition(() => {
         router.refresh();
       });
-      
+
       onUpdate?.();
       onClose();
     } catch (error) {
       console.error('Error deleting schedule:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to delete schedule', { id: toastId });
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to delete schedule',
+        { id: toastId }
+      );
     } finally {
       setIsDeleting(false);
     }
   };
 
-  const StatusIcon = STATUS_OPTIONS.find(opt => opt.value === status)?.icon || Clock;
+  const StatusIcon =
+    STATUS_OPTIONS.find((opt) => opt.value === status)?.icon || Clock;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+      <DialogContent className="flex max-h-[90vh] max-w-2xl flex-col overflow-hidden">
         <DialogHeader>
           <DialogTitle>Edit Schedule</DialogTitle>
           <DialogDescription>
@@ -201,11 +242,17 @@ export const EditScheduleModal = ({ isOpen, onClose, schedule, onUpdate }: EditS
             <Card>
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-base flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2 text-base">
                     <FileText className="h-4 w-4" />
                     Content Preview
                   </CardTitle>
-                  <Badge variant={schedule.content.type === 'BLOG_POST' ? 'default' : 'secondary'}>
+                  <Badge
+                    variant={
+                      schedule.content.type === 'BLOG_POST'
+                        ? 'default'
+                        : 'secondary'
+                    }
+                  >
                     {formatContentType(schedule.content.type)}
                   </Badge>
                 </div>
@@ -213,7 +260,7 @@ export const EditScheduleModal = ({ isOpen, onClose, schedule, onUpdate }: EditS
               <CardContent className="space-y-2">
                 <h3 className="font-semibold">{schedule.content.title}</h3>
                 {schedule.content.excerpt && (
-                  <p className="text-sm text-muted-foreground line-clamp-2">
+                  <p className="line-clamp-2 text-muted-foreground text-sm">
                     {schedule.content.excerpt}
                   </p>
                 )}
@@ -224,15 +271,19 @@ export const EditScheduleModal = ({ isOpen, onClose, schedule, onUpdate }: EditS
             <div className="grid grid-cols-2 gap-4">
               <Card>
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-base flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2 text-base">
                     <Hash className="h-4 w-4" />
                     Campaign
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="font-medium">{schedule.campaign.name}</p>
-                  <Badge 
-                    variant={schedule.campaign.status === 'ACTIVE' ? 'default' : 'secondary'}
+                  <Badge
+                    variant={
+                      schedule.campaign.status === 'ACTIVE'
+                        ? 'default'
+                        : 'secondary'
+                    }
                     className="mt-1"
                   >
                     {schedule.campaign.status}
@@ -259,7 +310,7 @@ export const EditScheduleModal = ({ isOpen, onClose, schedule, onUpdate }: EditS
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="publishAt">
-                  <Calendar className="inline h-3 w-3 mr-1" />
+                  <Calendar className="mr-1 inline h-3 w-3" />
                   Publish Date & Time
                 </Label>
                 <Input
@@ -271,7 +322,7 @@ export const EditScheduleModal = ({ isOpen, onClose, schedule, onUpdate }: EditS
                   disabled={schedule.status === 'PUBLISHED'}
                 />
                 {schedule.status === 'PUBLISHED' && (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     Published content cannot be rescheduled
                   </p>
                 )}
@@ -279,10 +330,13 @@ export const EditScheduleModal = ({ isOpen, onClose, schedule, onUpdate }: EditS
 
               <div className="space-y-2">
                 <Label htmlFor="status">
-                  <StatusIcon className="inline h-3 w-3 mr-1" />
+                  <StatusIcon className="mr-1 inline h-3 w-3" />
                   Status
                 </Label>
-                <Select value={status} onValueChange={(value) => setStatus(value as ScheduleStatus)}>
+                <Select
+                  value={status}
+                  onValueChange={(value) => setStatus(value as ScheduleStatus)}
+                >
                   <SelectTrigger id="status">
                     <SelectValue />
                   </SelectTrigger>
@@ -305,7 +359,7 @@ export const EditScheduleModal = ({ isOpen, onClose, schedule, onUpdate }: EditS
 
             {/* Additional Info */}
             <Card className="bg-muted/50">
-              <CardContent className="pt-6 space-y-2 text-sm">
+              <CardContent className="space-y-2 pt-6 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Created</span>
                   <span>{format(new Date(schedule.createdAt), 'PPp')}</span>
@@ -330,22 +384,34 @@ export const EditScheduleModal = ({ isOpen, onClose, schedule, onUpdate }: EditS
             variant="destructive"
             size="sm"
             onClick={handleDelete}
-            disabled={isDeleting || isPending || schedule.status === 'PUBLISHED'}
+            disabled={
+              isDeleting || isPending || schedule.status === 'PUBLISHED'
+            }
             className="mr-auto"
           >
-            <Trash2 className="h-4 w-4 mr-1" />
+            <Trash2 className="mr-1 h-4 w-4" />
             Delete
           </Button>
-          
-          <Button variant="outline" onClick={onClose} disabled={isDeleting || isPending}>
+
+          <Button
+            variant="outline"
+            onClick={onClose}
+            disabled={isDeleting || isPending}
+          >
             Cancel
           </Button>
-          
-          <Button 
-            onClick={handleUpdate} 
-            disabled={isDeleting || isPending || (publishAt === format(new Date(schedule.publishAt), "yyyy-MM-dd'T'HH:mm") && status === schedule.status)}
+
+          <Button
+            onClick={handleUpdate}
+            disabled={
+              isDeleting ||
+              isPending ||
+              (publishAt ===
+                format(new Date(schedule.publishAt), "yyyy-MM-dd'T'HH:mm") &&
+                status === schedule.status)
+            }
           >
-            <Edit3 className="h-4 w-4 mr-1" />
+            <Edit3 className="mr-1 h-4 w-4" />
             Update Schedule
           </Button>
         </DialogFooter>

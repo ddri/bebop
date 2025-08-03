@@ -1,5 +1,12 @@
 'use client';
 
+import { zodResolver } from '@hookform/resolvers/zod';
+import {
+  type ContentType,
+  type DestinationType,
+  type Schedule,
+  ScheduleStatus,
+} from '@repo/database/types';
 import { Button } from '@repo/design-system/components/ui/button';
 import {
   Dialog,
@@ -26,8 +33,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@repo/design-system/components/ui/select';
-import { Schedule, ScheduleStatus, ContentType, DestinationType } from '@repo/database/types';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
@@ -61,7 +66,11 @@ interface EditScheduleDialogProps {
   onClose: () => void;
 }
 
-export const EditScheduleDialog = ({ scheduleId, schedule, onClose }: EditScheduleDialogProps) => {
+export const EditScheduleDialog = ({
+  scheduleId,
+  schedule,
+  onClose,
+}: EditScheduleDialogProps) => {
   const router = useRouter();
 
   const form = useForm<EditScheduleForm>({
@@ -77,7 +86,7 @@ export const EditScheduleDialog = ({ scheduleId, schedule, onClose }: EditSchedu
     if (schedule) {
       const publishDate = new Date(schedule.publishAt);
       const formattedDate = publishDate.toISOString().slice(0, 16);
-      
+
       form.reset({
         publishAt: formattedDate,
         status: schedule.status,
@@ -122,13 +131,14 @@ export const EditScheduleDialog = ({ scheduleId, schedule, onClose }: EditSchedu
         <DialogHeader>
           <DialogTitle>Edit Schedule</DialogTitle>
           <DialogDescription>
-            Update the publish date and time or change the status of this scheduled content.
+            Update the publish date and time or change the status of this
+            scheduled content.
           </DialogDescription>
         </DialogHeader>
-        
-        <div className="mb-4 p-3 bg-muted rounded-lg">
-          <p className="text-sm font-medium">{schedule.content.title}</p>
-          <p className="text-xs text-muted-foreground">
+
+        <div className="mb-4 rounded-lg bg-muted p-3">
+          <p className="font-medium text-sm">{schedule.content.title}</p>
+          <p className="text-muted-foreground text-xs">
             {schedule.content.type} → {schedule.destination.name}
           </p>
         </div>
@@ -162,15 +172,22 @@ export const EditScheduleDialog = ({ scheduleId, schedule, onClose }: EditSchedu
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Status</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select status" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value={ScheduleStatus.PENDING}>Pending</SelectItem>
-                      <SelectItem value={ScheduleStatus.CANCELLED}>Cancelled</SelectItem>
+                      <SelectItem value={ScheduleStatus.PENDING}>
+                        Pending
+                      </SelectItem>
+                      <SelectItem value={ScheduleStatus.CANCELLED}>
+                        Cancelled
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                   <FormDescription>
@@ -182,11 +199,7 @@ export const EditScheduleDialog = ({ scheduleId, schedule, onClose }: EditSchedu
             />
 
             <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onClose}
-              >
+              <Button type="button" variant="outline" onClick={onClose}>
                 Cancel
               </Button>
               <Button type="submit">Update Schedule</Button>

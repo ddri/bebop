@@ -25,7 +25,7 @@ export const BlockNoteEditorWrapper = ({
 
   // Create the editor instance with simple initial content
   const editor = useCreateBlockNote({
-    initialContent: initialContent 
+    initialContent: initialContent
       ? [{ type: 'paragraph', content: initialContent }]
       : [{ type: 'paragraph', content: '' }],
     placeholders: {
@@ -50,10 +50,12 @@ export const BlockNoteEditorWrapper = ({
           .map((block: unknown) => {
             const blockObj = block as { content?: unknown[] };
             if (blockObj.content && Array.isArray(blockObj.content)) {
-              return blockObj.content.map((item: unknown) => {
-                const itemObj = item as { text?: string };
-                return itemObj.text || '';
-              }).join('');
+              return blockObj.content
+                .map((item: unknown) => {
+                  const itemObj = item as { text?: string };
+                  return itemObj.text || '';
+                })
+                .join('');
             }
             return '';
           })
@@ -70,7 +72,7 @@ export const BlockNoteEditorWrapper = ({
 
   if (!mounted) {
     return (
-      <div className={`border rounded-md ${className}`}>
+      <div className={`rounded-md border ${className}`}>
         <div className="p-4 text-muted-foreground">Loading editor...</div>
       </div>
     );
@@ -81,7 +83,7 @@ export const BlockNoteEditorWrapper = ({
   const blockNoteTheme = currentTheme === 'dark' ? 'dark' : 'light';
 
   return (
-    <div className={`border rounded-md overflow-hidden ${className}`}>
+    <div className={`overflow-hidden rounded-md border ${className}`}>
       <BlockNoteView
         editor={editor}
         onChange={handleChange}

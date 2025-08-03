@@ -1,23 +1,13 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
-import { Badge } from '@repo/design-system/components/ui/badge';
 import { Button } from '@repo/design-system/components/ui/button';
+import { Card, CardContent } from '@repo/design-system/components/ui/card';
 import { StatusBadge } from '@repo/design-system/components/ui/status-badge';
-import { 
-  Activity,
-  AlertTriangle,
-  CheckCircle,
-  Clock,
-  RefreshCw,
-  Timer,
-  TrendingUp,
-  Zap
-} from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { SchedulerStatusCards } from './scheduler-status-cards';
-import { PublishingActivityFeed } from './publishing-activity-feed';
+import { RefreshCw, Zap } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { FailedSchedulesManager } from './failed-schedules-manager';
+import { PublishingActivityFeed } from './publishing-activity-feed';
+import { SchedulerStatusCards } from './scheduler-status-cards';
 
 interface SchedulerHealth {
   status: string;
@@ -67,9 +57,9 @@ export const SchedulerMonitoringDashboard = () => {
       const response = await fetch('/api/scheduler', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'checkPending' })
+        body: JSON.stringify({ action: 'checkPending' }),
       });
-      
+
       if (response.ok) {
         // Refresh data after manual check
         setTimeout(() => fetchHealth(), 1000);
@@ -81,33 +71,33 @@ export const SchedulerMonitoringDashboard = () => {
 
   useEffect(() => {
     fetchHealth();
-    
+
     // Set up auto-refresh every 30 seconds
     const interval = setInterval(fetchHealth, 30000);
-    
+
     return () => clearInterval(interval);
   }, []);
 
   if (isLoading && !health) {
     return (
-      <div className="flex flex-col h-full">
-        <div className="flex items-center gap-4 h-16 px-4 md:px-8 border-b">
+      <div className="flex h-full flex-col">
+        <div className="flex h-16 items-center gap-4 border-b px-4 md:px-8">
           <div className="flex-1">
-            <h1 className="text-2xl font-bold">Publishing Queue Monitor</h1>
+            <h1 className="font-bold text-2xl">Publishing Queue Monitor</h1>
             <p className="text-muted-foreground">
               Real-time monitoring of content publishing operations
             </p>
           </div>
         </div>
-        
-        <div className="px-4 md:px-8 py-6 flex-1">
-          <div className="grid gap-6 md:grid-cols-4 mb-8">
+
+        <div className="flex-1 px-4 py-6 md:px-8">
+          <div className="mb-8 grid gap-6 md:grid-cols-4">
             {[...Array(4)].map((_, i) => (
               <Card key={i}>
                 <CardContent className="p-6">
                   <div className="animate-pulse">
-                    <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
-                    <div className="h-8 bg-muted rounded w-1/2"></div>
+                    <div className="mb-2 h-4 w-3/4 rounded bg-muted"></div>
+                    <div className="h-8 w-1/2 rounded bg-muted"></div>
                   </div>
                 </CardContent>
               </Card>
@@ -123,19 +113,21 @@ export const SchedulerMonitoringDashboard = () => {
     publishing: 0,
     published: 0,
     failed: 0,
-    total: 0
+    total: 0,
   };
 
   const recentActivity = health?.recentActivity || [];
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="flex items-center gap-4 h-16 px-4 md:px-8 border-b">
+      <div className="flex h-16 items-center gap-4 border-b px-4 md:px-8">
         <div className="flex-1">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold">Publishing Queue Monitor</h1>
-            <StatusBadge status={health?.status === 'healthy' ? 'active' : 'draft'}>
+            <h1 className="font-bold text-2xl">Publishing Queue Monitor</h1>
+            <StatusBadge
+              status={health?.status === 'healthy' ? 'active' : 'draft'}
+            >
               {health?.status || 'Unknown'}
             </StatusBadge>
           </div>
@@ -145,48 +137,48 @@ export const SchedulerMonitoringDashboard = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">
+          <span className="text-muted-foreground text-sm">
             Last updated: {lastRefresh.toLocaleTimeString()}
           </span>
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             onClick={fetchHealth}
             disabled={isLoading}
           >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw
+              className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`}
+            />
             Refresh
           </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={triggerManualCheck}
-          >
-            <Zap className="h-4 w-4 mr-2" />
+          <Button variant="outline" size="sm" onClick={triggerManualCheck}>
+            <Zap className="mr-2 h-4 w-4" />
             Check Now
           </Button>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="px-4 md:px-8 py-6 flex-1 overflow-auto">
+      <div className="flex-1 overflow-auto px-4 py-6 md:px-8">
         {/* Status Overview Cards */}
-        <SchedulerStatusCards 
-          statistics={stats} 
-          lastUpdate={health?.timestamp} 
+        <SchedulerStatusCards
+          statistics={stats}
+          lastUpdate={health?.timestamp}
         />
 
         {/* Activity Grid */}
-        <div className="grid gap-6 lg:grid-cols-2 mt-8">
+        <div className="mt-8 grid gap-6 lg:grid-cols-2">
           {/* Publishing Activity Feed */}
-          <PublishingActivityFeed 
+          <PublishingActivityFeed
             activities={recentActivity}
             onRefresh={fetchHealth}
           />
 
           {/* Failed Schedules Manager */}
-          <FailedSchedulesManager 
-            failedActivities={recentActivity.filter(a => a.status === 'FAILED')}
+          <FailedSchedulesManager
+            failedActivities={recentActivity.filter(
+              (a) => a.status === 'FAILED'
+            )}
             onRetry={fetchHealth}
           />
         </div>

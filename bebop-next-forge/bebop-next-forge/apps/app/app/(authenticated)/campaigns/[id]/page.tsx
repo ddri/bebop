@@ -27,7 +27,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     title: `${campaign.name} - Campaign Workspace`,
-    description: campaign.description || `Manage content and scheduling for ${campaign.name}`,
+    description:
+      campaign.description ||
+      `Manage content and scheduling for ${campaign.name}`,
   };
 }
 
@@ -78,12 +80,7 @@ const CampaignWorkspacePage = async ({ params }: Props) => {
     orderBy: { name: 'asc' },
   });
 
-  return (
-    <CampaignWorkspace 
-      campaign={campaign} 
-      destinations={destinations}
-    />
-  );
+  return <CampaignWorkspace campaign={campaign} destinations={destinations} />;
 };
 
 export default CampaignWorkspacePage;

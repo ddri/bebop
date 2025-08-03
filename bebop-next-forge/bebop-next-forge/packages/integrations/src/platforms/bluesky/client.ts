@@ -1,34 +1,29 @@
 import type { DestinationType } from '@repo/database/types';
 import { BasePlatformClient } from '../../core/platform-client';
 import type {
-  PlatformCredentials,
-  PlatformConfig,
-  PlatformMetadata,
   AdaptedContent,
+  PlatformConfig,
+  PlatformCredentials,
+  PlatformMetadata,
   PublishResult,
   ValidationResult,
 } from '../../types/platform';
-import {
-  AuthenticationError,
-  ValidationError,
-  PublishingError,
-} from '../../types/platform';
+import { AuthenticationError, ValidationError } from '../../types/platform';
 import type {
-  BlueskyCredentials,
-  BlueskyConfig,
-  BlueskySession,
-  BlueskyProfile,
   BlueskyBlob,
-  BlueskyFacet,
+  BlueskyConfig,
   BlueskyCreatePostResponse,
-  BlueskyUploadResponse,
+  BlueskyFacet,
+  BlueskyProfile,
+  BlueskySession,
   BlueskyThread,
+  BlueskyUploadResponse,
 } from './types';
 import {
-  BlueskyCredentialsSchema,
-  BlueskyConfigSchema,
   BLUESKY_API_ENDPOINT,
   BLUESKY_LIMITS,
+  BlueskyConfigSchema,
+  BlueskyCredentialsSchema,
 } from './types';
 
 /**
@@ -37,7 +32,7 @@ import {
  */
 export class BlueskyClient extends BasePlatformClient {
   readonly platform: DestinationType = 'BLUESKY';
-  
+
   private session?: BlueskySession;
   private serviceEndpoint: string = BLUESKY_API_ENDPOINT;
 
@@ -49,25 +44,33 @@ export class BlueskyClient extends BasePlatformClient {
     try {
       // Validate credentials structure
       if (credentials.type !== 'username-password') {
-        throw new AuthenticationError(this.platform, 'Bluesky requires username/password authentication');
+        throw new AuthenticationError(
+          this.platform,
+          'Bluesky requires username/password authentication'
+        );
       }
 
-      const parsedCredentials = BlueskyCredentialsSchema.parse(credentials.data);
+      const parsedCredentials = BlueskyCredentialsSchema.parse(
+        credentials.data
+      );
 
       // Create session with AT Protocol
-      const response = await this.makeRequest(`${this.serviceEndpoint}/xrpc/com.atproto.server.createSession`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          identifier: parsedCredentials.identifier,
-          password: parsedCredentials.password,
-        }),
-      });
+      const response = await this.makeRequest(
+        `${this.serviceEndpoint}/xrpc/com.atproto.server.createSession`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            identifier: parsedCredentials.identifier,
+            password: parsedCredentials.password,
+          }),
+        }
+      );
 
       this.session = await this.parseJsonResponse<BlueskySession>(response);
-      
+
       this.credentials = credentials;
       this.isAuthenticated = true;
     } catch (error) {
@@ -75,11 +78,16 @@ export class BlueskyClient extends BasePlatformClient {
       if (error instanceof ValidationError) {
         throw error;
       }
-      throw new AuthenticationError(this.platform, 'Failed to authenticate with Bluesky');
+      throw new AuthenticationError(
+        this.platform,
+        'Failed to authenticate with Bluesky'
+      );
     }
   }
 
-  async validateCredentials(credentials: PlatformCredentials): Promise<ValidationResult> {
+  async validateCredentials(
+    credentials: PlatformCredentials
+  ): Promise<ValidationResult> {
     try {
       if (credentials.type !== 'username-password') {
         return {
@@ -90,23 +98,28 @@ export class BlueskyClient extends BasePlatformClient {
       }
 
       BlueskyCredentialsSchema.parse(credentials.data);
-      
+
       // Test the credentials by creating a session
-      const response = await this.makeRequest(`${this.serviceEndpoint}/xrpc/com.atproto.server.createSession`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          identifier: credentials.data.identifier,
-          password: credentials.data.password,
-        }),
-      });
-      
+      const response = await this.makeRequest(
+        `${this.serviceEndpoint}/xrpc/com.atproto.server.createSession`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            identifier: credentials.data.identifier,
+            password: credentials.data.password,
+          }),
+        }
+      );
+
       if (!response.ok) {
         return {
           valid: false,
-          errors: [`Authentication failed: ${response.status} ${response.statusText}`],
+          errors: [
+            `Authentication failed: ${response.status} ${response.statusText}`,
+          ],
           warnings: [],
         };
       }
@@ -119,28 +132,38 @@ export class BlueskyClient extends BasePlatformClient {
     } catch (error) {
       return {
         valid: false,
-        errors: [error instanceof Error ? error.message : 'Invalid credentials'],
+        errors: [
+          error instanceof Error ? error.message : 'Invalid credentials',
+        ],
         warnings: [],
       };
     }
   }
 
-  async publish(content: AdaptedContent, config?: PlatformConfig): Promise<PublishResult> {
+  async publish(
+    content: AdaptedContent,
+    config?: PlatformConfig
+  ): Promise<PublishResult> {
     this.ensureAuthenticated();
 
     try {
       // Validate and parse configuration
-      const blueskyConfig = config ? BlueskyConfigSchema.parse(config) : ({} as BlueskyConfig);
-      
+      const blueskyConfig = config
+        ? BlueskyConfigSchema.parse(config)
+        : ({} as BlueskyConfig);
+
       // Validate content
       const validation = this.validateContent(content);
       if (!validation.valid) {
-        return this.createErrorResult(`Content validation failed: ${validation.errors.join(', ')}`);
+        return this.createErrorResult(
+          `Content validation failed: ${validation.errors.join(', ')}`
+        );
       }
 
       // Check if content needs to be split into thread
-      const shouldCreateThread = blueskyConfig.threadMode || this.shouldCreateThread(content.body!);
-      
+      const shouldCreateThread =
+        blueskyConfig.threadMode || this.shouldCreateThread(content.body!);
+
       if (shouldCreateThread) {
         return await this.publishThread(content, blueskyConfig);
       } else {
@@ -151,7 +174,11 @@ export class BlueskyClient extends BasePlatformClient {
     }
   }
 
-  async update(id: string, content: AdaptedContent, config?: PlatformConfig): Promise<PublishResult> {
+  async update(
+    id: string,
+    content: AdaptedContent,
+    config?: PlatformConfig
+  ): Promise<PublishResult> {
     // Bluesky doesn't support editing posts
     return this.createErrorResult(
       'Bluesky does not support editing posts. You can delete and recreate the post instead.',
@@ -166,21 +193,26 @@ export class BlueskyClient extends BasePlatformClient {
       // Extract repo and rkey from AT URI
       const { repo, rkey } = this.parseATUri(id);
 
-      const response = await this.makeRequest(`${this.serviceEndpoint}/xrpc/com.atproto.repo.deleteRecord`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.session!.accessJwt}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          repo,
-          collection: 'app.bsky.feed.post',
-          rkey,
-        }),
-      });
+      const response = await this.makeRequest(
+        `${this.serviceEndpoint}/xrpc/com.atproto.repo.deleteRecord`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${this.session!.accessJwt}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            repo,
+            collection: 'app.bsky.feed.post',
+            rkey,
+          }),
+        }
+      );
 
       if (!response.ok) {
-        return this.createErrorResult(`Failed to delete post: ${response.status} ${response.statusText}`);
+        return this.createErrorResult(
+          `Failed to delete post: ${response.status} ${response.statusText}`
+        );
       }
 
       return this.createSuccessResult(undefined, undefined, {
@@ -200,7 +232,7 @@ export class BlueskyClient extends BasePlatformClient {
         `${this.serviceEndpoint}/xrpc/app.bsky.actor.getProfile?actor=${this.session!.did}`,
         {
           headers: {
-            'Authorization': `Bearer ${this.session!.accessJwt}`,
+            Authorization: `Bearer ${this.session!.accessJwt}`,
           },
         }
       );
@@ -220,7 +252,9 @@ export class BlueskyClient extends BasePlatformClient {
         rateLimit: BLUESKY_LIMITS.rateLimit,
       };
     } catch (error) {
-      throw new Error(`Failed to get Bluesky metadata: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to get Bluesky metadata: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -238,12 +272,19 @@ export class BlueskyClient extends BasePlatformClient {
 
     // Length validations (Bluesky has practical limits)
     if (fullText.length > BLUESKY_LIMITS.maxTextLength) {
-      warnings.push(`Post is ${fullText.length} characters. Consider splitting into a thread.`);
+      warnings.push(
+        `Post is ${fullText.length} characters. Consider splitting into a thread.`
+      );
     }
 
     // Media validations
-    if (content.media && content.media.length > BLUESKY_LIMITS.maxImagesPerPost) {
-      errors.push(`Maximum ${BLUESKY_LIMITS.maxImagesPerPost} images allowed per post`);
+    if (
+      content.media &&
+      content.media.length > BLUESKY_LIMITS.maxImagesPerPost
+    ) {
+      errors.push(
+        `Maximum ${BLUESKY_LIMITS.maxImagesPerPost} images allowed per post`
+      );
     }
 
     return {
@@ -255,30 +296,44 @@ export class BlueskyClient extends BasePlatformClient {
 
   // Bluesky-specific methods
 
-  async uploadImage(imageData: Buffer, mimeType: string): Promise<BlueskyUploadResponse> {
+  async uploadImage(
+    imageData: Buffer,
+    mimeType: string
+  ): Promise<BlueskyUploadResponse> {
     this.ensureAuthenticated();
 
     try {
-      const response = await this.makeRequest(`${this.serviceEndpoint}/xrpc/com.atproto.repo.uploadBlob`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.session!.accessJwt}`,
-          'Content-Type': mimeType,
-        },
-        body: imageData,
-      });
+      const response = await this.makeRequest(
+        `${this.serviceEndpoint}/xrpc/com.atproto.repo.uploadBlob`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${this.session!.accessJwt}`,
+            'Content-Type': mimeType,
+          },
+          body: imageData,
+        }
+      );
 
       return await this.parseJsonResponse<BlueskyUploadResponse>(response);
     } catch (error) {
-      throw new Error(`Failed to upload image: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to upload image: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
-  async createPost(text: string, options: {
-    images?: Array<{ blob: BlueskyBlob; alt: string }>;
-    reply?: { root: { uri: string; cid: string }; parent: { uri: string; cid: string } };
-    langs?: string[];
-  } = {}): Promise<BlueskyCreatePostResponse> {
+  async createPost(
+    text: string,
+    options: {
+      images?: Array<{ blob: BlueskyBlob; alt: string }>;
+      reply?: {
+        root: { uri: string; cid: string };
+        parent: { uri: string; cid: string };
+      };
+      langs?: string[];
+    } = {}
+  ): Promise<BlueskyCreatePostResponse> {
     this.ensureAuthenticated();
 
     const record: {
@@ -291,7 +346,10 @@ export class BlueskyClient extends BasePlatformClient {
         $type: string;
         images?: Array<{ blob: BlueskyBlob; alt: string }>;
       };
-      reply?: { root: { uri: string; cid: string }; parent: { uri: string; cid: string } };
+      reply?: {
+        root: { uri: string; cid: string };
+        parent: { uri: string; cid: string };
+      };
     } = {
       $type: 'app.bsky.feed.post',
       text,
@@ -316,32 +374,41 @@ export class BlueskyClient extends BasePlatformClient {
     // Auto-detect facets for mentions and links
     record.facets = this.detectFacets(text);
 
-    const response = await this.makeRequest(`${this.serviceEndpoint}/xrpc/com.atproto.repo.createRecord`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${this.session!.accessJwt}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        repo: this.session!.did,
-        collection: 'app.bsky.feed.post',
-        record,
-      }),
-    });
+    const response = await this.makeRequest(
+      `${this.serviceEndpoint}/xrpc/com.atproto.repo.createRecord`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${this.session!.accessJwt}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          repo: this.session!.did,
+          collection: 'app.bsky.feed.post',
+          record,
+        }),
+      }
+    );
 
     return await this.parseJsonResponse<BlueskyCreatePostResponse>(response);
   }
 
   // Private helper methods
 
-  private async publishSinglePost(content: AdaptedContent, config: BlueskyConfig): Promise<PublishResult> {
+  private async publishSinglePost(
+    content: AdaptedContent,
+    config: BlueskyConfig
+  ): Promise<PublishResult> {
     try {
       const text = this.constructPostText(content);
       const images: Array<{ blob: BlueskyBlob; alt: string }> = [];
 
       // Handle image uploads
       if (content.media && config.includeImages !== false) {
-        for (const media of content.media.slice(0, BLUESKY_LIMITS.maxImagesPerPost)) {
+        for (const media of content.media.slice(
+          0,
+          BLUESKY_LIMITS.maxImagesPerPost
+        )) {
           if (media.type === 'image') {
             // Note: In a real implementation, you'd fetch the image data from media.url
             // For now, we'll skip this step as it requires additional image processing
@@ -370,7 +437,10 @@ export class BlueskyClient extends BasePlatformClient {
     }
   }
 
-  private async publishThread(content: AdaptedContent, config: BlueskyConfig): Promise<PublishResult> {
+  private async publishThread(
+    content: AdaptedContent,
+    config: BlueskyConfig
+  ): Promise<PublishResult> {
     try {
       const thread = this.splitIntoThread(content);
       const posts: BlueskyCreatePostResponse[] = [];
@@ -381,7 +451,12 @@ export class BlueskyClient extends BasePlatformClient {
         const isFirst = i === 0;
         const isLast = i === thread.posts.length - 1;
 
-        let reply: { root: { uri: string; cid: string }; parent: { uri: string; cid: string } } | undefined;
+        let reply:
+          | {
+              root: { uri: string; cid: string };
+              parent: { uri: string; cid: string };
+            }
+          | undefined;
 
         if (!isFirst && rootPost) {
           const parentPost = posts[i - 1];
@@ -404,7 +479,7 @@ export class BlueskyClient extends BasePlatformClient {
 
         // Small delay between posts to avoid rate limits
         if (!isLast) {
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise((resolve) => setTimeout(resolve, 1000));
         }
       }
 
@@ -424,7 +499,7 @@ export class BlueskyClient extends BasePlatformClient {
 
   private constructPostText(content: AdaptedContent): string {
     let text = '';
-    
+
     if (content.title && content.body) {
       text = `${content.title}\n\n${content.body}`;
     } else {
@@ -441,7 +516,7 @@ export class BlueskyClient extends BasePlatformClient {
   private splitIntoThread(content: AdaptedContent): BlueskyThread {
     const fullText = this.constructPostText(content);
     const posts: Array<{ text: string }> = [];
-    
+
     if (fullText.length <= BLUESKY_LIMITS.maxTextLength) {
       return { posts: [{ text: fullText }] };
     }
@@ -451,38 +526,41 @@ export class BlueskyClient extends BasePlatformClient {
     let currentPost = '';
 
     for (const paragraph of paragraphs) {
-      const potentialPost = currentPost ? `${currentPost}\n\n${paragraph}` : paragraph;
-      
+      const potentialPost = currentPost
+        ? `${currentPost}\n\n${paragraph}`
+        : paragraph;
+
       if (potentialPost.length <= BLUESKY_LIMITS.maxTextLength) {
         currentPost = potentialPost;
+      } else if (currentPost) {
+        posts.push({ text: currentPost });
+        currentPost = paragraph;
       } else {
-        if (currentPost) {
-          posts.push({ text: currentPost });
-          currentPost = paragraph;
-        } else {
-          // Single paragraph is too long, split by sentences
-          const sentences = paragraph.split('. ');
-          let sentencePost = '';
-          
-          for (const sentence of sentences) {
-            const potentialSentencePost = sentencePost ? `${sentencePost}. ${sentence}` : sentence;
-            
-            if (potentialSentencePost.length <= BLUESKY_LIMITS.maxTextLength) {
-              sentencePost = potentialSentencePost;
-            } else {
-              if (sentencePost) {
-                posts.push({ text: sentencePost });
-                sentencePost = sentence;
-              } else {
-                // Even single sentence is too long, hard cut
-                posts.push({ text: sentence.substring(0, BLUESKY_LIMITS.maxTextLength - 3) + '...' });
-              }
-            }
+        // Single paragraph is too long, split by sentences
+        const sentences = paragraph.split('. ');
+        let sentencePost = '';
+
+        for (const sentence of sentences) {
+          const potentialSentencePost = sentencePost
+            ? `${sentencePost}. ${sentence}`
+            : sentence;
+
+          if (potentialSentencePost.length <= BLUESKY_LIMITS.maxTextLength) {
+            sentencePost = potentialSentencePost;
+          } else if (sentencePost) {
+            posts.push({ text: sentencePost });
+            sentencePost = sentence;
+          } else {
+            // Even single sentence is too long, hard cut
+            posts.push({
+              text:
+                sentence.substring(0, BLUESKY_LIMITS.maxTextLength - 3) + '...',
+            });
           }
-          
-          if (sentencePost) {
-            currentPost = sentencePost;
-          }
+        }
+
+        if (sentencePost) {
+          currentPost = sentencePost;
         }
       }
     }
@@ -496,7 +574,7 @@ export class BlueskyClient extends BasePlatformClient {
 
   private detectFacets(text: string): BlueskyFacet[] {
     const facets: BlueskyFacet[] = [];
-    
+
     // Detect mentions (@handle)
     const mentionRegex = /@([a-zA-Z0-9.-]+)/g;
     let match;
@@ -506,10 +584,12 @@ export class BlueskyClient extends BasePlatformClient {
           byteStart: match.index,
           byteEnd: match.index + match[0].length,
         },
-        features: [{
-          $type: 'app.bsky.richtext.facet#mention',
-          did: `did:plc:${match[1]}`, // This would need proper DID resolution
-        }],
+        features: [
+          {
+            $type: 'app.bsky.richtext.facet#mention',
+            did: `did:plc:${match[1]}`, // This would need proper DID resolution
+          },
+        ],
       });
     }
 
@@ -521,10 +601,12 @@ export class BlueskyClient extends BasePlatformClient {
           byteStart: match.index,
           byteEnd: match.index + match[0].length,
         },
-        features: [{
-          $type: 'app.bsky.richtext.facet#link',
-          uri: match[0],
-        }],
+        features: [
+          {
+            $type: 'app.bsky.richtext.facet#link',
+            uri: match[0],
+          },
+        ],
       });
     }
 

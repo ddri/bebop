@@ -7,7 +7,16 @@ const createContentSchema = z.object({
   title: z.string().min(1),
   body: z.string().min(1),
   excerpt: z.string().optional(),
-  type: z.enum(['BLOG_POST', 'EMAIL', 'SOCIAL_POST', 'TWITTER', 'LINKEDIN', 'INSTAGRAM', 'FACEBOOK', 'CUSTOM']),
+  type: z.enum([
+    'BLOG_POST',
+    'EMAIL',
+    'SOCIAL_POST',
+    'TWITTER',
+    'LINKEDIN',
+    'INSTAGRAM',
+    'FACEBOOK',
+    'CUSTOM',
+  ]),
   status: z.enum(['DRAFT', 'READY', 'PUBLISHED', 'ARCHIVED']),
   campaignId: z.string().min(1),
 });
@@ -15,7 +24,7 @@ const createContentSchema = z.object({
 export async function POST(request: Request) {
   try {
     const { userId } = await auth();
-    
+
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -32,7 +41,10 @@ export async function POST(request: Request) {
     });
 
     if (!campaign) {
-      return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Campaign not found' },
+        { status: 404 }
+      );
     }
 
     const content = await database.content.create({
@@ -59,7 +71,7 @@ export async function POST(request: Request) {
 export async function GET() {
   try {
     const { userId } = await auth();
-    
+
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

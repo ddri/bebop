@@ -1,17 +1,17 @@
 import type { DestinationType } from '@repo/database/types';
 import type {
-  PlatformClient,
-  PlatformCredentials,
-  PlatformConfig,
-  PlatformMetadata,
   AdaptedContent,
+  PlatformClient,
+  PlatformConfig,
+  PlatformCredentials,
+  PlatformMetadata,
   PublishResult,
   ValidationResult,
 } from '../types/platform';
 import {
   AuthenticationError,
-  ValidationError,
   PublishingError,
+  ValidationError,
 } from '../types/platform';
 
 /**
@@ -20,7 +20,7 @@ import {
  */
 export abstract class BasePlatformClient implements PlatformClient {
   abstract readonly platform: DestinationType;
-  
+
   protected credentials?: PlatformCredentials;
   protected isAuthenticated = false;
 
@@ -28,9 +28,18 @@ export abstract class BasePlatformClient implements PlatformClient {
 
   // Abstract methods that must be implemented by platform-specific clients
   abstract authenticate(credentials: PlatformCredentials): Promise<void>;
-  abstract validateCredentials(credentials: PlatformCredentials): Promise<ValidationResult>;
-  abstract publish(content: AdaptedContent, config?: PlatformConfig): Promise<PublishResult>;
-  abstract update(id: string, content: AdaptedContent, config?: PlatformConfig): Promise<PublishResult>;
+  abstract validateCredentials(
+    credentials: PlatformCredentials
+  ): Promise<ValidationResult>;
+  abstract publish(
+    content: AdaptedContent,
+    config?: PlatformConfig
+  ): Promise<PublishResult>;
+  abstract update(
+    id: string,
+    content: AdaptedContent,
+    config?: PlatformConfig
+  ): Promise<PublishResult>;
   abstract delete(id: string): Promise<PublishResult>;
   abstract getMetadata(): Promise<PlatformMetadata>;
   abstract validateContent(content: AdaptedContent): ValidationResult;
@@ -50,28 +59,43 @@ export abstract class BasePlatformClient implements PlatformClient {
         { originalError: error }
       );
     }
-    throw new PublishingError(this.platform, `${operation} failed: Unknown error`);
+    throw new PublishingError(
+      this.platform,
+      `${operation} failed: Unknown error`
+    );
   }
 
-  protected validateRequiredFields(content: AdaptedContent, required: string[]): void {
+  protected validateRequiredFields(
+    content: AdaptedContent,
+    required: string[]
+  ): void {
     const missing: string[] = [];
-    
+
     for (const field of required) {
       if (field === 'title' && !content.title?.trim()) {
         missing.push('title');
       } else if (field === 'body' && !content.body?.trim()) {
         missing.push('body');
-      } else if (field === 'tags' && (!content.tags || content.tags.length === 0)) {
+      } else if (
+        field === 'tags' &&
+        (!content.tags || content.tags.length === 0)
+      ) {
         missing.push('tags');
       }
     }
 
     if (missing.length > 0) {
-      throw new ValidationError(this.platform, [`Missing required fields: ${missing.join(', ')}`]);
+      throw new ValidationError(this.platform, [
+        `Missing required fields: ${missing.join(', ')}`,
+      ]);
     }
   }
 
-  protected createSuccessResult(platformPostId?: string, platformUrl?: string, response?: Record<string, unknown>): PublishResult {
+  protected createSuccessResult(
+    platformPostId?: string,
+    platformUrl?: string,
+    response?: Record<string, unknown>
+  ): PublishResult {
     return {
       success: true,
       platformPostId,
@@ -80,7 +104,10 @@ export abstract class BasePlatformClient implements PlatformClient {
     };
   }
 
-  protected createErrorResult(error: string, response?: Record<string, unknown>): PublishResult {
+  protected createErrorResult(
+    error: string,
+    response?: Record<string, unknown>
+  ): PublishResult {
     return {
       success: false,
       error,
@@ -114,33 +141,47 @@ export abstract class BasePlatformClient implements PlatformClient {
   }
 
   // Helper method for handling JSON responses
-  protected async parseJsonResponse<T = unknown>(response: Response): Promise<T> {
+  protected async parseJsonResponse<T = unknown>(
+    response: Response
+  ): Promise<T> {
     try {
-      return await response.json() as T;
+      return (await response.json()) as T;
     } catch (error) {
       throw new Error('Failed to parse JSON response');
     }
   }
 
   // Helper method for validating content length
-  protected validateContentLength(content: string, maxLength: number, fieldName = 'content'): string[] {
+  protected validateContentLength(
+    content: string,
+    maxLength: number,
+    fieldName = 'content'
+  ): string[] {
     const errors: string[] = [];
-    
+
     if (content.length > maxLength) {
-      errors.push(`${fieldName} exceeds maximum length of ${maxLength} characters (current: ${content.length})`);
+      errors.push(
+        `${fieldName} exceeds maximum length of ${maxLength} characters (current: ${content.length})`
+      );
     }
-    
+
     return errors;
   }
 
   // Helper method for validating array length
-  protected validateArrayLength<T>(array: T[] | undefined, maxLength: number, fieldName: string): string[] {
+  protected validateArrayLength<T>(
+    array: T[] | undefined,
+    maxLength: number,
+    fieldName: string
+  ): string[] {
     const errors: string[] = [];
-    
+
     if (array && array.length > maxLength) {
-      errors.push(`${fieldName} exceeds maximum count of ${maxLength} (current: ${array.length})`);
+      errors.push(
+        `${fieldName} exceeds maximum count of ${maxLength} (current: ${array.length})`
+      );
     }
-    
+
     return errors;
   }
 }

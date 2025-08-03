@@ -23,7 +23,10 @@ export interface PlatformFieldConfig {
   }[];
 }
 
-export const platformConfigurations: Record<DestinationType, PlatformFieldConfig> = {
+export const platformConfigurations: Record<
+  DestinationType,
+  PlatformFieldConfig
+> = {
   [DestinationType.HASHNODE]: {
     needsApiKey: true,
     apiKeyLabel: 'Personal Access Token',
@@ -54,11 +57,12 @@ export const platformConfigurations: Record<DestinationType, PlatformFieldConfig
         name: 'isNewsletterActivated',
         label: 'Send to Newsletter',
         type: 'boolean',
-        description: 'Also send published articles to your newsletter subscribers',
+        description:
+          'Also send published articles to your newsletter subscribers',
       },
     ],
   },
-  
+
   [DestinationType.DEVTO]: {
     needsApiKey: true,
     apiKeyLabel: 'API Key',
@@ -76,7 +80,8 @@ export const platformConfigurations: Record<DestinationType, PlatformFieldConfig
         label: 'Organization ID (Optional)',
         type: 'text',
         placeholder: '12345',
-        description: 'Publish under an organization instead of personal account',
+        description:
+          'Publish under an organization instead of personal account',
       },
       {
         name: 'series',
@@ -93,7 +98,7 @@ export const platformConfigurations: Record<DestinationType, PlatformFieldConfig
       },
     ],
   },
-  
+
   [DestinationType.BLUESKY]: {
     needsUsername: true,
     needsApiKey: true,
@@ -136,7 +141,7 @@ export const platformConfigurations: Record<DestinationType, PlatformFieldConfig
       },
     ],
   },
-  
+
   [DestinationType.MASTODON]: {
     needsUrl: true,
     needsApiKey: true,
@@ -155,7 +160,10 @@ export const platformConfigurations: Record<DestinationType, PlatformFieldConfig
         type: 'select',
         options: [
           { value: 'public', label: 'Public - Visible to all' },
-          { value: 'unlisted', label: 'Unlisted - Public but not in timelines' },
+          {
+            value: 'unlisted',
+            label: 'Unlisted - Public but not in timelines',
+          },
           { value: 'private', label: 'Private - Followers only' },
           { value: 'direct', label: 'Direct - Mentioned users only' },
         ],
@@ -176,7 +184,7 @@ export const platformConfigurations: Record<DestinationType, PlatformFieldConfig
       },
     ],
   },
-  
+
   // Placeholder configurations for future platforms
   [DestinationType.WORDPRESS]: {
     needsUrl: true,
@@ -189,7 +197,7 @@ export const platformConfigurations: Record<DestinationType, PlatformFieldConfig
     needsApiSecret: false,
     apiSecretLabel: '',
   },
-  
+
   [DestinationType.GHOST]: {
     needsUrl: true,
     needsApiKey: true,
@@ -201,7 +209,7 @@ export const platformConfigurations: Record<DestinationType, PlatformFieldConfig
     apiSecretLabel: '',
     usernameLabel: '',
   },
-  
+
   [DestinationType.MAILCHIMP]: {
     needsApiKey: true,
     apiKeyLabel: 'API Key',
@@ -213,7 +221,7 @@ export const platformConfigurations: Record<DestinationType, PlatformFieldConfig
     urlLabel: '',
     usernameLabel: '',
   },
-  
+
   [DestinationType.SENDGRID]: {
     needsApiKey: true,
     apiKeyLabel: 'API Key',
@@ -225,7 +233,7 @@ export const platformConfigurations: Record<DestinationType, PlatformFieldConfig
     urlLabel: '',
     usernameLabel: '',
   },
-  
+
   [DestinationType.TWITTER]: {
     needsApiKey: true,
     needsApiSecret: true,
@@ -237,7 +245,7 @@ export const platformConfigurations: Record<DestinationType, PlatformFieldConfig
     urlLabel: '',
     usernameLabel: '',
   },
-  
+
   [DestinationType.LINKEDIN]: {
     needsApiKey: true,
     apiKeyLabel: 'Access Token',
@@ -249,7 +257,7 @@ export const platformConfigurations: Record<DestinationType, PlatformFieldConfig
     urlLabel: '',
     usernameLabel: '',
   },
-  
+
   [DestinationType.FACEBOOK]: {
     needsApiKey: true,
     apiKeyLabel: 'Page Access Token',
@@ -261,7 +269,7 @@ export const platformConfigurations: Record<DestinationType, PlatformFieldConfig
     urlLabel: '',
     usernameLabel: '',
   },
-  
+
   [DestinationType.INSTAGRAM]: {
     needsApiKey: true,
     apiKeyLabel: 'Access Token',
@@ -273,7 +281,7 @@ export const platformConfigurations: Record<DestinationType, PlatformFieldConfig
     urlLabel: '',
     usernameLabel: '',
   },
-  
+
   [DestinationType.WEBHOOK]: {
     needsUrl: true,
     urlLabel: 'Webhook URL',
@@ -285,7 +293,7 @@ export const platformConfigurations: Record<DestinationType, PlatformFieldConfig
     apiSecretLabel: '',
     usernameLabel: '',
   },
-  
+
   [DestinationType.CUSTOM]: {
     needsUrl: true,
     needsApiKey: true,

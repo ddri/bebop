@@ -5,7 +5,24 @@ import { z } from 'zod';
 
 const updateDestinationSchema = z.object({
   name: z.string().min(1).optional(),
-  type: z.enum(['HASHNODE', 'DEVTO', 'BLUESKY', 'MASTODON', 'WORDPRESS', 'GHOST', 'MAILCHIMP', 'SENDGRID', 'TWITTER', 'LINKEDIN', 'FACEBOOK', 'INSTAGRAM', 'WEBHOOK', 'CUSTOM']).optional(),
+  type: z
+    .enum([
+      'HASHNODE',
+      'DEVTO',
+      'BLUESKY',
+      'MASTODON',
+      'WORDPRESS',
+      'GHOST',
+      'MAILCHIMP',
+      'SENDGRID',
+      'TWITTER',
+      'LINKEDIN',
+      'FACEBOOK',
+      'INSTAGRAM',
+      'WEBHOOK',
+      'CUSTOM',
+    ])
+    .optional(),
   config: z.record(z.any()).optional(),
   isActive: z.boolean().optional(),
 });
@@ -16,7 +33,7 @@ export async function PATCH(
 ) {
   try {
     const { userId } = await auth();
-    
+
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -34,7 +51,10 @@ export async function PATCH(
     });
 
     if (!existingDestination) {
-      return NextResponse.json({ error: 'Destination not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Destination not found' },
+        { status: 404 }
+      );
     }
 
     const destination = await database.destination.update({
@@ -60,7 +80,7 @@ export async function DELETE(
 ) {
   try {
     const { userId } = await auth();
-    
+
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -76,7 +96,10 @@ export async function DELETE(
     });
 
     if (!existingDestination) {
-      return NextResponse.json({ error: 'Destination not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Destination not found' },
+        { status: 404 }
+      );
     }
 
     await database.destination.delete({

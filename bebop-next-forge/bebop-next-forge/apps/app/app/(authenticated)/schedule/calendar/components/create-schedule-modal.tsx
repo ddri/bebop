@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import type { CampaignStatus, DestinationType } from '@repo/database/types';
 import { Button } from '@repo/design-system/components/ui/button';
 import {
   Dialog,
@@ -12,7 +12,6 @@ import {
 } from '@repo/design-system/components/ui/dialog';
 import { Input } from '@repo/design-system/components/ui/input';
 import { Label } from '@repo/design-system/components/ui/label';
-import { Textarea } from '@repo/design-system/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -20,8 +19,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@repo/design-system/components/ui/select';
-import type { DestinationType, CampaignStatus } from '@repo/database/types';
-import { Calendar, Clock, Target, Globe } from 'lucide-react';
+import { Textarea } from '@repo/design-system/components/ui/textarea';
+import { Calendar, Clock, Globe, Target } from 'lucide-react';
+import { useState } from 'react';
 
 interface CreateScheduleModalProps {
   isOpen: boolean;
@@ -57,13 +57,19 @@ export const CreateScheduleModal = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!title || !content || !selectedDestination || !selectedCampaign || !scheduledDate) {
+
+    if (
+      !title ||
+      !content ||
+      !selectedDestination ||
+      !selectedCampaign ||
+      !scheduledDate
+    ) {
       return;
     }
 
     setIsSubmitting(true);
-    
+
     try {
       // TODO: Implement API call to create schedule
       console.log('Creating schedule:', {
@@ -73,10 +79,10 @@ export const CreateScheduleModal = ({
         campaignId: selectedCampaign,
         publishAt: new Date(scheduledDate),
       });
-      
+
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       // Reset form and close modal
       setTitle('');
       setContent('');
@@ -91,7 +97,9 @@ export const CreateScheduleModal = ({
     }
   };
 
-  const selectedDestinationObj = destinations.find(d => d.id === selectedDestination);
+  const selectedDestinationObj = destinations.find(
+    (d) => d.id === selectedDestination
+  );
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -102,7 +110,8 @@ export const CreateScheduleModal = ({
             Schedule Content
           </DialogTitle>
           <DialogDescription>
-            Create and schedule content to be published on your selected platform.
+            Create and schedule content to be published on your selected
+            platform.
           </DialogDescription>
         </DialogHeader>
 
@@ -135,13 +144,17 @@ export const CreateScheduleModal = ({
           {/* Destination */}
           <div className="space-y-2">
             <Label htmlFor="destination">Destination</Label>
-            <Select value={selectedDestination} onValueChange={setSelectedDestination}>
+            <Select
+              value={selectedDestination}
+              onValueChange={setSelectedDestination}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select destination">
                   {selectedDestinationObj && (
                     <div className="flex items-center gap-2">
                       <Globe className="h-4 w-4" />
-                      {selectedDestinationObj.name} ({selectedDestinationObj.type})
+                      {selectedDestinationObj.name} (
+                      {selectedDestinationObj.type})
                     </div>
                   )}
                 </SelectValue>
@@ -162,20 +175,23 @@ export const CreateScheduleModal = ({
           {/* Campaign */}
           <div className="space-y-2">
             <Label htmlFor="campaign">Campaign</Label>
-            <Select value={selectedCampaign} onValueChange={setSelectedCampaign}>
+            <Select
+              value={selectedCampaign}
+              onValueChange={setSelectedCampaign}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select campaign">
-                  {campaigns.find(c => c.id === selectedCampaign) && (
+                  {campaigns.find((c) => c.id === selectedCampaign) && (
                     <div className="flex items-center gap-2">
                       <Target className="h-4 w-4" />
-                      {campaigns.find(c => c.id === selectedCampaign)?.name}
+                      {campaigns.find((c) => c.id === selectedCampaign)?.name}
                     </div>
                   )}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {campaigns
-                  .filter(campaign => campaign.status === 'ACTIVE')
+                  .filter((campaign) => campaign.status === 'ACTIVE')
                   .map((campaign) => (
                     <SelectItem key={campaign.id} value={campaign.id}>
                       <div className="flex items-center gap-2">
@@ -192,7 +208,7 @@ export const CreateScheduleModal = ({
           <div className="space-y-2">
             <Label htmlFor="scheduledDate">Publish Date & Time</Label>
             <div className="relative">
-              <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Clock className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 transform text-muted-foreground" />
               <Input
                 id="scheduledDate"
                 type="datetime-local"

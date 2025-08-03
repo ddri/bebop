@@ -17,11 +17,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const content = await database.content.findFirst({
-    where: { 
+    where: {
       id,
       campaign: {
-        userId
-      }
+        userId,
+      },
     },
     select: { title: true, type: true },
   });
@@ -46,11 +46,11 @@ const ContentDetailPage = async ({ params }: Props) => {
 
   // Fetch content with related data
   const content = await database.content.findFirst({
-    where: { 
+    where: {
       id,
       campaign: {
-        userId
-      }
+        userId,
+      },
     },
     include: {
       campaign: {
@@ -81,8 +81,8 @@ const ContentDetailPage = async ({ params }: Props) => {
   // Fetch user's campaigns for reassignment
   const campaigns = await database.campaign.findMany({
     where: { userId },
-    select: { 
-      id: true, 
+    select: {
+      id: true,
       name: true,
       userId: true,
       description: true,
@@ -91,17 +91,12 @@ const ContentDetailPage = async ({ params }: Props) => {
       endDate: true,
       goals: true,
       createdAt: true,
-      updatedAt: true
+      updatedAt: true,
     },
     orderBy: { name: 'asc' },
   });
 
-  return (
-    <ContentEditor 
-      content={content} 
-      campaigns={campaigns}
-    />
-  );
+  return <ContentEditor content={content} campaigns={campaigns} />;
 };
 
 export default ContentDetailPage;

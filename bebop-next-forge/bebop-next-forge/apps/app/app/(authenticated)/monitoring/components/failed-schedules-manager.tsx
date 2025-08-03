@@ -1,21 +1,31 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
+import type { DestinationType } from '@repo/database/types';
+import {
+  backgroundColors,
+  destructiveAction,
+  getPlatformColor,
+  iconColors,
+} from '@repo/design-system';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Button } from '@repo/design-system/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@repo/design-system/components/ui/card';
 import { EmptyState } from '@repo/design-system/components/ui/empty-state';
-import { getPlatformColor, iconColors, backgroundColors, destructiveAction } from '@repo/design-system';
-import { 
+import { formatDistanceToNow } from 'date-fns';
+import {
   AlertTriangle,
+  Calendar,
+  ExternalLink,
   RefreshCw,
   RotateCcw,
   X,
-  ExternalLink,
-  Calendar
 } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
 import { useState } from 'react';
-import type { DestinationType } from '@repo/database/types';
 
 interface FailedSchedule {
   id: string;
@@ -33,23 +43,25 @@ interface FailedSchedulesManagerProps {
   onRetry: () => void;
 }
 
-
-export const FailedSchedulesManager = ({ failedActivities, onRetry }: FailedSchedulesManagerProps) => {
+export const FailedSchedulesManager = ({
+  failedActivities,
+  onRetry,
+}: FailedSchedulesManagerProps) => {
   const [retryingIds, setRetryingIds] = useState<Set<string>>(new Set());
 
   const handleRetrySchedule = async (scheduleId: string) => {
-    setRetryingIds(prev => new Set([...prev, scheduleId]));
-    
+    setRetryingIds((prev) => new Set([...prev, scheduleId]));
+
     try {
       const response = await fetch('/api/scheduler', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           action: 'retrySchedule',
-          scheduleId 
-        })
+          scheduleId,
+        }),
       });
-      
+
       if (response.ok) {
         // Refresh data after retry
         setTimeout(() => onRetry(), 1000);
@@ -57,7 +69,7 @@ export const FailedSchedulesManager = ({ failedActivities, onRetry }: FailedSche
     } catch (error) {
       console.error('Failed to retry schedule:', error);
     } finally {
-      setRetryingIds(prev => {
+      setRetryingIds((prev) => {
         const newSet = new Set(prev);
         newSet.delete(scheduleId);
         return newSet;
@@ -70,12 +82,12 @@ export const FailedSchedulesManager = ({ failedActivities, onRetry }: FailedSche
       const response = await fetch('/api/scheduler', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           action: 'cancelSchedule',
-          scheduleId 
-        })
+          scheduleId,
+        }),
       });
-      
+
       if (response.ok) {
         // Refresh data after cancellation
         setTimeout(() => onRetry(), 1000);
@@ -108,26 +120,34 @@ export const FailedSchedulesManager = ({ failedActivities, onRetry }: FailedSche
             description="All schedules are publishing successfully"
           />
         ) : (
-          <div className="space-y-4 max-h-96 overflow-y-auto">
+          <div className="max-h-96 space-y-4 overflow-y-auto">
             {failedActivities.map((schedule) => {
               const isRetrying = retryingIds.has(schedule.id);
-              const timeAgo = formatDistanceToNow(new Date(schedule.publishAt), { addSuffix: true });
+              const timeAgo = formatDistanceToNow(
+                new Date(schedule.publishAt),
+                { addSuffix: true }
+              );
               const maxAttemptsReached = schedule.attempts >= 3;
 
               return (
-                <div key={schedule.id} className={`border rounded-lg p-4 ${backgroundColors.error}`}>
+                <div
+                  key={schedule.id}
+                  className={`rounded-lg border p-4 ${backgroundColors.error}`}
+                >
                   <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-2">
-                        <AlertTriangle className={`h-4 w-4 ${iconColors.error} flex-shrink-0`} />
-                        <p className="font-medium text-sm truncate">
+                    <div className="min-w-0 flex-1">
+                      <div className="mb-2 flex items-center gap-2">
+                        <AlertTriangle
+                          className={`h-4 w-4 ${iconColors.error} flex-shrink-0`}
+                        />
+                        <p className="truncate font-medium text-sm">
                           {schedule.content.title}
                         </p>
                       </div>
-                      
-                      <div className="flex items-center gap-2 mb-3">
-                        <Badge 
-                          variant="outline" 
+
+                      <div className="mb-3 flex items-center gap-2">
+                        <Badge
+                          variant="outline"
                           className={`text-xs ${getPlatformColor(schedule.destination.type as DestinationType)}`}
                         >
                           {schedule.destination.name}
@@ -135,20 +155,20 @@ export const FailedSchedulesManager = ({ failedActivities, onRetry }: FailedSche
                         <Badge variant="destructive" className="text-xs">
                           Attempt {schedule.attempts}/3
                         </Badge>
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-1 text-muted-foreground text-xs">
                           <Calendar className="h-3 w-3" />
                           {timeAgo}
                         </div>
                       </div>
 
                       {schedule.error && (
-                        <div className={`mb-3 p-2 ${backgroundColors.error} rounded text-xs`}>
+                        <div
+                          className={`mb-3 p-2 ${backgroundColors.error} rounded text-xs`}
+                        >
                           <p className={`font-medium ${iconColors.error} mb-1`}>
                             Error Details:
                           </p>
-                          <p className={iconColors.error}>
-                            {schedule.error}
-                          </p>
+                          <p className={iconColors.error}>{schedule.error}</p>
                         </div>
                       )}
 
@@ -161,29 +181,33 @@ export const FailedSchedulesManager = ({ failedActivities, onRetry }: FailedSche
                           className="h-7 text-xs"
                         >
                           {isRetrying ? (
-                            <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
+                            <RefreshCw className="mr-1 h-3 w-3 animate-spin" />
                           ) : (
-                            <RotateCcw className="h-3 w-3 mr-1" />
+                            <RotateCcw className="mr-1 h-3 w-3" />
                           )}
-                          {maxAttemptsReached ? 'Max Attempts' : isRetrying ? 'Retrying...' : 'Retry'}
+                          {maxAttemptsReached
+                            ? 'Max Attempts'
+                            : isRetrying
+                              ? 'Retrying...'
+                              : 'Retry'}
                         </Button>
-                        
+
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleCancelSchedule(schedule.id)}
                           className={`h-7 text-xs ${destructiveAction.button}`}
                         >
-                          <X className="h-3 w-3 mr-1" />
+                          <X className="mr-1 h-3 w-3" />
                           Cancel
                         </Button>
 
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-7 text-xs ml-auto"
+                          className="ml-auto h-7 text-xs"
                         >
-                          <ExternalLink className="h-3 w-3 mr-1" />
+                          <ExternalLink className="mr-1 h-3 w-3" />
                           View Content
                         </Button>
                       </div>

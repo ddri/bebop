@@ -3,8 +3,8 @@ import { database } from '@repo/database';
 import { ScheduleStatus } from '@repo/database/types';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { ScheduledContentTable } from './components/scheduled-content-table';
 import { Header } from '../components/header';
+import { ScheduledContentTable } from './components/scheduled-content-table';
 
 const title = 'Scheduled Content';
 const description = 'View and manage all scheduled content across campaigns';
@@ -40,7 +40,12 @@ const ScheduledContentPage = async (props: { searchParams: SearchParams }) => {
     },
   };
 
-  if (searchParams.status && Object.values(ScheduleStatus).includes(searchParams.status as ScheduleStatus)) {
+  if (
+    searchParams.status &&
+    Object.values(ScheduleStatus).includes(
+      searchParams.status as ScheduleStatus
+    )
+  ) {
     whereClause.status = searchParams.status as ScheduleStatus;
   }
 
@@ -100,10 +105,10 @@ const ScheduledContentPage = async (props: { searchParams: SearchParams }) => {
   ]);
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex h-full flex-col">
       <Header pages={[]} page="Scheduled Content" />
-      <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-        <ScheduledContentTable 
+      <div className="flex-1 space-y-4 p-4 pt-6 md:p-8">
+        <ScheduledContentTable
           schedules={schedules}
           campaigns={campaigns}
           destinations={destinations}

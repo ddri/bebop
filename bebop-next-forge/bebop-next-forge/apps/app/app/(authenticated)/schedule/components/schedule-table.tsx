@@ -1,15 +1,21 @@
 'use client';
 
-import { StatusBadge } from '@repo/design-system/components/ui/status-badge';
+import type {
+  ContentType,
+  DestinationType,
+  Schedule,
+  ScheduleStatus,
+} from '@repo/database/types';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Button } from '@repo/design-system/components/ui/button';
-import { EmptyState } from '@repo/design-system/components/ui/empty-state';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@repo/design-system/components/ui/dropdown-menu';
+import { EmptyState } from '@repo/design-system/components/ui/empty-state';
+import { StatusBadge } from '@repo/design-system/components/ui/status-badge';
 import {
   Table,
   TableBody,
@@ -18,15 +24,9 @@ import {
   TableHeader,
   TableRow,
 } from '@repo/design-system/components/ui/table';
-import type { 
-  Schedule, 
-  ScheduleStatus, 
-  ContentType, 
-  DestinationType 
-} from '@repo/database/types';
 import { Calendar, Clock, MoreHorizontal, Plus } from 'lucide-react';
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { CreateScheduleDialog } from './create-schedule-dialog';
 import { EditScheduleDialog } from './edit-schedule-dialog';
 
@@ -49,7 +49,10 @@ interface ScheduleTableProps {
   })[];
 }
 
-const statusMapping: Record<ScheduleStatus, 'pending' | 'publishing' | 'published' | 'failed' | 'cancelled'> = {
+const statusMapping: Record<
+  ScheduleStatus,
+  'pending' | 'publishing' | 'published' | 'failed' | 'cancelled'
+> = {
   PENDING: 'pending',
   PUBLISHING: 'publishing',
   PUBLISHED: 'published',
@@ -109,7 +112,8 @@ export const ScheduleTable = ({ schedules }: ScheduleTableProps) => {
   };
 
   const handleCancel = async (scheduleId: string) => {
-    if (!confirm('Are you sure you want to cancel this scheduled post?')) return;
+    if (!confirm('Are you sure you want to cancel this scheduled post?'))
+      return;
 
     try {
       const response = await fetch(`/api/schedule/${scheduleId}`, {
@@ -131,7 +135,12 @@ export const ScheduleTable = ({ schedules }: ScheduleTableProps) => {
   };
 
   const handleDelete = async (scheduleId: string) => {
-    if (!confirm('Are you sure you want to delete this schedule? This action cannot be undone.')) return;
+    if (
+      !confirm(
+        'Are you sure you want to delete this schedule? This action cannot be undone.'
+      )
+    )
+      return;
 
     try {
       const response = await fetch(`/api/schedule/${scheduleId}`, {
@@ -150,7 +159,7 @@ export const ScheduleTable = ({ schedules }: ScheduleTableProps) => {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Content Schedule</h1>
+          <h1 className="font-bold text-2xl">Content Schedule</h1>
           <p className="text-muted-foreground">
             Manage when your content gets published across different platforms
           </p>
@@ -187,9 +196,11 @@ export const ScheduleTable = ({ schedules }: ScheduleTableProps) => {
                   label: 'Schedule Content',
                   icon: Plus,
                   onClick: () => {
-                    const createButton = document.querySelector('[data-create-schedule-trigger]') as HTMLButtonElement;
+                    const createButton = document.querySelector(
+                      '[data-create-schedule-trigger]'
+                    ) as HTMLButtonElement;
                     createButton?.click();
-                  }
+                  },
                 }}
               />
             ) : (
@@ -198,8 +209,13 @@ export const ScheduleTable = ({ schedules }: ScheduleTableProps) => {
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <div>
-                        <div className="font-medium">{schedule.content.title}</div>
-                        <Badge className={typeColors[schedule.content.type]} variant="outline">
+                        <div className="font-medium">
+                          {schedule.content.title}
+                        </div>
+                        <Badge
+                          className={typeColors[schedule.content.type]}
+                          variant="outline"
+                        >
                           {schedule.content.type.replace('_', ' ')}
                         </Badge>
                       </div>
@@ -208,8 +224,15 @@ export const ScheduleTable = ({ schedules }: ScheduleTableProps) => {
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <div>
-                        <div className="font-medium">{schedule.destination.name}</div>
-                        <Badge className={destinationColors[schedule.destination.type]} variant="outline">
+                        <div className="font-medium">
+                          {schedule.destination.name}
+                        </div>
+                        <Badge
+                          className={
+                            destinationColors[schedule.destination.type]
+                          }
+                          variant="outline"
+                        >
                           {schedule.destination.type}
                         </Badge>
                       </div>
@@ -226,7 +249,7 @@ export const ScheduleTable = ({ schedules }: ScheduleTableProps) => {
                         <div className="font-medium">
                           {formatDateTime(schedule.publishAt)}
                         </div>
-                        <div className="text-sm text-muted-foreground">
+                        <div className="text-muted-foreground text-sm">
                           {isUpcoming(schedule.publishAt) ? 'Upcoming' : 'Past'}
                         </div>
                       </div>
@@ -248,16 +271,22 @@ export const ScheduleTable = ({ schedules }: ScheduleTableProps) => {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleEdit(schedule.id)}>
+                        <DropdownMenuItem
+                          onClick={() => handleEdit(schedule.id)}
+                        >
                           Edit
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleEdit(schedule.id)}>
+                        <DropdownMenuItem
+                          onClick={() => handleEdit(schedule.id)}
+                        >
                           Reschedule
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleCancel(schedule.id)}>
+                        <DropdownMenuItem
+                          onClick={() => handleCancel(schedule.id)}
+                        >
                           Cancel
                         </DropdownMenuItem>
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                           className="text-red-600"
                           onClick={() => handleDelete(schedule.id)}
                         >
@@ -276,7 +305,7 @@ export const ScheduleTable = ({ schedules }: ScheduleTableProps) => {
       {editingSchedule && (
         <EditScheduleDialog
           scheduleId={editingSchedule}
-          schedule={schedules.find(s => s.id === editingSchedule)}
+          schedule={schedules.find((s) => s.id === editingSchedule)}
           onClose={() => setEditingSchedule(null)}
         />
       )}

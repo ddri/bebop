@@ -1,5 +1,7 @@
 'use client';
 
+import { zodResolver } from '@hookform/resolvers/zod';
+import { ScheduleStatus } from '@repo/database/types';
 import { Button } from '@repo/design-system/components/ui/button';
 import {
   Dialog,
@@ -27,10 +29,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@repo/design-system/components/ui/select';
-import { ScheduleStatus } from '@repo/database/types';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -63,7 +63,10 @@ interface Destination {
   type: string;
 }
 
-export const CreateScheduleDialog = ({ children, campaignId }: CreateScheduleDialogProps) => {
+export const CreateScheduleDialog = ({
+  children,
+  campaignId,
+}: CreateScheduleDialogProps) => {
   const [open, setOpen] = useState(false);
   const [content, setContent] = useState<Content[]>([]);
   const [destinations, setDestinations] = useState<Destination[]>([]);
@@ -89,19 +92,25 @@ export const CreateScheduleDialog = ({ children, campaignId }: CreateScheduleDia
 
         if (contentRes.ok) {
           const contentData = await contentRes.json();
-          let filteredContent = contentData.filter((c: { status: string }) => c.status === 'READY');
-          
+          let filteredContent = contentData.filter(
+            (c: { status: string }) => c.status === 'READY'
+          );
+
           // Filter by campaign if campaignId is provided
           if (campaignId) {
-            filteredContent = filteredContent.filter((c: { campaignId: string }) => c.campaignId === campaignId);
+            filteredContent = filteredContent.filter(
+              (c: { campaignId: string }) => c.campaignId === campaignId
+            );
           }
-          
+
           setContent(filteredContent);
         }
 
         if (destinationsRes.ok) {
           const destinationsData = await destinationsRes.json();
-          setDestinations(destinationsData.filter((d: { isActive: boolean }) => d.isActive));
+          setDestinations(
+            destinationsData.filter((d: { isActive: boolean }) => d.isActive)
+          );
         }
       } catch (error) {
         console.error('Failed to fetch data:', error);
@@ -150,7 +159,8 @@ export const CreateScheduleDialog = ({ children, campaignId }: CreateScheduleDia
         <DialogHeader>
           <DialogTitle>Schedule Content</DialogTitle>
           <DialogDescription>
-            Choose content and destination, then set when it should be published.
+            Choose content and destination, then set when it should be
+            published.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -161,7 +171,10 @@ export const CreateScheduleDialog = ({ children, campaignId }: CreateScheduleDia
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Content</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select content to schedule" />
@@ -172,7 +185,7 @@ export const CreateScheduleDialog = ({ children, campaignId }: CreateScheduleDia
                         <SelectItem key={item.id} value={item.id}>
                           <div className="flex flex-col">
                             <div className="font-medium">{item.title}</div>
-                            <div className="text-sm text-muted-foreground">
+                            <div className="text-muted-foreground text-sm">
                               {item.type} • {item.campaign.name}
                             </div>
                           </div>
@@ -194,7 +207,10 @@ export const CreateScheduleDialog = ({ children, campaignId }: CreateScheduleDia
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Destination</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select destination" />
@@ -205,7 +221,7 @@ export const CreateScheduleDialog = ({ children, campaignId }: CreateScheduleDia
                         <SelectItem key={dest.id} value={dest.id}>
                           <div className="flex flex-col">
                             <div className="font-medium">{dest.name}</div>
-                            <div className="text-sm text-muted-foreground">
+                            <div className="text-muted-foreground text-sm">
                               {dest.type}
                             </div>
                           </div>
@@ -248,14 +264,19 @@ export const CreateScheduleDialog = ({ children, campaignId }: CreateScheduleDia
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Status</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select status" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value={ScheduleStatus.PENDING}>Pending</SelectItem>
+                      <SelectItem value={ScheduleStatus.PENDING}>
+                        Pending
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                   <FormDescription>

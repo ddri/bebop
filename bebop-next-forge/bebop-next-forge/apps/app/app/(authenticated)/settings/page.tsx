@@ -2,8 +2,8 @@ import { auth } from '@repo/auth/server';
 import { database } from '@repo/database';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { SettingsLayout } from './components/settings-layout';
 import { Header } from '../components/header';
+import { SettingsLayout } from './components/settings-layout';
 
 const title = 'Settings';
 const description = 'Manage your account and preferences';

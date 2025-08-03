@@ -1,27 +1,29 @@
 'use client';
 
-import FullCalendar from '@fullcalendar/react';
+import type { EventClickArg, EventDropArg } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
+import interactionPlugin, {
+  type DateClickArg,
+} from '@fullcalendar/interaction';
+import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
-import interactionPlugin, { DateClickArg } from '@fullcalendar/interaction';
-import { EventClickArg, EventDropArg } from '@fullcalendar/core';
-import { useState, useMemo, useCallback, useTransition } from 'react';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import type { 
-  Schedule, 
-  ScheduleStatus, 
-  ContentType, 
+import type {
+  CampaignStatus,
+  ContentType,
   DestinationType,
-  CampaignStatus
+  Schedule,
+  ScheduleStatus,
 } from '@repo/database/types';
+import { Badge } from '@repo/design-system/components/ui/badge';
+import { Button } from '@repo/design-system/components/ui/button';
 import { Calendar, Filter, Plus } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useCallback, useMemo, useState, useTransition } from 'react';
+import { toast } from 'sonner';
 import { CalendarFilters } from './calendar-filters';
-import { ScheduleEventCard } from './schedule-event-card';
 import { CreateScheduleModal } from './create-schedule-modal';
 import { EditScheduleModal } from './edit-schedule-modal';
-import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
+import { ScheduleEventCard } from './schedule-event-card';
 
 interface CalendarViewProps {
   schedules: (Schedule & {
@@ -80,46 +82,70 @@ const STATUS_COLORS = {
   CANCELLED: '#9E9E9E',
 } as const;
 
-export const CalendarView = ({ schedules, destinations, campaigns }: CalendarViewProps) => {
-  const [selectedPlatforms, setSelectedPlatforms] = useState<DestinationType[]>([]);
-  const [selectedStatuses, setSelectedStatuses] = useState<ScheduleStatus[]>([]);
+export const CalendarView = ({
+  schedules,
+  destinations,
+  campaigns,
+}: CalendarViewProps) => {
+  const [selectedPlatforms, setSelectedPlatforms] = useState<DestinationType[]>(
+    []
+  );
+  const [selectedStatuses, setSelectedStatuses] = useState<ScheduleStatus[]>(
+    []
+  );
   const [selectedCampaigns, setSelectedCampaigns] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [selectedSchedule, setSelectedSchedule] = useState<CalendarViewProps['schedules'][0] | null>(null);
+  const [selectedSchedule, setSelectedSchedule] = useState<
+    CalendarViewProps['schedules'][0] | null
+  >(null);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
   // Convert schedules to FullCalendar events
   const calendarEvents = useMemo(() => {
     return schedules
-      .filter(schedule => {
+      .filter((schedule) => {
         // Apply platform filters
-        if (selectedPlatforms.length > 0 && !selectedPlatforms.includes(schedule.destination.type)) {
+        if (
+          selectedPlatforms.length > 0 &&
+          !selectedPlatforms.includes(schedule.destination.type)
+        ) {
           return false;
         }
-        
+
         // Apply status filters
-        if (selectedStatuses.length > 0 && !selectedStatuses.includes(schedule.status)) {
+        if (
+          selectedStatuses.length > 0 &&
+          !selectedStatuses.includes(schedule.status)
+        ) {
           return false;
         }
-        
+
         // Apply campaign filters
-        if (selectedCampaigns.length > 0 && !selectedCampaigns.includes(schedule.campaign.id)) {
+        if (
+          selectedCampaigns.length > 0 &&
+          !selectedCampaigns.includes(schedule.campaign.id)
+        ) {
           return false;
         }
-        
+
         return true;
       })
-      .map(schedule => ({
+      .map((schedule) => ({
         id: schedule.id,
         title: schedule.content.title,
         start: schedule.publishAt,
-        backgroundColor: PLATFORM_COLORS[schedule.destination.type as keyof typeof PLATFORM_COLORS] || PLATFORM_COLORS.CUSTOM,
-        borderColor: STATUS_COLORS[schedule.status as keyof typeof STATUS_COLORS],
-        textColor: schedule.destination.type === 'DEVTO' ? '#FFFFFF' : '#FFFFFF',
+        backgroundColor:
+          PLATFORM_COLORS[
+            schedule.destination.type as keyof typeof PLATFORM_COLORS
+          ] || PLATFORM_COLORS.CUSTOM,
+        borderColor:
+          STATUS_COLORS[schedule.status as keyof typeof STATUS_COLORS],
+        textColor:
+          schedule.destination.type === 'DEVTO' ? '#FFFFFF' : '#FFFFFF',
         extendedProps: {
           schedule,
           platform: schedule.destination.type,
@@ -129,7 +155,9 @@ export const CalendarView = ({ schedules, destinations, campaigns }: CalendarVie
           excerpt: schedule.content.excerpt,
         },
         classNames: [`schedule-event-${schedule.status.toLowerCase()}`],
-        editable: schedule.status === 'PENDING' && new Date(schedule.publishAt) > new Date(),
+        editable:
+          schedule.status === 'PENDING' &&
+          new Date(schedule.publishAt) > new Date(),
       }));
   }, [schedules, selectedPlatforms, selectedStatuses, selectedCampaigns]);
 
@@ -144,117 +172,138 @@ export const CalendarView = ({ schedules, destinations, campaigns }: CalendarVie
     setShowEditModal(true);
   };
 
-  const handleEventDrop = useCallback(async (eventInfo: EventDropArg) => {
-    const scheduleId = eventInfo.event.id;
-    const newDate = eventInfo.event.start;
-    const oldDate = eventInfo.oldEvent.start;
-    const schedule = eventInfo.event.extendedProps.schedule;
-    
-    if (!newDate) {
-      toast.error('Invalid date');
-      eventInfo.revert();
-      return;
-    }
+  const handleEventDrop = useCallback(
+    async (eventInfo: EventDropArg) => {
+      const scheduleId = eventInfo.event.id;
+      const newDate = eventInfo.event.start;
+      const oldDate = eventInfo.oldEvent.start;
+      const schedule = eventInfo.event.extendedProps.schedule;
 
-    // Prevent moving to past dates
-    if (newDate < new Date()) {
-      toast.error('Cannot schedule content in the past');
-      eventInfo.revert();
-      return;
-    }
-
-    // Show confirmation if moving more than 7 days
-    const daysDiff = Math.abs((newDate.getTime() - (oldDate?.getTime() || 0)) / (1000 * 60 * 60 * 24));
-    if (daysDiff > 7) {
-      const confirmed = window.confirm(
-        `Are you sure you want to reschedule "${schedule.content.title}" to ${newDate.toLocaleDateString()}?`
-      );
-      if (!confirmed) {
+      if (!newDate) {
+        toast.error('Invalid date');
         eventInfo.revert();
         return;
       }
-    }
 
-    // Optimistically update UI
-    const toastId = toast.loading('Rescheduling content...');
-    
-    try {
-      const response = await fetch(`/api/schedule/${scheduleId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          publishAt: newDate.toISOString(),
-        }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to update schedule');
+      // Prevent moving to past dates
+      if (newDate < new Date()) {
+        toast.error('Cannot schedule content in the past');
+        eventInfo.revert();
+        return;
       }
 
-      toast.success('Content rescheduled successfully', { id: toastId });
-      
-      // Refresh the page to get updated data
-      startTransition(() => {
-        router.refresh();
-      });
-    } catch (error) {
-      console.error('Error updating schedule:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to reschedule content', { id: toastId });
-      // Revert the drag operation
-      eventInfo.revert();
-    }
-  }, [router]);
-
-  const handleEventResize = useCallback(async (eventInfo: { event: { id: string; start: Date | null }; revert: () => void }) => {
-    // For now, we'll just use the start time since we don't have duration in our schema
-    const scheduleId = eventInfo.event.id;
-    const newDate = eventInfo.event.start;
-    
-    if (!newDate) {
-      toast.error('Invalid date');
-      eventInfo.revert();
-      return;
-    }
-
-    // Prevent moving to past dates
-    if (newDate < new Date()) {
-      toast.error('Cannot schedule content in the past');
-      eventInfo.revert();
-      return;
-    }
-
-    const toastId = toast.loading('Updating schedule time...');
-    
-    try {
-      const response = await fetch(`/api/schedule/${scheduleId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          publishAt: newDate.toISOString(),
-        }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to update schedule');
+      // Show confirmation if moving more than 7 days
+      const daysDiff = Math.abs(
+        (newDate.getTime() - (oldDate?.getTime() || 0)) / (1000 * 60 * 60 * 24)
+      );
+      if (daysDiff > 7) {
+        const confirmed = window.confirm(
+          `Are you sure you want to reschedule "${schedule.content.title}" to ${newDate.toLocaleDateString()}?`
+        );
+        if (!confirmed) {
+          eventInfo.revert();
+          return;
+        }
       }
 
-      toast.success('Schedule time updated', { id: toastId });
-      
-      startTransition(() => {
-        router.refresh();
-      });
-    } catch (error) {
-      console.error('Error updating schedule:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to update schedule time', { id: toastId });
-      eventInfo.revert();
-    }
-  }, [router]);
+      // Optimistically update UI
+      const toastId = toast.loading('Rescheduling content...');
+
+      try {
+        const response = await fetch(`/api/schedule/${scheduleId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            publishAt: newDate.toISOString(),
+          }),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Failed to update schedule');
+        }
+
+        toast.success('Content rescheduled successfully', { id: toastId });
+
+        // Refresh the page to get updated data
+        startTransition(() => {
+          router.refresh();
+        });
+      } catch (error) {
+        console.error('Error updating schedule:', error);
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : 'Failed to reschedule content',
+          { id: toastId }
+        );
+        // Revert the drag operation
+        eventInfo.revert();
+      }
+    },
+    [router]
+  );
+
+  const handleEventResize = useCallback(
+    async (eventInfo: {
+      event: { id: string; start: Date | null };
+      revert: () => void;
+    }) => {
+      // For now, we'll just use the start time since we don't have duration in our schema
+      const scheduleId = eventInfo.event.id;
+      const newDate = eventInfo.event.start;
+
+      if (!newDate) {
+        toast.error('Invalid date');
+        eventInfo.revert();
+        return;
+      }
+
+      // Prevent moving to past dates
+      if (newDate < new Date()) {
+        toast.error('Cannot schedule content in the past');
+        eventInfo.revert();
+        return;
+      }
+
+      const toastId = toast.loading('Updating schedule time...');
+
+      try {
+        const response = await fetch(`/api/schedule/${scheduleId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            publishAt: newDate.toISOString(),
+          }),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Failed to update schedule');
+        }
+
+        toast.success('Schedule time updated', { id: toastId });
+
+        startTransition(() => {
+          router.refresh();
+        });
+      } catch (error) {
+        console.error('Error updating schedule:', error);
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : 'Failed to update schedule time',
+          { id: toastId }
+        );
+        eventInfo.revert();
+      }
+    },
+    [router]
+  );
 
   return (
     <div className="space-y-4">
@@ -262,12 +311,12 @@ export const CalendarView = ({ schedules, destinations, campaigns }: CalendarVie
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Calendar className="h-5 w-5" />
-          <h2 className="text-lg font-semibold">Content Calendar</h2>
+          <h2 className="font-semibold text-lg">Content Calendar</h2>
           <Badge variant="secondary" className="ml-2">
             {calendarEvents.length} scheduled
           </Badge>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
@@ -278,7 +327,7 @@ export const CalendarView = ({ schedules, destinations, campaigns }: CalendarVie
             <Filter className="h-4 w-4" />
             Filters
           </Button>
-          
+
           <Button
             size="sm"
             onClick={() => setShowCreateModal(true)}
@@ -330,7 +379,7 @@ export const CalendarView = ({ schedules, destinations, campaigns }: CalendarVie
             eventStartEditable={true}
             eventConstraint={{
               start: new Date().toISOString(),
-              end: '2100-01-01'
+              end: '2100-01-01',
             }}
             eventContent={(eventInfo) => (
               <ScheduleEventCard
@@ -343,7 +392,9 @@ export const CalendarView = ({ schedules, destinations, campaigns }: CalendarVie
             )}
             // Custom styling
             eventClassNames={(arg) => {
-              return [`platform-${arg.event.extendedProps.platform.toLowerCase()}`];
+              return [
+                `platform-${arg.event.extendedProps.platform.toLowerCase()}`,
+              ];
             }}
           />
         </div>

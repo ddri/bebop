@@ -2,7 +2,7 @@
 
 /**
  * Quick Test Script for Publishing Queue System
- * 
+ *
  * This script:
  * 1. Creates test data (campaign, content, destination, schedule)
  * 2. Schedules a post for immediate publication
@@ -11,7 +11,13 @@
  */
 
 import { database } from '@repo/database';
-import { CampaignStatus, ContentStatus, ContentType, ScheduleStatus, DestinationType } from '@repo/database/types';
+import {
+  CampaignStatus,
+  ContentStatus,
+  ContentType,
+  DestinationType,
+  ScheduleStatus,
+} from '@repo/database/types';
 
 async function createTestData() {
   console.log('🔧 Creating test data...');
@@ -36,7 +42,8 @@ async function createTestData() {
 #testing #scheduler #automation
 
 This post should be published automatically by our queue system!`,
-      excerpt: 'A test post to verify our publishing queue system works correctly.',
+      excerpt:
+        'A test post to verify our publishing queue system works correctly.',
       type: ContentType.BLOG_POST,
       status: ContentStatus.READY,
     },
@@ -74,7 +81,9 @@ This post should be published automatically by our queue system!`,
   console.log(`   Campaign: ${campaign.name} (${campaign.id})`);
   console.log(`   Content: ${content.title}`);
   console.log(`   Destination: ${destination.name} (${destination.type})`);
-  console.log(`   Schedule: ${schedule.id} (due at ${publishAt.toISOString()})`);
+  console.log(
+    `   Schedule: ${schedule.id} (due at ${publishAt.toISOString()})`
+  );
   console.log('');
 
   return { campaign, content, destination, schedule };
@@ -107,19 +116,19 @@ async function watchSchedule(scheduleId: string, maxWaitMinutes = 5) {
     if (schedule.status !== lastStatus) {
       const timestamp = new Date().toISOString();
       console.log(`[${timestamp}] Status: ${lastStatus} → ${schedule.status}`);
-      
+
       if (schedule.attempts > 0) {
         console.log(`   Attempts: ${schedule.attempts}`);
       }
-      
+
       if (schedule.error) {
         console.log(`   Error: ${schedule.error}`);
       }
-      
+
       if (schedule.publishedAt) {
         console.log(`   Published at: ${schedule.publishedAt.toISOString()}`);
       }
-      
+
       lastStatus = schedule.status;
       console.log('');
     }
@@ -129,14 +138,14 @@ async function watchSchedule(scheduleId: string, maxWaitMinutes = 5) {
       console.log('🎉 SUCCESS! Post was published successfully');
       return { success: true, schedule };
     }
-    
+
     if (schedule.status === ScheduleStatus.FAILED) {
       console.log('💥 FAILED! Post failed to publish after all retries');
       return { success: false, schedule };
     }
 
     // Wait 10 seconds before checking again
-    await new Promise(resolve => setTimeout(resolve, 10000));
+    await new Promise((resolve) => setTimeout(resolve, 10000));
   }
 
   console.log(`⏰ Timeout: No completion after ${maxWaitMinutes} minutes`);
@@ -145,35 +154,44 @@ async function watchSchedule(scheduleId: string, maxWaitMinutes = 5) {
 
 async function triggerSchedulerCheck() {
   console.log('🚀 Manually triggering scheduler check...');
-  
+
   try {
     const response = await fetch('http://localhost:3007/api/scheduler', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'checkPending' }),
     });
-    
+
     if (response.ok) {
       console.log('✅ Scheduler check triggered successfully');
     } else {
-      console.log('⚠️  Scheduler API not available (server might not be running)');
+      console.log(
+        '⚠️  Scheduler API not available (server might not be running)'
+      );
     }
   } catch (error) {
-    console.log('⚠️  Could not reach scheduler API (server might not be running)');
+    console.log(
+      '⚠️  Could not reach scheduler API (server might not be running)'
+    );
   }
-  
+
   console.log('');
 }
 
-async function cleanup(ids: { campaignId: string; scheduleId: string; contentId: string; destinationId: string }) {
+async function cleanup(ids: {
+  campaignId: string;
+  scheduleId: string;
+  contentId: string;
+  destinationId: string;
+}) {
   console.log('🧹 Cleaning up test data...');
-  
+
   try {
     await database.schedule.delete({ where: { id: ids.scheduleId } });
     await database.content.delete({ where: { id: ids.contentId } });
     await database.destination.delete({ where: { id: ids.destinationId } });
     await database.campaign.delete({ where: { id: ids.campaignId } });
-    
+
     console.log('✅ Cleanup completed');
   } catch (error) {
     console.log('⚠️  Cleanup failed:', error);
@@ -204,7 +222,7 @@ async function main() {
     // Step 4: Report results
     console.log('📊 Test Results:');
     console.log('================');
-    
+
     if (result?.success) {
       console.log('✅ PASS: Publishing queue system working correctly!');
       console.log('   - Scheduler detected the pending post');
@@ -229,7 +247,6 @@ async function main() {
       contentId: content.id,
       destinationId: destination.id,
     });
-
   } catch (error) {
     console.error('💥 Test script failed:', error);
     process.exit(1);
@@ -241,7 +258,9 @@ async function main() {
 
 // Handle cleanup on exit
 process.on('SIGINT', async () => {
-  console.log('\n🛑 Test interrupted. You may need to manually clean up test data.');
+  console.log(
+    '\n🛑 Test interrupted. You may need to manually clean up test data.'
+  );
   process.exit(0);
 });
 

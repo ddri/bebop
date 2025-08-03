@@ -1,15 +1,20 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
-import { Badge } from '@repo/design-system/components/ui/badge';
 import { getStatusColor } from '@repo/design-system';
-import { 
-  BarChart3, 
-  Calendar, 
-  FileText, 
-  Globe, 
+import { Badge } from '@repo/design-system/components/ui/badge';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@repo/design-system/components/ui/card';
+import {
   Activity,
-  Clock
+  BarChart3,
+  Calendar,
+  Clock,
+  FileText,
+  Globe,
 } from 'lucide-react';
 
 interface AnalyticsDashboardProps {
@@ -61,11 +66,10 @@ export const AnalyticsDashboard = ({ stats }: AnalyticsDashboardProps) => {
     CUSTOM: 'Custom',
   };
 
-
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Analytics Dashboard</h1>
+        <h1 className="font-bold text-2xl">Analytics Dashboard</h1>
         <p className="text-muted-foreground">
           Track your content marketing performance and activity
         </p>
@@ -75,12 +79,14 @@ export const AnalyticsDashboard = ({ stats }: AnalyticsDashboardProps) => {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Campaigns</CardTitle>
+            <CardTitle className="font-medium text-sm">
+              Total Campaigns
+            </CardTitle>
             <BarChart3 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalCampaigns}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="font-bold text-2xl">{stats.totalCampaigns}</div>
+            <p className="text-muted-foreground text-xs">
               {stats.activeCampaigns} active campaigns
             </p>
           </CardContent>
@@ -88,12 +94,14 @@ export const AnalyticsDashboard = ({ stats }: AnalyticsDashboardProps) => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Content Pieces</CardTitle>
+            <CardTitle className="font-medium text-sm">
+              Content Pieces
+            </CardTitle>
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalContent}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="font-bold text-2xl">{stats.totalContent}</div>
+            <p className="text-muted-foreground text-xs">
               {stats.publishedContent} published
             </p>
           </CardContent>
@@ -101,12 +109,14 @@ export const AnalyticsDashboard = ({ stats }: AnalyticsDashboardProps) => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Scheduled Posts</CardTitle>
+            <CardTitle className="font-medium text-sm">
+              Scheduled Posts
+            </CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalSchedules}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="font-bold text-2xl">{stats.totalSchedules}</div>
+            <p className="text-muted-foreground text-xs">
               {stats.publishedSchedules} published
             </p>
           </CardContent>
@@ -114,12 +124,14 @@ export const AnalyticsDashboard = ({ stats }: AnalyticsDashboardProps) => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Destinations</CardTitle>
+            <CardTitle className="font-medium text-sm">
+              Active Destinations
+            </CardTitle>
             <Globe className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.activeDestinations}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="font-bold text-2xl">{stats.activeDestinations}</div>
+            <p className="text-muted-foreground text-xs">
               Publishing platforms
             </p>
           </CardContent>
@@ -136,14 +148,16 @@ export const AnalyticsDashboard = ({ stats }: AnalyticsDashboardProps) => {
             <div className="space-y-3">
               {Object.entries(stats.contentByType).map(([type, count]) => (
                 <div key={type} className="flex items-center justify-between">
-                  <span className="text-sm font-medium">
+                  <span className="font-medium text-sm">
                     {contentTypeLabels[type] || type}
                   </span>
                   <Badge variant="outline">{count}</Badge>
                 </div>
               ))}
               {Object.keys(stats.contentByType).length === 0 && (
-                <p className="text-sm text-muted-foreground">No content created yet</p>
+                <p className="text-muted-foreground text-sm">
+                  No content created yet
+                </p>
               )}
             </div>
           </CardContent>
@@ -156,16 +170,28 @@ export const AnalyticsDashboard = ({ stats }: AnalyticsDashboardProps) => {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {Object.entries(stats.campaignsByStatus).map(([status, count]) => (
-                <div key={status} className="flex items-center justify-between">
-                  <span className="text-sm font-medium">{status}</span>
-                  <Badge className={getStatusColor(status as keyof typeof getStatusColor) || 'bg-muted text-muted-foreground'}>
-                    {count}
-                  </Badge>
-                </div>
-              ))}
+              {Object.entries(stats.campaignsByStatus).map(
+                ([status, count]) => (
+                  <div
+                    key={status}
+                    className="flex items-center justify-between"
+                  >
+                    <span className="font-medium text-sm">{status}</span>
+                    <Badge
+                      className={
+                        getStatusColor(status as keyof typeof getStatusColor) ||
+                        'bg-muted text-muted-foreground'
+                      }
+                    >
+                      {count}
+                    </Badge>
+                  </div>
+                )
+              )}
               {Object.keys(stats.campaignsByStatus).length === 0 && (
-                <p className="text-sm text-muted-foreground">No campaigns created yet</p>
+                <p className="text-muted-foreground text-sm">
+                  No campaigns created yet
+                </p>
               )}
             </div>
           </CardContent>
@@ -179,19 +205,22 @@ export const AnalyticsDashboard = ({ stats }: AnalyticsDashboardProps) => {
           <CardContent>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Success Rate</span>
+                <span className="font-medium text-sm">Success Rate</span>
                 <Badge className="bg-success/10 text-success">
-                  {stats.totalSchedules > 0 
-                    ? Math.round((stats.publishedSchedules / stats.totalSchedules) * 100)
-                    : 0}%
+                  {stats.totalSchedules > 0
+                    ? Math.round(
+                        (stats.publishedSchedules / stats.totalSchedules) * 100
+                      )
+                    : 0}
+                  %
                 </Badge>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Published</span>
+                <span className="font-medium text-sm">Published</span>
                 <Badge variant="outline">{stats.publishedSchedules}</Badge>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Pending</span>
+                <span className="font-medium text-sm">Pending</span>
                 <Badge variant="outline">
                   {stats.totalSchedules - stats.publishedSchedules}
                 </Badge>
@@ -205,7 +234,7 @@ export const AnalyticsDashboard = ({ stats }: AnalyticsDashboardProps) => {
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-lg">
               <Activity className="h-4 w-4" />
               Recent Content
             </CardTitle>
@@ -214,28 +243,38 @@ export const AnalyticsDashboard = ({ stats }: AnalyticsDashboardProps) => {
             <div className="space-y-3">
               {stats.recentContent.length > 0 ? (
                 stats.recentContent.map((content) => (
-                  <div key={content.id} className="flex items-center justify-between">
+                  <div
+                    key={content.id}
+                    className="flex items-center justify-between"
+                  >
                     <div className="flex-1">
-                      <p className="text-sm font-medium truncate">{content.title}</p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="truncate font-medium text-sm">
+                        {content.title}
+                      </p>
+                      <p className="text-muted-foreground text-xs">
                         {content.campaign.name}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge 
-                        variant="outline" 
-                        className="text-xs"
-                      >
+                      <Badge variant="outline" className="text-xs">
                         {content.type.replace('_', ' ')}
                       </Badge>
-                      <Badge className={getStatusColor(content.status as keyof typeof getStatusColor) || 'bg-muted text-muted-foreground'}>
+                      <Badge
+                        className={
+                          getStatusColor(
+                            content.status as keyof typeof getStatusColor
+                          ) || 'bg-muted text-muted-foreground'
+                        }
+                      >
                         {content.status}
                       </Badge>
                     </div>
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-muted-foreground">No recent content</p>
+                <p className="text-muted-foreground text-sm">
+                  No recent content
+                </p>
               )}
             </div>
           </CardContent>
@@ -243,7 +282,7 @@ export const AnalyticsDashboard = ({ stats }: AnalyticsDashboardProps) => {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-lg">
               <Clock className="h-4 w-4" />
               Recent Schedules
             </CardTitle>
@@ -252,28 +291,38 @@ export const AnalyticsDashboard = ({ stats }: AnalyticsDashboardProps) => {
             <div className="space-y-3">
               {stats.recentSchedules.length > 0 ? (
                 stats.recentSchedules.map((schedule) => (
-                  <div key={schedule.id} className="flex items-center justify-between">
+                  <div
+                    key={schedule.id}
+                    className="flex items-center justify-between"
+                  >
                     <div className="flex-1">
-                      <p className="text-sm font-medium truncate">{schedule.content.title}</p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="truncate font-medium text-sm">
+                        {schedule.content.title}
+                      </p>
+                      <p className="text-muted-foreground text-xs">
                         {schedule.destination.name}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge 
-                        variant="outline" 
-                        className="text-xs"
-                      >
+                      <Badge variant="outline" className="text-xs">
                         {new Date(schedule.publishAt).toLocaleDateString()}
                       </Badge>
-                      <Badge className={getStatusColor(schedule.status as keyof typeof getStatusColor) || 'bg-muted text-muted-foreground'}>
+                      <Badge
+                        className={
+                          getStatusColor(
+                            schedule.status as keyof typeof getStatusColor
+                          ) || 'bg-muted text-muted-foreground'
+                        }
+                      >
                         {schedule.status}
                       </Badge>
                     </div>
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-muted-foreground">No recent schedules</p>
+                <p className="text-muted-foreground text-sm">
+                  No recent schedules
+                </p>
               )}
             </div>
           </CardContent>

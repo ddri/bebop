@@ -1,14 +1,18 @@
 import type { DestinationType } from '@repo/database/types';
 import { BaseContentAdapter } from '../../core/content-adapter';
-import type {
-  ContentInput,
-  AdaptedContent,
-  AdaptationOptions,
-  ValidationResult,
-  MediaAttachment,
-} from '../../types/platform';
 import { BlueskyContentSchema } from '../../types/content';
-import { extractImages, extractFirstParagraph, stripMarkdown } from '../../utils/markdown';
+import type {
+  AdaptationOptions,
+  AdaptedContent,
+  ContentInput,
+  MediaAttachment,
+  ValidationResult,
+} from '../../types/platform';
+import {
+  extractFirstParagraph,
+  extractImages,
+  stripMarkdown,
+} from '../../utils/markdown';
 import { BLUESKY_LIMITS } from './types';
 
 /**
@@ -18,18 +22,21 @@ import { BLUESKY_LIMITS } from './types';
 export class BlueskyAdapter extends BaseContentAdapter {
   readonly platform: DestinationType = 'BLUESKY';
 
-  async adaptContent(content: ContentInput, options: AdaptationOptions): Promise<AdaptedContent> {
+  async adaptContent(
+    content: ContentInput,
+    options: AdaptationOptions
+  ): Promise<AdaptedContent> {
     try {
       // For Bluesky, we combine title and body into a single text field
       const title = content.title;
       const body = this.preparePlainTextContent(content.body);
-      
+
       // Create combined text (Bluesky doesn't have separate title/body)
       const combinedText = this.createBlueskyText(title, body);
-      
+
       // Extract and process media (limit to 4 images)
       const media = await this.extractAndOptimizeMedia(content.body);
-      
+
       // Build Bluesky-specific metadata
       const metadata = this.buildBlueskyMetadata(content, options);
 
@@ -44,7 +51,9 @@ export class BlueskyAdapter extends BaseContentAdapter {
 
       return adaptedContent;
     } catch (error) {
-      throw new Error(`Failed to adapt content for Bluesky: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to adapt content for Bluesky: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -52,7 +61,7 @@ export class BlueskyAdapter extends BaseContentAdapter {
     try {
       // Use Zod schema for validation
       BlueskyContentSchema.parse(content);
-      
+
       const errors: string[] = [];
       const warnings: string[] = [];
 
@@ -62,12 +71,19 @@ export class BlueskyAdapter extends BaseContentAdapter {
       }
 
       if (content.body && content.body.length > BLUESKY_LIMITS.maxTextLength) {
-        warnings.push(`Post is ${content.body.length} characters. Will be split into a thread.`);
+        warnings.push(
+          `Post is ${content.body.length} characters. Will be split into a thread.`
+        );
       }
 
       // Media validations
-      if (content.media && content.media.length > BLUESKY_LIMITS.maxImagesPerPost) {
-        errors.push(`Maximum ${BLUESKY_LIMITS.maxImagesPerPost} images allowed per post`);
+      if (
+        content.media &&
+        content.media.length > BLUESKY_LIMITS.maxImagesPerPost
+      ) {
+        errors.push(
+          `Maximum ${BLUESKY_LIMITS.maxImagesPerPost} images allowed per post`
+        );
       }
 
       // Check for potential formatting issues
@@ -76,15 +92,19 @@ export class BlueskyAdapter extends BaseContentAdapter {
       }
 
       if (content.body && content.body.includes('![')) {
-        warnings.push('Markdown image syntax will be displayed as text. Use media attachments instead.');
+        warnings.push(
+          'Markdown image syntax will be displayed as text. Use media attachments instead.'
+        );
       }
 
       // Check for long paragraphs that might not display well
       if (content.body) {
         const paragraphs = content.body.split('\n\n');
-        const longParagraphs = paragraphs.filter(p => p.length > 200);
+        const longParagraphs = paragraphs.filter((p) => p.length > 200);
         if (longParagraphs.length > 0) {
-          warnings.push('Some paragraphs are very long. Consider breaking them up for better readability.');
+          warnings.push(
+            'Some paragraphs are very long. Consider breaking them up for better readability.'
+          );
         }
       }
 
@@ -107,9 +127,14 @@ export class BlueskyAdapter extends BaseContentAdapter {
   /**
    * Generate thread preview showing how content will be split
    */
-  generateThreadPreview(content: ContentInput): Array<{ text: string; characterCount: number }> {
-    const combinedText = this.createBlueskyText(content.title, this.preparePlainTextContent(content.body));
-    
+  generateThreadPreview(
+    content: ContentInput
+  ): Array<{ text: string; characterCount: number }> {
+    const combinedText = this.createBlueskyText(
+      content.title,
+      this.preparePlainTextContent(content.body)
+    );
+
     if (combinedText.length <= BLUESKY_LIMITS.maxTextLength) {
       return [{ text: combinedText, characterCount: combinedText.length }];
     }
@@ -133,7 +158,7 @@ export class BlueskyAdapter extends BaseContentAdapter {
     // Extract potential hashtags from tags
     if (content.metadata?.tags) {
       const tags = content.metadata.tags as string[];
-      tags.forEach(tag => {
+      tags.forEach((tag) => {
         const cleanTag = tag.toLowerCase().replace(/[^a-z0-9]/g, '');
         if (cleanTag) {
           hashtags.push(`#${cleanTag}`);
@@ -156,9 +181,15 @@ export class BlueskyAdapter extends BaseContentAdapter {
   /**
    * Generate social media friendly text for Bluesky
    */
-  generateSocialText(content: ContentInput, maxLength: number = BLUESKY_LIMITS.maxTextLength): string {
-    let text = this.createBlueskyText(content.title, this.preparePlainTextContent(content.body));
-    
+  generateSocialText(
+    content: ContentInput,
+    maxLength: number = BLUESKY_LIMITS.maxTextLength
+  ): string {
+    let text = this.createBlueskyText(
+      content.title,
+      this.preparePlainTextContent(content.body)
+    );
+
     if (text.length <= maxLength) {
       return text;
     }
@@ -166,7 +197,7 @@ export class BlueskyAdapter extends BaseContentAdapter {
     // Try to fit within limit while preserving meaning
     const excerpt = this.extractFirstParagraph(content.body);
     text = content.title ? `${content.title}\n\n${excerpt}` : excerpt;
-    
+
     if (text.length <= maxLength) {
       return text;
     }
@@ -183,8 +214,11 @@ export class BlueskyAdapter extends BaseContentAdapter {
     estimatedPosts: number;
     structure: Array<{ section: string; length: number }>;
   } {
-    const fullText = this.createBlueskyText(content.title, this.preparePlainTextContent(content.body));
-    
+    const fullText = this.createBlueskyText(
+      content.title,
+      this.preparePlainTextContent(content.body)
+    );
+
     if (fullText.length <= BLUESKY_LIMITS.maxTextLength) {
       return {
         shouldUseThread: false,
@@ -194,7 +228,7 @@ export class BlueskyAdapter extends BaseContentAdapter {
     }
 
     const threadPosts = this.splitTextIntoThread(fullText);
-    
+
     return {
       shouldUseThread: true,
       estimatedPosts: threadPosts.length,
@@ -219,7 +253,7 @@ export class BlueskyAdapter extends BaseContentAdapter {
     text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1 $2');
 
     // Preserve intentional line breaks
-    text = text.replace(/  \n/g, '\n');
+    text = text.replace(/ {2}\n/g, '\n');
 
     return text.trim();
   }
@@ -227,7 +261,7 @@ export class BlueskyAdapter extends BaseContentAdapter {
   private createBlueskyText(title: string, body: string): string {
     if (!title) return body;
     if (!body) return title;
-    
+
     // Combine title and body with appropriate spacing
     return `${title}\n\n${body}`;
   }
@@ -238,18 +272,23 @@ export class BlueskyAdapter extends BaseContentAdapter {
     return this.truncateText(firstParagraph, 160);
   }
 
-  private async extractAndOptimizeMedia(markdown: string): Promise<MediaAttachment[]> {
+  private async extractAndOptimizeMedia(
+    markdown: string
+  ): Promise<MediaAttachment[]> {
     const images = extractImages(markdown);
-    
+
     // Limit to Bluesky's maximum and add required alt text
-    return images.slice(0, BLUESKY_LIMITS.maxImagesPerPost).map(img => ({
+    return images.slice(0, BLUESKY_LIMITS.maxImagesPerPost).map((img) => ({
       url: img.url,
       altText: img.alt || 'Image',
       type: 'image' as const,
     }));
   }
 
-  private buildBlueskyMetadata(content: ContentInput, options: AdaptationOptions): Record<string, unknown> {
+  private buildBlueskyMetadata(
+    content: ContentInput,
+    options: AdaptationOptions
+  ): Record<string, unknown> {
     const metadata: Record<string, unknown> = {};
 
     // Extract hashtags and mentions
@@ -274,9 +313,11 @@ export class BlueskyAdapter extends BaseContentAdapter {
     return metadata;
   }
 
-  private splitTextIntoThread(text: string): Array<{ text: string; characterCount: number }> {
+  private splitTextIntoThread(
+    text: string
+  ): Array<{ text: string; characterCount: number }> {
     const posts: Array<{ text: string; characterCount: number }> = [];
-    
+
     if (text.length <= BLUESKY_LIMITS.maxTextLength) {
       return [{ text, characterCount: text.length }];
     }
@@ -286,39 +327,43 @@ export class BlueskyAdapter extends BaseContentAdapter {
     let currentPost = '';
 
     for (const paragraph of paragraphs) {
-      const potentialPost = currentPost ? `${currentPost}\n\n${paragraph}` : paragraph;
-      
+      const potentialPost = currentPost
+        ? `${currentPost}\n\n${paragraph}`
+        : paragraph;
+
       if (potentialPost.length <= BLUESKY_LIMITS.maxTextLength) {
         currentPost = potentialPost;
+      } else if (currentPost) {
+        posts.push({ text: currentPost, characterCount: currentPost.length });
+        currentPost = paragraph;
       } else {
-        if (currentPost) {
-          posts.push({ text: currentPost, characterCount: currentPost.length });
-          currentPost = paragraph;
-        } else {
-          // Single paragraph is too long, split by sentences
-          const sentences = paragraph.split('. ');
-          let sentencePost = '';
-          
-          for (const sentence of sentences) {
-            const potentialSentencePost = sentencePost ? `${sentencePost}. ${sentence}` : sentence;
-            
-            if (potentialSentencePost.length <= BLUESKY_LIMITS.maxTextLength) {
-              sentencePost = potentialSentencePost;
-            } else {
-              if (sentencePost) {
-                posts.push({ text: sentencePost, characterCount: sentencePost.length });
-                sentencePost = sentence;
-              } else {
-                // Even single sentence is too long, hard cut
-                const truncated = sentence.substring(0, BLUESKY_LIMITS.maxTextLength - 3) + '...';
-                posts.push({ text: truncated, characterCount: truncated.length });
-              }
-            }
+        // Single paragraph is too long, split by sentences
+        const sentences = paragraph.split('. ');
+        let sentencePost = '';
+
+        for (const sentence of sentences) {
+          const potentialSentencePost = sentencePost
+            ? `${sentencePost}. ${sentence}`
+            : sentence;
+
+          if (potentialSentencePost.length <= BLUESKY_LIMITS.maxTextLength) {
+            sentencePost = potentialSentencePost;
+          } else if (sentencePost) {
+            posts.push({
+              text: sentencePost,
+              characterCount: sentencePost.length,
+            });
+            sentencePost = sentence;
+          } else {
+            // Even single sentence is too long, hard cut
+            const truncated =
+              sentence.substring(0, BLUESKY_LIMITS.maxTextLength - 3) + '...';
+            posts.push({ text: truncated, characterCount: truncated.length });
           }
-          
-          if (sentencePost) {
-            currentPost = sentencePost;
-          }
+        }
+
+        if (sentencePost) {
+          currentPost = sentencePost;
         }
       }
     }

@@ -11,7 +11,13 @@ Module.prototype.require = function (id: string) {
 };
 
 import { database } from '@repo/database';
-import { ContentType, ContentStatus, CampaignStatus, DestinationType, ScheduleStatus } from '@repo/database/types';
+import {
+  CampaignStatus,
+  ContentStatus,
+  ContentType,
+  DestinationType,
+  ScheduleStatus,
+} from '@repo/database/types';
 
 /**
  * Creates test scenarios to verify scheduler retry logic and failure handling
@@ -27,26 +33,26 @@ async function createFailureTestScenarios() {
     await database.schedule.deleteMany({
       where: {
         campaign: {
-          userId: testUserId
-        }
-      }
+          userId: testUserId,
+        },
+      },
     });
     await database.content.deleteMany({
       where: {
         campaign: {
-          userId: testUserId
-        }
-      }
+          userId: testUserId,
+        },
+      },
     });
     await database.destination.deleteMany({
       where: {
-        userId: testUserId
-      }
+        userId: testUserId,
+      },
     });
     await database.campaign.deleteMany({
       where: {
-        userId: testUserId
-      }
+        userId: testUserId,
+      },
     });
 
     // Create test campaign
@@ -69,7 +75,7 @@ async function createFailureTestScenarios() {
           type: DestinationType.HASHNODE,
           config: {
             publicationId: 'invalid-publication-id',
-            apiToken: 'invalid-token-should-fail'
+            apiToken: 'invalid-token-should-fail',
           },
           isActive: true,
         },
@@ -80,7 +86,7 @@ async function createFailureTestScenarios() {
           name: 'Broken Dev.to Config',
           type: DestinationType.DEVTO,
           config: {
-            apiKey: 'invalid-dev-to-key'
+            apiKey: 'invalid-dev-to-key',
           },
           isActive: true,
         },
@@ -158,24 +164,33 @@ async function createFailureTestScenarios() {
     console.log(`   Failure Schedules: ${schedules.length}`);
 
     console.log('\n🔬 Test Scenarios:');
-    console.log('   1. ❌ Immediate failures (2 schedules) - should fail and retry 3 times each');
-    console.log('   2. 🔄 Manual retry test (1 schedule) - use API to retry failed schedule');
-    console.log('   3. ⏰ 5-minute retry delays - failed schedules should reschedule for 5 minutes later');
+    console.log(
+      '   1. ❌ Immediate failures (2 schedules) - should fail and retry 3 times each'
+    );
+    console.log(
+      '   2. 🔄 Manual retry test (1 schedule) - use API to retry failed schedule'
+    );
+    console.log(
+      '   3. ⏰ 5-minute retry delays - failed schedules should reschedule for 5 minutes later'
+    );
 
     console.log('\n🧪 How to test:');
     console.log('   1. Watch server console for failure logs');
-    console.log('   2. Check health endpoint: GET /api/scheduler?action=health');
+    console.log(
+      '   2. Check health endpoint: GET /api/scheduler?action=health'
+    );
     console.log('   3. Monitor retry attempts with monitoring script');
-    console.log('   4. Test manual retry: POST /api/scheduler with {"action": "retry", "scheduleId": "..."}');
+    console.log(
+      '   4. Test manual retry: POST /api/scheduler with {"action": "retry", "scheduleId": "..."}'
+    );
 
     return {
       campaignId: campaign.id,
-      destinationIds: destinations.map(d => d.id),
-      contentIds: content.map(c => c.id),
-      scheduleIds: schedules.map(s => s.id),
+      destinationIds: destinations.map((d) => d.id),
+      contentIds: content.map((c) => c.id),
+      scheduleIds: schedules.map((s) => s.id),
       failedScheduleId: schedules[2].id, // For manual retry testing
     };
-
   } catch (error) {
     console.error('❌ Error creating failure test scenarios:', error);
     throw error;
@@ -184,61 +199,69 @@ async function createFailureTestScenarios() {
 
 async function monitorFailureTests() {
   console.log('\n🔍 Monitoring failure test progress...');
-  
+
   const schedules = await database.schedule.findMany({
     where: {
       campaign: {
-        userId: 'test_failure_scheduler'
-      }
+        userId: 'test_failure_scheduler',
+      },
     },
     include: {
       content: {
         select: {
-          title: true
-        }
+          title: true,
+        },
       },
       destination: {
         select: {
           name: true,
-          type: true
-        }
-      }
+          type: true,
+        },
+      },
     },
     orderBy: {
-      createdAt: 'desc'
-    }
+      createdAt: 'desc',
+    },
   });
 
   console.log('\n📋 Current Status:');
   schedules.forEach((schedule, i) => {
     const timeUntil = schedule.publishAt.getTime() - Date.now();
-    const timeStr = timeUntil > 0 
-      ? `in ${Math.round(timeUntil / (60 * 1000))} minutes`
-      : `${Math.round(Math.abs(timeUntil) / (60 * 1000))} minutes ago`;
-    
+    const timeStr =
+      timeUntil > 0
+        ? `in ${Math.round(timeUntil / (60 * 1000))} minutes`
+        : `${Math.round(Math.abs(timeUntil) / (60 * 1000))} minutes ago`;
+
     console.log(`  ${i + 1}. [${schedule.status}] "${schedule.content.title}"`);
-    console.log(`     → ${schedule.destination.name} (${schedule.destination.type})`);
+    console.log(
+      `     → ${schedule.destination.name} (${schedule.destination.type})`
+    );
     console.log(`     → Scheduled: ${timeStr}`);
     console.log(`     → Attempts: ${schedule.attempts}/3`);
-    
+
     if (schedule.error) {
       console.log(`     → Error: ${schedule.error}`);
     }
-    
+
     if (schedule.lastAttemptAt) {
       const lastAttempt = new Date(schedule.lastAttemptAt);
-      const minutesSinceAttempt = Math.round((Date.now() - lastAttempt.getTime()) / (60 * 1000));
+      const minutesSinceAttempt = Math.round(
+        (Date.now() - lastAttempt.getTime()) / (60 * 1000)
+      );
       console.log(`     → Last attempt: ${minutesSinceAttempt} minutes ago`);
     }
-    
+
     console.log('');
   });
 
   // Show summary stats
-  const stats = schedules.reduce((acc, s) => {
-    acc[s.status] = (acc[s.status] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  const stats = schedules.reduce(
+    (acc, s) => {
+      acc[s.status] = (acc[s.status] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
 
   console.log('📊 Summary:');
   Object.entries(stats).forEach(([status, count]) => {
@@ -248,7 +271,7 @@ async function monitorFailureTests() {
 
 async function testManualRetry(scheduleId: string) {
   console.log(`\n🔄 Testing manual retry for schedule: ${scheduleId}`);
-  
+
   try {
     const response = await fetch('http://localhost:3000/api/scheduler', {
       method: 'POST',
@@ -257,12 +280,12 @@ async function testManualRetry(scheduleId: string) {
       },
       body: JSON.stringify({
         action: 'retry',
-        scheduleId
+        scheduleId,
       }),
     });
 
     const result = await response.json();
-    
+
     if (response.ok) {
       console.log('✅ Manual retry initiated:', result.message);
     } else {
@@ -276,30 +299,36 @@ async function testManualRetry(scheduleId: string) {
 // Main execution
 async function main() {
   const command = process.argv[2];
-  
+
   try {
     switch (command) {
       case 'create':
         const testData = await createFailureTestScenarios();
         console.log('\n💡 Next steps:');
-        console.log('   - Run "npm run test:scheduler:failures monitor" to watch progress');
-        console.log(`   - Run "npm run test:scheduler:failures retry ${testData.failedScheduleId}" to test manual retry`);
+        console.log(
+          '   - Run "npm run test:scheduler:failures monitor" to watch progress'
+        );
+        console.log(
+          `   - Run "npm run test:scheduler:failures retry ${testData.failedScheduleId}" to test manual retry`
+        );
         break;
-        
+
       case 'monitor':
         await monitorFailureTests();
         break;
-        
+
       case 'retry':
         const scheduleId = process.argv[3];
         if (!scheduleId) {
           console.log('❌ Please provide a schedule ID for retry testing');
-          console.log('Usage: npm run test:scheduler:failures retry <scheduleId>');
+          console.log(
+            'Usage: npm run test:scheduler:failures retry <scheduleId>'
+          );
           process.exit(1);
         }
         await testManualRetry(scheduleId);
         break;
-        
+
       default:
         console.log('🧪 Bebop Scheduler Failure Testing\n');
         console.log('Commands:');

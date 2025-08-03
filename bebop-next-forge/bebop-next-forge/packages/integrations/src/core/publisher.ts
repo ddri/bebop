@@ -1,13 +1,12 @@
 import type { DestinationType } from '@repo/database/types';
 import type {
-  PlatformClient,
+  AdaptationOptions,
   ContentAdapter,
   ContentInput,
-  AdaptationOptions,
-  PublishResult,
+  PlatformClient,
   PlatformConfig,
   PlatformCredentials,
-  QueueItem,
+  PublishResult,
 } from '../types/platform';
 
 /**
@@ -49,7 +48,10 @@ export class Publisher {
 
     try {
       // Adapt content for the platform
-      const adaptedContent = await adapter.adaptContent(content, adaptationOptions);
+      const adaptedContent = await adapter.adaptContent(
+        content,
+        adaptationOptions
+      );
 
       // Validate adapted content
       const validation = adapter.validateContent(adaptedContent);
@@ -66,7 +68,8 @@ export class Publisher {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown publishing error',
+        error:
+          error instanceof Error ? error.message : 'Unknown publishing error',
       };
     }
   }
@@ -83,9 +86,12 @@ export class Publisher {
     const adapter = this.getAdapter(platform);
 
     try {
-      const adaptedContent = await adapter.adaptContent(content, adaptationOptions);
+      const adaptedContent = await adapter.adaptContent(
+        content,
+        adaptationOptions
+      );
       const validation = adapter.validateContent(adaptedContent);
-      
+
       if (!validation.valid) {
         return {
           success: false,
@@ -93,7 +99,11 @@ export class Publisher {
         };
       }
 
-      const result = await client.update(postId, adaptedContent, platformConfig);
+      const result = await client.update(
+        postId,
+        adaptedContent,
+        platformConfig
+      );
       return result;
     } catch (error) {
       return {
@@ -109,14 +119,15 @@ export class Publisher {
     postId: string
   ): Promise<PublishResult> {
     const client = this.getClient(platform);
-    
+
     try {
       const result = await client.delete(postId);
       return result;
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown deletion error',
+        error:
+          error instanceof Error ? error.message : 'Unknown deletion error',
       };
     }
   }
@@ -137,9 +148,12 @@ export class Publisher {
     adaptationOptions: AdaptationOptions
   ): Promise<{ valid: boolean; errors: string[]; warnings: string[] }> {
     const adapter = this.getAdapter(platform);
-    
+
     try {
-      const adaptedContent = await adapter.adaptContent(content, adaptationOptions);
+      const adaptedContent = await adapter.adaptContent(
+        content,
+        adaptationOptions
+      );
       return adapter.validateContent(adaptedContent);
     } catch (error) {
       return {
@@ -161,7 +175,9 @@ export class Publisher {
   }
 
   // Get platform metadata
-  async getPlatformMetadata(platform: DestinationType): Promise<Record<string, unknown>> {
+  async getPlatformMetadata(
+    platform: DestinationType
+  ): Promise<Record<string, unknown>> {
     const client = this.getClient(platform);
     return await client.getMetadata();
   }
@@ -176,23 +192,25 @@ export class Publisher {
     content: ContentInput
   ): Promise<Record<string, PublishResult>> {
     const results: Record<string, PublishResult> = {};
-    
+
     // Publish to all platforms in parallel
-    const promises = platforms.map(async ({ platform, adaptationOptions, platformConfig }) => {
-      const result = await this.publishToplatform(
-        platform,
-        content,
-        adaptationOptions,
-        platformConfig
-      );
-      return { platform, result };
-    });
+    const promises = platforms.map(
+      async ({ platform, adaptationOptions, platformConfig }) => {
+        const result = await this.publishToplatform(
+          platform,
+          content,
+          adaptationOptions,
+          platformConfig
+        );
+        return { platform, result };
+      }
+    );
 
     const settled = await Promise.allSettled(promises);
-    
+
     settled.forEach((promise, index) => {
       const platform = platforms[index].platform;
-      
+
       if (promise.status === 'fulfilled') {
         results[platform] = promise.value.result;
       } else {

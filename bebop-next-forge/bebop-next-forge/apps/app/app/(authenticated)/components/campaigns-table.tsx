@@ -1,15 +1,15 @@
 'use client';
 
-import { StatusBadge } from '@repo/design-system/components/ui/status-badge';
+import type { Campaign, CampaignStatus } from '@repo/database/types';
 import { Button } from '@repo/design-system/components/ui/button';
-import { EmptyState } from '@repo/design-system/components/ui/empty-state';
-import Link from 'next/link';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@repo/design-system/components/ui/dropdown-menu';
+import { EmptyState } from '@repo/design-system/components/ui/empty-state';
+import { StatusBadge } from '@repo/design-system/components/ui/status-badge';
 import {
   Table,
   TableBody,
@@ -18,8 +18,8 @@ import {
   TableHeader,
   TableRow,
 } from '@repo/design-system/components/ui/table';
-import type { Campaign, CampaignStatus } from '@repo/database/types';
-import { MoreHorizontal, Plus, Briefcase } from 'lucide-react';
+import { Briefcase, MoreHorizontal, Plus } from 'lucide-react';
+import Link from 'next/link';
 import { CreateCampaignDialog } from './create-campaign-dialog';
 
 interface CampaignsTableProps {
@@ -27,7 +27,10 @@ interface CampaignsTableProps {
   statusFilter?: string;
 }
 
-const statusMapping: Record<CampaignStatus, 'draft' | 'active' | 'paused' | 'completed' | 'archived'> = {
+const statusMapping: Record<
+  CampaignStatus,
+  'draft' | 'active' | 'paused' | 'completed' | 'archived'
+> = {
   DRAFT: 'draft',
   ACTIVE: 'active',
   PAUSED: 'paused',
@@ -35,38 +38,41 @@ const statusMapping: Record<CampaignStatus, 'draft' | 'active' | 'paused' | 'com
   ARCHIVED: 'archived',
 };
 
-export const CampaignsTable = ({ campaigns, statusFilter }: CampaignsTableProps) => {
+export const CampaignsTable = ({
+  campaigns,
+  statusFilter,
+}: CampaignsTableProps) => {
   const getEmptyStateMessage = () => {
     switch (statusFilter) {
       case 'DRAFT':
         return {
           title: 'No draft campaigns',
-          description: 'Draft campaigns will appear here when you save them'
+          description: 'Draft campaigns will appear here when you save them',
         };
       case 'ACTIVE':
         return {
           title: 'No active campaigns',
-          description: 'Campaigns you\'ve started will appear here'
+          description: "Campaigns you've started will appear here",
         };
       case 'COMPLETED':
         return {
           title: 'No completed campaigns',
-          description: 'Finished campaigns will appear here'
+          description: 'Finished campaigns will appear here',
         };
       case 'PAUSED':
         return {
           title: 'No paused campaigns',
-          description: 'Paused campaigns will appear here'
+          description: 'Paused campaigns will appear here',
         };
       case 'ARCHIVED':
         return {
           title: 'No archived campaigns',
-          description: 'Archived campaigns will appear here'
+          description: 'Archived campaigns will appear here',
         };
       default:
         return {
           title: 'No campaigns yet',
-          description: 'Create your first campaign to get started'
+          description: 'Create your first campaign to get started',
         };
     }
   };
@@ -76,7 +82,7 @@ export const CampaignsTable = ({ campaigns, statusFilter }: CampaignsTableProps)
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Campaigns</h1>
+          <h1 className="font-bold text-2xl">Campaigns</h1>
           <p className="text-muted-foreground">
             Manage your content marketing campaigns
           </p>
@@ -109,30 +115,38 @@ export const CampaignsTable = ({ campaigns, statusFilter }: CampaignsTableProps)
                 icon={Briefcase}
                 title={emptyState.title}
                 description={emptyState.description}
-                action={statusFilter ? undefined : {
-                  label: 'Create Your First Campaign',
-                  icon: Plus,
-                  onClick: () => {
-                    // This will be handled by the CreateCampaignDialog trigger
-                    const createButton = document.querySelector('[data-create-campaign-trigger]') as HTMLButtonElement;
-                    createButton?.click();
-                  }
-                }}
+                action={
+                  statusFilter
+                    ? undefined
+                    : {
+                        label: 'Create Your First Campaign',
+                        icon: Plus,
+                        onClick: () => {
+                          // This will be handled by the CreateCampaignDialog trigger
+                          const createButton = document.querySelector(
+                            '[data-create-campaign-trigger]'
+                          ) as HTMLButtonElement;
+                          createButton?.click();
+                        },
+                      }
+                }
               />
             ) : (
               campaigns.map((campaign) => (
-                <TableRow 
-                  key={campaign.id} 
+                <TableRow
+                  key={campaign.id}
                   className="cursor-pointer hover:bg-muted/50"
-                  onClick={() => window.location.href = `/campaigns/${campaign.id}`}
+                  onClick={() =>
+                    (window.location.href = `/campaigns/${campaign.id}`)
+                  }
                 >
                   <TableCell className="font-medium">
                     <div>
-                      <div className="font-medium hover:text-primary transition-colors">
+                      <div className="font-medium transition-colors hover:text-primary">
                         {campaign.name}
                       </div>
                       {campaign.description && (
-                        <div className="text-sm text-muted-foreground mt-1">
+                        <div className="mt-1 text-muted-foreground text-sm">
                           {campaign.description}
                         </div>
                       )}
@@ -159,8 +173,8 @@ export const CampaignsTable = ({ campaigns, statusFilter }: CampaignsTableProps)
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button 
-                          variant="ghost" 
+                        <Button
+                          variant="ghost"
                           size="icon"
                           onClick={(e) => e.stopPropagation()}
                         >
@@ -169,19 +183,27 @@ export const CampaignsTable = ({ campaigns, statusFilter }: CampaignsTableProps)
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem asChild>
-                          <Link href={`/campaigns/${campaign.id}`}>
-                            Edit
-                          </Link>
+                          <Link href={`/campaigns/${campaign.id}`}>Edit</Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => console.log('Duplicate campaign:', campaign.id)}>
+                        <DropdownMenuItem
+                          onClick={() =>
+                            console.log('Duplicate campaign:', campaign.id)
+                          }
+                        >
                           Duplicate
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => console.log('Archive campaign:', campaign.id)}>
+                        <DropdownMenuItem
+                          onClick={() =>
+                            console.log('Archive campaign:', campaign.id)
+                          }
+                        >
                           Archive
                         </DropdownMenuItem>
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                           className="text-red-600"
-                          onClick={() => console.log('Delete campaign:', campaign.id)}
+                          onClick={() =>
+                            console.log('Delete campaign:', campaign.id)
+                          }
                         >
                           Delete
                         </DropdownMenuItem>

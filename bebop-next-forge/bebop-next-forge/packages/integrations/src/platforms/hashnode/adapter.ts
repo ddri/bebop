@@ -1,14 +1,19 @@
 import type { DestinationType } from '@repo/database/types';
 import { BaseContentAdapter } from '../../core/content-adapter';
-import type {
-  ContentInput,
-  AdaptedContent,
-  AdaptationOptions,
-  ValidationResult,
-  MediaAttachment,
-} from '../../types/platform';
 import { HashnodeContentSchema } from '../../types/content';
-import { extractTableOfContents, extractImages, extractFirstParagraph, stripMarkdown } from '../../utils/markdown';
+import type {
+  AdaptationOptions,
+  AdaptedContent,
+  ContentInput,
+  MediaAttachment,
+  ValidationResult,
+} from '../../types/platform';
+import {
+  extractFirstParagraph,
+  extractImages,
+  extractTableOfContents,
+  stripMarkdown,
+} from '../../utils/markdown';
 
 /**
  * Content adapter for Hashnode platform
@@ -17,19 +22,26 @@ import { extractTableOfContents, extractImages, extractFirstParagraph, stripMark
 export class HashnodeAdapter extends BaseContentAdapter {
   readonly platform: DestinationType = 'HASHNODE';
 
-  async adaptContent(content: ContentInput, options: AdaptationOptions): Promise<AdaptedContent> {
+  async adaptContent(
+    content: ContentInput,
+    options: AdaptationOptions
+  ): Promise<AdaptedContent> {
     try {
       // Extract basic content
       const title = content.title;
       const body = this.prepareMarkdownContent(content.body);
-      const excerpt = content.excerpt || this.extractFirstParagraph(content.body);
-      
+      const excerpt =
+        content.excerpt || this.extractFirstParagraph(content.body);
+
       // Process tags
-      const tags = this.optimizeTags(content.metadata?.tags as string[] || [], this.platform);
-      
+      const tags = this.optimizeTags(
+        (content.metadata?.tags as string[]) || [],
+        this.platform
+      );
+
       // Extract and process media
       const media = await this.extractAndOptimizeMedia(content.body);
-      
+
       // Build Hashnode-specific metadata
       const metadata = this.buildHashnodeMetadata(content, options);
 
@@ -44,7 +56,9 @@ export class HashnodeAdapter extends BaseContentAdapter {
 
       return adaptedContent;
     } catch (error) {
-      throw new Error(`Failed to adapt content for Hashnode: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to adapt content for Hashnode: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -52,7 +66,7 @@ export class HashnodeAdapter extends BaseContentAdapter {
     try {
       // Use Zod schema for validation
       HashnodeContentSchema.parse(content);
-      
+
       const errors: string[] = [];
       const warnings: string[] = [];
 
@@ -67,16 +81,22 @@ export class HashnodeAdapter extends BaseContentAdapter {
 
       // Check for potential SEO issues
       if (content.title && content.title.length < 10) {
-        warnings.push('Title is very short, consider making it more descriptive');
+        warnings.push(
+          'Title is very short, consider making it more descriptive'
+        );
       }
 
       if (content.excerpt && content.excerpt.length > 160) {
-        warnings.push('Excerpt is longer than typical meta description length (160 chars)');
+        warnings.push(
+          'Excerpt is longer than typical meta description length (160 chars)'
+        );
       }
 
       // Check for markdown issues
       if (content.body.includes('```') && !content.body.includes('```\n')) {
-        warnings.push('Code blocks might not render correctly - ensure proper markdown formatting');
+        warnings.push(
+          'Code blocks might not render correctly - ensure proper markdown formatting'
+        );
       }
 
       return {
@@ -106,7 +126,9 @@ export class HashnodeAdapter extends BaseContentAdapter {
   /**
    * Generate table of contents if enabled
    */
-  generateTableOfContents(markdown: string): Array<{ level: number; text: string; slug: string }> {
+  generateTableOfContents(
+    markdown: string
+  ): Array<{ level: number; text: string; slug: string }> {
     return extractTableOfContents(markdown);
   }
 
@@ -124,10 +146,10 @@ export class HashnodeAdapter extends BaseContentAdapter {
   generateSocialTeaser(content: ContentInput): string {
     const title = content.title;
     const excerpt = this.extractFirstParagraph(content.body);
-    
+
     // Create a compelling teaser combining title and excerpt
     const teaser = `${title}\n\n${this.truncateText(excerpt, 200)}`;
-    
+
     return this.truncateText(teaser, 280); // Twitter-friendly length
   }
 
@@ -137,8 +159,8 @@ export class HashnodeAdapter extends BaseContentAdapter {
   optimizeHashnodeTags(tags: string[]): string[] {
     return tags
       .slice(0, 5) // Hashnode limit
-      .map(tag => this.cleanHashnodeTag(tag))
-      .filter(tag => tag.length > 0);
+      .map((tag) => this.cleanHashnodeTag(tag))
+      .filter((tag) => tag.length > 0);
   }
 
   /**
@@ -161,7 +183,7 @@ export class HashnodeAdapter extends BaseContentAdapter {
     };
 
     Object.entries(techKeywords).forEach(([tag, keywords]) => {
-      if (keywords.some(keyword => body.includes(keyword))) {
+      if (keywords.some((keyword) => body.includes(keyword))) {
         suggestions.push(tag);
       }
     });
@@ -190,17 +212,22 @@ export class HashnodeAdapter extends BaseContentAdapter {
     return cleaned.trim();
   }
 
-  private async extractAndOptimizeMedia(markdown: string): Promise<MediaAttachment[]> {
+  private async extractAndOptimizeMedia(
+    markdown: string
+  ): Promise<MediaAttachment[]> {
     const images = extractImages(markdown);
-    
-    return images.map(img => ({
+
+    return images.map((img) => ({
       url: img.url,
       altText: img.alt || 'Image',
       type: 'image' as const,
     }));
   }
 
-  private buildHashnodeMetadata(content: ContentInput, options: AdaptationOptions): Record<string, unknown> {
+  private buildHashnodeMetadata(
+    content: ContentInput,
+    options: AdaptationOptions
+  ): Record<string, unknown> {
     const metadata: Record<string, unknown> = {};
 
     // Extract metadata from content metadata

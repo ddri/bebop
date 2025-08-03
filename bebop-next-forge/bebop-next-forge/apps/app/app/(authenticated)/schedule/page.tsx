@@ -1,12 +1,12 @@
 import { auth } from '@repo/auth/server';
 import { database } from '@repo/database';
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
-import { ScheduleTable } from './components/schedule-table';
-import { Header } from '../components/header';
 import { Button } from '@repo/design-system/components/ui/button';
 import { Calendar, List } from 'lucide-react';
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import { Header } from '../components/header';
+import { ScheduleTable } from './components/schedule-table';
 
 const title = 'Schedule';
 const description = 'Manage your content publishing schedule';
@@ -63,7 +63,7 @@ const SchedulePage = async () => {
         {/* View Toggle */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <h2 className="text-lg font-semibold">Schedule</h2>
+            <h2 className="font-semibold text-lg">Schedule</h2>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" asChild>
@@ -80,7 +80,7 @@ const SchedulePage = async () => {
             </Button>
           </div>
         </div>
-        
+
         <ScheduleTable schedules={schedules} />
       </div>
     </>

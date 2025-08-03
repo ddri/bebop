@@ -1,7 +1,13 @@
 'use client';
 
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@repo/design-system/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@repo/design-system/components/ui/card';
 import {
   Form,
   FormControl,
@@ -19,9 +25,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@repo/design-system/components/ui/select';
-import { Textarea } from '@repo/design-system/components/ui/textarea';
 import { Switch } from '@repo/design-system/components/ui/switch';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { Textarea } from '@repo/design-system/components/ui/textarea';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -114,7 +119,10 @@ export const GeneralSettings = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Timezone</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select your timezone" />
@@ -170,7 +178,10 @@ export const GeneralSettings = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Default Content Type</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select default content type" />

@@ -1,10 +1,13 @@
 'use client';
-
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/design-system/components/ui/tabs';
 import type { Destination } from '@repo/database/types';
-import { GeneralSettings } from './general-settings';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@repo/design-system/components/ui/tabs';
 import { ApiKeysSettings } from './api-keys-settings';
+import { GeneralSettings } from './general-settings';
 import { NotificationSettings } from './notification-settings';
 import { PublishingSettings } from './publishing-settings';
 
@@ -16,7 +19,7 @@ export const SettingsLayout = ({ destinations }: SettingsLayoutProps) => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Settings</h1>
+        <h1 className="font-bold text-2xl">Settings</h1>
         <p className="text-muted-foreground">
           Manage your account preferences and integrations
         </p>

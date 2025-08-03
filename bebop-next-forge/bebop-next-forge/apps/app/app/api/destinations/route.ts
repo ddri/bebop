@@ -5,7 +5,22 @@ import { z } from 'zod';
 
 const createDestinationSchema = z.object({
   name: z.string().min(1),
-  type: z.enum(['HASHNODE', 'DEVTO', 'BLUESKY', 'MASTODON', 'WORDPRESS', 'GHOST', 'MAILCHIMP', 'SENDGRID', 'TWITTER', 'LINKEDIN', 'FACEBOOK', 'INSTAGRAM', 'WEBHOOK', 'CUSTOM']),
+  type: z.enum([
+    'HASHNODE',
+    'DEVTO',
+    'BLUESKY',
+    'MASTODON',
+    'WORDPRESS',
+    'GHOST',
+    'MAILCHIMP',
+    'SENDGRID',
+    'TWITTER',
+    'LINKEDIN',
+    'FACEBOOK',
+    'INSTAGRAM',
+    'WEBHOOK',
+    'CUSTOM',
+  ]),
   config: z.record(z.any()),
   isActive: z.boolean().default(true),
 });
@@ -13,7 +28,7 @@ const createDestinationSchema = z.object({
 export async function POST(request: Request) {
   try {
     const { userId } = await auth();
-    
+
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -44,7 +59,7 @@ export async function POST(request: Request) {
 export async function GET() {
   try {
     const { userId } = await auth();
-    
+
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

@@ -16,12 +16,15 @@ export const BlueskyCredentialsSchema = z.object({
 /**
  * Bluesky platform configuration schema
  */
-export const BlueskyConfigSchema = z.object({
-  languages: z.array(z.string()).optional(),
-  threadMode: z.boolean().optional().default(false),
-  includeImages: z.boolean().optional().default(true),
-  autoDetectFacets: z.boolean().optional().default(true),
-}).optional().default({});
+export const BlueskyConfigSchema = z
+  .object({
+    languages: z.array(z.string()).optional(),
+    threadMode: z.boolean().optional().default(false),
+    includeImages: z.boolean().optional().default(true),
+    autoDetectFacets: z.boolean().optional().default(true),
+  })
+  .optional()
+  .default({});
 
 /**
  * Bluesky post input schema for API validation
@@ -30,29 +33,40 @@ export const BlueskyPostInputSchema = z.object({
   text: z.string().min(1, 'Post text is required'),
   langs: z.array(z.string()).optional(),
   facets: z.array(z.any()).optional(), // Facets for mentions, links, hashtags
-  embed: z.object({
-    $type: z.string(),
-    images: z.array(z.object({
-      image: z.any(), // Blob reference
-      alt: z.string(),
-    })).max(4, 'Maximum 4 images allowed').optional(),
-    external: z.object({
-      uri: z.string().url(),
-      title: z.string(),
-      description: z.string(),
-      thumb: z.any().optional(), // Blob reference
-    }).optional(),
-  }).optional(),
-  reply: z.object({
-    root: z.object({
-      uri: z.string(),
-      cid: z.string(),
-    }),
-    parent: z.object({
-      uri: z.string(),
-      cid: z.string(),
-    }),
-  }).optional(),
+  embed: z
+    .object({
+      $type: z.string(),
+      images: z
+        .array(
+          z.object({
+            image: z.any(), // Blob reference
+            alt: z.string(),
+          })
+        )
+        .max(4, 'Maximum 4 images allowed')
+        .optional(),
+      external: z
+        .object({
+          uri: z.string().url(),
+          title: z.string(),
+          description: z.string(),
+          thumb: z.any().optional(), // Blob reference
+        })
+        .optional(),
+    })
+    .optional(),
+  reply: z
+    .object({
+      root: z.object({
+        uri: z.string(),
+        cid: z.string(),
+      }),
+      parent: z.object({
+        uri: z.string(),
+        cid: z.string(),
+      }),
+    })
+    .optional(),
   createdAt: z.string(),
 });
 
@@ -122,7 +136,10 @@ export interface BlueskyFacet {
     byteEnd: number;
   };
   features: Array<{
-    $type: 'app.bsky.richtext.facet#mention' | 'app.bsky.richtext.facet#link' | 'app.bsky.richtext.facet#tag';
+    $type:
+      | 'app.bsky.richtext.facet#mention'
+      | 'app.bsky.richtext.facet#link'
+      | 'app.bsky.richtext.facet#tag';
     did?: string; // For mentions
     uri?: string; // For links
     tag?: string; // For hashtags
@@ -130,7 +147,10 @@ export interface BlueskyFacet {
 }
 
 export interface BlueskyEmbed {
-  $type: 'app.bsky.embed.images#view' | 'app.bsky.embed.external#view' | 'app.bsky.embed.record#view';
+  $type:
+    | 'app.bsky.embed.images#view'
+    | 'app.bsky.embed.external#view'
+    | 'app.bsky.embed.record#view';
   images?: Array<{
     thumb: string;
     fullsize: string;

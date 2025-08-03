@@ -2,8 +2,8 @@ import { auth } from '@repo/auth/server';
 import { database } from '@repo/database';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { ContentTable } from './components/content-table';
 import { Header } from '../components/header';
+import { ContentTable } from './components/content-table';
 
 const title = 'Content';
 const description = 'Manage your content pieces';

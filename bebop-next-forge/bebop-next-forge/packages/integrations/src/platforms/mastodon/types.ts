@@ -11,36 +11,49 @@ export const MastodonCredentialsSchema = z.object({
 /**
  * Mastodon platform configuration schema
  */
-export const MastodonConfigSchema = z.object({
-  visibility: z.enum(['public', 'unlisted', 'private', 'direct']).optional().default('public'),
-  sensitive: z.boolean().optional().default(false),
-  spoilerText: z.string().optional(),
-  language: z.string().optional(),
-  scheduledAt: z.string().datetime().optional(),
-  poll: z.object({
-    options: z.array(z.string()).min(2).max(4),
-    expiresIn: z.number().min(300).max(2629746), // 5 minutes to 1 month
-    multiple: z.boolean().optional().default(false),
-    hideTotals: z.boolean().optional().default(false),
-  }).optional(),
-}).optional().default({});
+export const MastodonConfigSchema = z
+  .object({
+    visibility: z
+      .enum(['public', 'unlisted', 'private', 'direct'])
+      .optional()
+      .default('public'),
+    sensitive: z.boolean().optional().default(false),
+    spoilerText: z.string().optional(),
+    language: z.string().optional(),
+    scheduledAt: z.string().datetime().optional(),
+    poll: z
+      .object({
+        options: z.array(z.string()).min(2).max(4),
+        expiresIn: z.number().min(300).max(2629746), // 5 minutes to 1 month
+        multiple: z.boolean().optional().default(false),
+        hideTotals: z.boolean().optional().default(false),
+      })
+      .optional(),
+  })
+  .optional()
+  .default({});
 
 /**
  * Mastodon status input schema for API validation
  */
 export const MastodonStatusInputSchema = z.object({
   status: z.string().optional(),
-  mediaIds: z.array(z.string()).max(4, 'Maximum 4 media attachments').optional(),
+  mediaIds: z
+    .array(z.string())
+    .max(4, 'Maximum 4 media attachments')
+    .optional(),
   visibility: z.enum(['public', 'unlisted', 'private', 'direct']).optional(),
   sensitive: z.boolean().optional(),
   spoilerText: z.string().optional(),
   language: z.string().optional(),
-  poll: z.object({
-    options: z.array(z.string()).min(2).max(4),
-    expiresIn: z.number(),
-    multiple: z.boolean().optional(),
-    hideTotals: z.boolean().optional(),
-  }).optional(),
+  poll: z
+    .object({
+      options: z.array(z.string()).min(2).max(4),
+      expiresIn: z.number(),
+      multiple: z.boolean().optional(),
+      hideTotals: z.boolean().optional(),
+    })
+    .optional(),
   scheduledAt: z.string().optional(),
 });
 
@@ -328,25 +341,34 @@ export const MASTODON_LIMITS = {
   maxPollCharactersPerOption: 50,
   minPollExpiration: 300, // 5 minutes
   maxPollExpiration: 2629746, // 1 month
-  
+
   // Media limits (defaults)
   defaultImageSizeLimit: 10485760, // 10MB
   defaultVideoSizeLimit: 41943040, // 40MB
-  
+
   // Rate limiting (defaults)
   rateLimit: {
     requestsPerFiveMinutes: 300,
     mediaUploadsPerThirtyMinutes: 30,
     statusDeletionsPerThirtyMinutes: 30,
   },
-  
+
   // Supported media types
   supportedImageTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
   supportedVideoTypes: ['video/mp4', 'video/webm', 'video/quicktime'],
-  supportedAudioTypes: ['audio/mpeg', 'audio/ogg', 'audio/wav', 'audio/flac', 'audio/aac', 'audio/m4a', 'audio/3gpp'],
-  
+  supportedAudioTypes: [
+    'audio/mpeg',
+    'audio/ogg',
+    'audio/wav',
+    'audio/flac',
+    'audio/aac',
+    'audio/m4a',
+    'audio/3gpp',
+  ],
+
   // Visibility options
   visibilityOptions: ['public', 'unlisted', 'private', 'direct'] as const,
 } as const;
 
-export type MastodonVisibility = typeof MASTODON_LIMITS.visibilityOptions[number];
+export type MastodonVisibility =
+  (typeof MASTODON_LIMITS.visibilityOptions)[number];

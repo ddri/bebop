@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { scheduler } from '../../../lib/scheduler';
 import { database } from '@repo/database';
 import { ScheduleStatus } from '@repo/database/types';
+import { type NextRequest, NextResponse } from 'next/server';
+import { scheduler } from '../../../lib/scheduler';
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,7 +16,10 @@ export async function POST(request: NextRequest) {
           );
         }
         await scheduler.publishNow(scheduleId);
-        return NextResponse.json({ success: true, message: 'Published successfully' });
+        return NextResponse.json({
+          success: true,
+          message: 'Published successfully',
+        });
 
       case 'retry':
         if (!scheduleId) {
@@ -36,7 +39,10 @@ export async function POST(request: NextRequest) {
           );
         }
         await scheduler.retryFailed(scheduleId);
-        return NextResponse.json({ success: true, message: 'Schedule retry initiated' });
+        return NextResponse.json({
+          success: true,
+          message: 'Schedule retry initiated',
+        });
 
       case 'cancelSchedule':
         if (!scheduleId) {
@@ -48,30 +54,36 @@ export async function POST(request: NextRequest) {
         // Update schedule status to cancelled
         await database.schedule.update({
           where: { id: scheduleId },
-          data: { 
+          data: {
             status: ScheduleStatus.FAILED,
             error: 'Cancelled by user',
-            updatedAt: new Date()
-          }
+            updatedAt: new Date(),
+          },
         });
-        return NextResponse.json({ success: true, message: 'Schedule cancelled' });
+        return NextResponse.json({
+          success: true,
+          message: 'Schedule cancelled',
+        });
 
       case 'checkPending':
         await scheduler.checkPendingJobs();
-        return NextResponse.json({ success: true, message: 'Checked pending jobs' });
+        return NextResponse.json({
+          success: true,
+          message: 'Checked pending jobs',
+        });
 
       default:
         return NextResponse.json(
-          { error: 'Invalid action. Use: publishNow, retry, retrySchedule, cancelSchedule, or checkPending' },
+          {
+            error:
+              'Invalid action. Use: publishNow, retry, retrySchedule, cancelSchedule, or checkPending',
+          },
           { status: 400 }
         );
     }
   } catch (error) {
     console.error('Scheduler API error:', error);
-    return NextResponse.json(
-      { error: String(error) },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: String(error) }, { status: 500 });
   }
 }
 
@@ -86,15 +98,15 @@ export async function GET(request: NextRequest) {
       const stats = await database.schedule.groupBy({
         by: ['status'],
         _count: {
-          status: true
-        }
+          status: true,
+        },
       });
 
       const recentActivity = await database.schedule.findMany({
         where: {
           updatedAt: {
-            gte: new Date(Date.now() - 24 * 60 * 60 * 1000) // Last 24 hours
-          }
+            gte: new Date(Date.now() - 24 * 60 * 60 * 1000), // Last 24 hours
+          },
         },
         select: {
           id: true,
@@ -104,20 +116,28 @@ export async function GET(request: NextRequest) {
           attempts: true,
           error: true,
           content: {
-            select: { title: true }
+            select: { title: true },
           },
           destination: {
-            select: { name: true, type: true }
-          }
+            select: { name: true, type: true },
+          },
         },
         orderBy: { updatedAt: 'desc' },
-        take: 10
+        take: 10,
       });
 
-      const pendingCount = stats.find(s => s.status === ScheduleStatus.PENDING)?._count.status || 0;
-      const publishedCount = stats.find(s => s.status === ScheduleStatus.PUBLISHED)?._count.status || 0;
-      const failedCount = stats.find(s => s.status === ScheduleStatus.FAILED)?._count.status || 0;
-      const publishingCount = stats.find(s => s.status === ScheduleStatus.PUBLISHING)?._count.status || 0;
+      const pendingCount =
+        stats.find((s) => s.status === ScheduleStatus.PENDING)?._count.status ||
+        0;
+      const publishedCount =
+        stats.find((s) => s.status === ScheduleStatus.PUBLISHED)?._count
+          .status || 0;
+      const failedCount =
+        stats.find((s) => s.status === ScheduleStatus.FAILED)?._count.status ||
+        0;
+      const publishingCount =
+        stats.find((s) => s.status === ScheduleStatus.PUBLISHING)?._count
+          .status || 0;
 
       return NextResponse.json({
         status: 'healthy',
@@ -127,23 +147,32 @@ export async function GET(request: NextRequest) {
           publishing: publishingCount,
           published: publishedCount,
           failed: failedCount,
-          total: stats.reduce((sum, s) => sum + s._count.status, 0)
+          total: stats.reduce((sum, s) => sum + s._count.status, 0),
         },
-        recentActivity
+        recentActivity,
       });
     }
 
     return NextResponse.json({
       message: 'Publishing Scheduler API',
-      actions: ['publishNow', 'retry', 'retrySchedule', 'cancelSchedule', 'checkPending'],
+      actions: [
+        'publishNow',
+        'retry',
+        'retrySchedule',
+        'cancelSchedule',
+        'checkPending',
+      ],
       usage: 'POST with action and optional scheduleId',
-      health: 'GET /api/scheduler?action=health'
+      health: 'GET /api/scheduler?action=health',
     });
   } catch (error) {
     console.error('Scheduler GET error:', error);
-    return NextResponse.json({ 
-      error: 'Health check failed', 
-      details: String(error) 
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: 'Health check failed',
+        details: String(error),
+      },
+      { status: 500 }
+    );
   }
 }

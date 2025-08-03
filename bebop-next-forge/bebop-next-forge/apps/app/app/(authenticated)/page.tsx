@@ -26,10 +26,15 @@ const App = async ({
 
   // Await searchParams for Next.js 15
   const params = await searchParams;
-  
+
   // Build where clause based on status filter
   const whereClause: Record<string, unknown> = { userId };
-  if (params.status && ['DRAFT', 'ACTIVE', 'PAUSED', 'COMPLETED', 'ARCHIVED'].includes(params.status)) {
+  if (
+    params.status &&
+    ['DRAFT', 'ACTIVE', 'PAUSED', 'COMPLETED', 'ARCHIVED'].includes(
+      params.status
+    )
+  ) {
     whereClause.status = params.status;
   }
 

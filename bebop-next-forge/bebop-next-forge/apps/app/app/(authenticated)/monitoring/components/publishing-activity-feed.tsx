@@ -1,19 +1,24 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Button } from '@repo/design-system/components/ui/button';
-import { StatusBadge } from '@repo/design-system/components/ui/status-badge';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@repo/design-system/components/ui/card';
 import { EmptyState } from '@repo/design-system/components/ui/empty-state';
-import { 
+import { StatusBadge } from '@repo/design-system/components/ui/status-badge';
+import { formatDistanceToNow } from 'date-fns';
+import {
   Activity,
   AlertTriangle,
   CheckCircle,
   Clock,
   ExternalLink,
-  RefreshCw
+  RefreshCw,
 } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
 
 interface PublishingActivity {
   id: string;
@@ -81,7 +86,10 @@ const getPlatformColor = (type: string) => {
   }
 };
 
-export const PublishingActivityFeed = ({ activities, onRefresh }: PublishingActivityFeedProps) => {
+export const PublishingActivityFeed = ({
+  activities,
+  onRefresh,
+}: PublishingActivityFeedProps) => {
   return (
     <Card>
       <CardHeader>
@@ -90,12 +98,8 @@ export const PublishingActivityFeed = ({ activities, onRefresh }: PublishingActi
             <Activity className="h-5 w-5" />
             Recent Activity
           </CardTitle>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={onRefresh}
-          >
-            <RefreshCw className="h-4 w-4 mr-2" />
+          <Button variant="outline" size="sm" onClick={onRefresh}>
+            <RefreshCw className="mr-2 h-4 w-4" />
             Refresh
           </Button>
         </div>
@@ -110,29 +114,38 @@ export const PublishingActivityFeed = ({ activities, onRefresh }: PublishingActi
             description="Publishing activity will appear here"
           />
         ) : (
-          <div className="space-y-4 max-h-96 overflow-y-auto">
+          <div className="max-h-96 space-y-4 overflow-y-auto">
             {activities.map((activity) => {
               const statusConfig = getStatusConfig(activity.status);
               const Icon = statusConfig.icon;
-              const timeAgo = activity.publishedAt 
-                ? formatDistanceToNow(new Date(activity.publishedAt), { addSuffix: true })
-                : formatDistanceToNow(new Date(activity.publishAt), { addSuffix: true });
+              const timeAgo = activity.publishedAt
+                ? formatDistanceToNow(new Date(activity.publishedAt), {
+                    addSuffix: true,
+                  })
+                : formatDistanceToNow(new Date(activity.publishAt), {
+                    addSuffix: true,
+                  });
 
               return (
-                <div key={activity.id} className="flex items-start gap-3 p-3 border rounded-lg">
-                  <div className={`rounded-full p-1.5 ${statusConfig.color === 'text-green-600' ? 'bg-green-50 dark:bg-green-950/30' : statusConfig.color === 'text-red-600' ? 'bg-red-50 dark:bg-red-950/30' : statusConfig.color === 'text-yellow-600' ? 'bg-yellow-50 dark:bg-yellow-950/30' : 'bg-blue-50 dark:bg-blue-950/30'}`}>
+                <div
+                  key={activity.id}
+                  className="flex items-start gap-3 rounded-lg border p-3"
+                >
+                  <div
+                    className={`rounded-full p-1.5 ${statusConfig.color === 'text-green-600' ? 'bg-green-50 dark:bg-green-950/30' : statusConfig.color === 'text-red-600' ? 'bg-red-50 dark:bg-red-950/30' : statusConfig.color === 'text-yellow-600' ? 'bg-yellow-50 dark:bg-yellow-950/30' : 'bg-blue-50 dark:bg-blue-950/30'}`}
+                  >
                     <Icon className={`h-4 w-4 ${statusConfig.color}`} />
                   </div>
-                  
-                  <div className="flex-1 min-w-0">
+
+                  <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm truncate">
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-medium text-sm">
                           {activity.content.title}
                         </p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Badge 
-                            variant="outline" 
+                        <div className="mt-1 flex items-center gap-2">
+                          <Badge
+                            variant="outline"
                             className={`text-xs ${getPlatformColor(activity.destination.type)}`}
                           >
                             {activity.destination.name}
@@ -142,30 +155,34 @@ export const PublishingActivityFeed = ({ activities, onRefresh }: PublishingActi
                           </StatusBadge>
                         </div>
                       </div>
-                      
+
                       <div className="text-right">
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-muted-foreground text-xs">
                           {timeAgo}
                         </p>
                         {activity.attempts > 1 && (
-                          <p className="text-xs text-yellow-600 mt-1">
+                          <p className="mt-1 text-xs text-yellow-600">
                             Attempt {activity.attempts}/3
                           </p>
                         )}
                       </div>
                     </div>
-                    
+
                     {activity.error && (
-                      <div className="mt-2 p-2 bg-red-50 dark:bg-red-950/30 rounded text-xs text-red-700 dark:text-red-300">
+                      <div className="mt-2 rounded bg-red-50 p-2 text-red-700 text-xs dark:bg-red-950/30 dark:text-red-300">
                         <p className="font-medium">Error:</p>
                         <p className="mt-1">{activity.error}</p>
                       </div>
                     )}
-                    
+
                     {activity.status === 'PUBLISHED' && (
                       <div className="mt-2">
-                        <Button variant="ghost" size="sm" className="h-auto p-1 text-xs">
-                          <ExternalLink className="h-3 w-3 mr-1" />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-auto p-1 text-xs"
+                        >
+                          <ExternalLink className="mr-1 h-3 w-3" />
                           View Published Content
                         </Button>
                       </div>

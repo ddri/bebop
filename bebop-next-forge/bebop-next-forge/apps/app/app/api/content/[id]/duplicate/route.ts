@@ -1,6 +1,6 @@
 import { auth } from '@repo/auth/server';
 import { database } from '@repo/database';
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 
 export async function POST(
   request: NextRequest,
@@ -16,11 +16,11 @@ export async function POST(
 
     // Check if content exists and belongs to user
     const existingContent = await database.content.findFirst({
-      where: { 
+      where: {
         id,
         campaign: {
-          userId
-        }
+          userId,
+        },
       },
     });
 
@@ -51,6 +51,9 @@ export async function POST(
     return NextResponse.json(duplicatedContent);
   } catch (error) {
     console.error('Failed to duplicate content:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }

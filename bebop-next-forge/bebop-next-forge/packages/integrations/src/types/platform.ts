@@ -1,4 +1,3 @@
-import { z } from 'zod';
 import type { DestinationType } from '@repo/database/types';
 
 // Base platform authentication
@@ -63,16 +62,25 @@ export interface MediaAttachment {
 // Base platform client interface
 export interface PlatformClient {
   readonly platform: DestinationType;
-  
+
   // Authentication
   authenticate(credentials: PlatformCredentials): Promise<void>;
-  validateCredentials(credentials: PlatformCredentials): Promise<ValidationResult>;
-  
+  validateCredentials(
+    credentials: PlatformCredentials
+  ): Promise<ValidationResult>;
+
   // Publishing
-  publish(content: AdaptedContent, config?: PlatformConfig): Promise<PublishResult>;
-  update(id: string, content: AdaptedContent, config?: PlatformConfig): Promise<PublishResult>;
+  publish(
+    content: AdaptedContent,
+    config?: PlatformConfig
+  ): Promise<PublishResult>;
+  update(
+    id: string,
+    content: AdaptedContent,
+    config?: PlatformConfig
+  ): Promise<PublishResult>;
   delete(id: string): Promise<PublishResult>;
-  
+
   // Metadata
   getMetadata(): Promise<PlatformMetadata>;
   validateContent(content: AdaptedContent): ValidationResult;
@@ -81,15 +89,18 @@ export interface PlatformClient {
 // Content adapter interface
 export interface ContentAdapter {
   readonly platform: DestinationType;
-  
+
   // Content transformation
-  adaptContent(content: ContentInput, options: AdaptationOptions): Promise<AdaptedContent>;
+  adaptContent(
+    content: ContentInput,
+    options: AdaptationOptions
+  ): Promise<AdaptedContent>;
   extractSocialTeaser(content: ContentInput): string;
   optimizeTags(tags: string[], platform: DestinationType): string[];
-  
+
   // Validation
   validateContent(content: AdaptedContent): ValidationResult;
-  
+
   // Media handling
   optimizeMedia(media: MediaAttachment[]): Promise<MediaAttachment[]>;
 }
@@ -137,13 +148,21 @@ export class AuthenticationError extends PlatformError {
 
 export class ValidationError extends PlatformError {
   constructor(platform: DestinationType, errors: string[]) {
-    super(`Validation failed: ${errors.join(', ')}`, platform, 'VALIDATION_ERROR');
+    super(
+      `Validation failed: ${errors.join(', ')}`,
+      platform,
+      'VALIDATION_ERROR'
+    );
     this.name = 'ValidationError';
   }
 }
 
 export class PublishingError extends PlatformError {
-  constructor(platform: DestinationType, message: string, details?: Record<string, unknown>) {
+  constructor(
+    platform: DestinationType,
+    message: string,
+    details?: Record<string, unknown>
+  ) {
     super(message, platform, 'PUBLISHING_ERROR', details);
     this.name = 'PublishingError';
   }

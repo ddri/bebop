@@ -15,14 +15,17 @@ export const DevtoCredentialsSchema = z.object({
 /**
  * Dev.to platform configuration schema
  */
-export const DevtoConfigSchema = z.object({
-  published: z.boolean().optional().default(false),
-  series: z.string().optional(),
-  main_image: z.string().url().optional(),
-  canonical_url: z.string().url().optional(),
-  description: z.string().optional(),
-  organization_id: z.number().optional(),
-}).optional().default({});
+export const DevtoConfigSchema = z
+  .object({
+    published: z.boolean().optional().default(false),
+    series: z.string().optional(),
+    main_image: z.string().url().optional(),
+    canonical_url: z.string().url().optional(),
+    description: z.string().optional(),
+    organization_id: z.number().optional(),
+  })
+  .optional()
+  .default({});
 
 /**
  * Dev.to article input schema for API validation

@@ -22,70 +22,96 @@ export const AdaptedContentSchema = BaseContentSchema.extend({
 
 // Platform-specific content validation schemas
 export const HashnodeContentSchema = AdaptedContentSchema.extend({
-  metadata: z.object({
-    publicationId: z.string().optional(),
-    seriesId: z.string().optional(),
-    coverImage: z.string().url().optional(),
-    subtitle: z.string().optional(),
-    canonicalUrl: z.string().url().optional(),
-    enableTableOfContents: z.boolean().optional(),
-    isNewsletterActivated: z.boolean().optional(),
-    metaTitle: z.string().optional(),
-    metaDescription: z.string().optional(),
-    ogImage: z.string().url().optional(),
-  }).optional(),
+  metadata: z
+    .object({
+      publicationId: z.string().optional(),
+      seriesId: z.string().optional(),
+      coverImage: z.string().url().optional(),
+      subtitle: z.string().optional(),
+      canonicalUrl: z.string().url().optional(),
+      enableTableOfContents: z.boolean().optional(),
+      isNewsletterActivated: z.boolean().optional(),
+      metaTitle: z.string().optional(),
+      metaDescription: z.string().optional(),
+      ogImage: z.string().url().optional(),
+    })
+    .optional(),
   tags: z.array(z.string()).max(5, 'Hashnode allows maximum 5 tags').optional(),
 });
 
 export const DevToContentSchema = AdaptedContentSchema.extend({
-  metadata: z.object({
-    published: z.boolean().optional(),
-    series: z.string().optional(),
-    canonicalUrl: z.string().url().optional(),
-    description: z.string().optional(),
-    coverImage: z.string().url().optional(),
-    organizationId: z.number().optional(),
-    mainImage: z.string().url().optional(),
-  }).optional(),
+  metadata: z
+    .object({
+      published: z.boolean().optional(),
+      series: z.string().optional(),
+      canonicalUrl: z.string().url().optional(),
+      description: z.string().optional(),
+      coverImage: z.string().url().optional(),
+      organizationId: z.number().optional(),
+      mainImage: z.string().url().optional(),
+    })
+    .optional(),
   tags: z.array(z.string()).max(4, 'Dev.to allows maximum 4 tags').optional(),
 });
 
 export const BlueskyContentSchema = z.object({
   text: z.string().max(300, 'Bluesky posts are limited to 300 characters'),
-  embed: z.object({
-    uri: z.string().url().optional(),
-    title: z.string().optional(),
-    description: z.string().optional(),
-    thumb: z.string().url().optional(),
-    images: z.array(z.object({
-      alt: z.string(),
-      image: z.any(), // Blob type
-    })).max(4, 'Maximum 4 images allowed').optional(),
-  }).optional(),
-  thread: z.array(z.object({
-    text: z.string().max(300),
-    embed: z.any().optional(),
-  })).optional(),
+  embed: z
+    .object({
+      uri: z.string().url().optional(),
+      title: z.string().optional(),
+      description: z.string().optional(),
+      thumb: z.string().url().optional(),
+      images: z
+        .array(
+          z.object({
+            alt: z.string(),
+            image: z.any(), // Blob type
+          })
+        )
+        .max(4, 'Maximum 4 images allowed')
+        .optional(),
+    })
+    .optional(),
+  thread: z
+    .array(
+      z.object({
+        text: z.string().max(300),
+        embed: z.any().optional(),
+      })
+    )
+    .optional(),
 });
 
 export const MastodonContentSchema = z.object({
   status: z.string().max(500, 'Default Mastodon limit is 500 characters'),
   instanceUrl: z.string().url('Valid instance URL required'),
-  mediaIds: z.array(z.string()).max(4, 'Maximum 4 media attachments').optional(),
-  mediaAttributes: z.array(z.object({
-    id: z.string(),
-    description: z.string(),
-    focus: z.string().optional(),
-  })).optional(),
-  visibility: z.enum(['public', 'unlisted', 'private', 'direct']).default('public'),
+  mediaIds: z
+    .array(z.string())
+    .max(4, 'Maximum 4 media attachments')
+    .optional(),
+  mediaAttributes: z
+    .array(
+      z.object({
+        id: z.string(),
+        description: z.string(),
+        focus: z.string().optional(),
+      })
+    )
+    .optional(),
+  visibility: z
+    .enum(['public', 'unlisted', 'private', 'direct'])
+    .default('public'),
   sensitive: z.boolean().optional(),
   spoilerText: z.string().optional(),
   language: z.string().optional(),
-  poll: z.object({
-    options: z.array(z.string()).min(2).max(4),
-    expiresIn: z.number(),
-    multiple: z.boolean().optional(),
-  }).optional(),
+  poll: z
+    .object({
+      options: z.array(z.string()).min(2).max(4),
+      expiresIn: z.number(),
+      multiple: z.boolean().optional(),
+    })
+    .optional(),
   inReplyToId: z.string().optional(),
 });
 
@@ -103,12 +129,12 @@ export const ContentLimits = {
   HASHNODE: {
     title: 255,
     tags: 5,
-    body: Infinity, // No specific limit
+    body: Number.POSITIVE_INFINITY, // No specific limit
   },
   DEVTO: {
     title: 255,
     tags: 4,
-    body: Infinity, // No specific limit
+    body: Number.POSITIVE_INFINITY, // No specific limit
   },
   BLUESKY: {
     text: 300,

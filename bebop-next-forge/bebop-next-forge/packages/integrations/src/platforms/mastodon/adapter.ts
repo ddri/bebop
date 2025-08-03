@@ -1,14 +1,18 @@
 import type { DestinationType } from '@repo/database/types';
 import { BaseContentAdapter } from '../../core/content-adapter';
-import type {
-  ContentInput,
-  AdaptedContent,
-  AdaptationOptions,
-  ValidationResult,
-  MediaAttachment,
-} from '../../types/platform';
 import { MastodonContentSchema } from '../../types/content';
-import { extractImages, extractFirstParagraph, stripMarkdown } from '../../utils/markdown';
+import type {
+  AdaptationOptions,
+  AdaptedContent,
+  ContentInput,
+  MediaAttachment,
+  ValidationResult,
+} from '../../types/platform';
+import {
+  extractFirstParagraph,
+  extractImages,
+  stripMarkdown,
+} from '../../utils/markdown';
 import { MASTODON_LIMITS, type MastodonVisibility } from './types';
 
 /**
@@ -18,21 +22,24 @@ import { MASTODON_LIMITS, type MastodonVisibility } from './types';
 export class MastodonAdapter extends BaseContentAdapter {
   readonly platform: DestinationType = 'MASTODON';
 
-  async adaptContent(content: ContentInput, options: AdaptationOptions): Promise<AdaptedContent> {
+  async adaptContent(
+    content: ContentInput,
+    options: AdaptationOptions
+  ): Promise<AdaptedContent> {
     try {
       // Extract basic content
       const title = content.title;
       const body = this.preparePlainTextContent(content.body);
-      
+
       // Create status text (Mastodon combines title and body)
       const statusText = this.createStatusText(title, body);
-      
+
       // Extract and process media (limit to instance maximum)
       const media = await this.extractAndOptimizeMedia(content.body);
-      
+
       // Process hashtags
       const tags = this.extractHashtags(content);
-      
+
       // Build Mastodon-specific metadata
       const metadata = this.buildMastodonMetadata(content, options);
 
@@ -47,7 +54,9 @@ export class MastodonAdapter extends BaseContentAdapter {
 
       return adaptedContent;
     } catch (error) {
-      throw new Error(`Failed to adapt content for Mastodon: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to adapt content for Mastodon: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -55,27 +64,45 @@ export class MastodonAdapter extends BaseContentAdapter {
     try {
       // Use Zod schema for validation
       MastodonContentSchema.parse(content);
-      
+
       const errors: string[] = [];
       const warnings: string[] = [];
 
       // Text length validations
-      if (!content.body?.trim() && (!content.media || content.media.length === 0)) {
+      if (
+        !content.body?.trim() &&
+        (!content.media || content.media.length === 0)
+      ) {
         errors.push('Status text or media attachments are required');
       }
 
-      if (content.body && content.body.length > MASTODON_LIMITS.defaultMaxCharacters) {
-        errors.push(`Status exceeds default maximum length of ${MASTODON_LIMITS.defaultMaxCharacters} characters (current: ${content.body.length})`);
-        warnings.push('Consider checking your instance\'s character limit as it may be higher');
+      if (
+        content.body &&
+        content.body.length > MASTODON_LIMITS.defaultMaxCharacters
+      ) {
+        errors.push(
+          `Status exceeds default maximum length of ${MASTODON_LIMITS.defaultMaxCharacters} characters (current: ${content.body.length})`
+        );
+        warnings.push(
+          "Consider checking your instance's character limit as it may be higher"
+        );
       }
 
       // Media validations
-      if (content.media && content.media.length > MASTODON_LIMITS.maxMediaAttachments) {
-        errors.push(`Maximum ${MASTODON_LIMITS.maxMediaAttachments} media attachments allowed`);
+      if (
+        content.media &&
+        content.media.length > MASTODON_LIMITS.maxMediaAttachments
+      ) {
+        errors.push(
+          `Maximum ${MASTODON_LIMITS.maxMediaAttachments} media attachments allowed`
+        );
       }
 
       // Content quality warnings
-      if (content.body && content.body.length > MASTODON_LIMITS.defaultMaxCharacters * 0.8) {
+      if (
+        content.body &&
+        content.body.length > MASTODON_LIMITS.defaultMaxCharacters * 0.8
+      ) {
         warnings.push('Status is approaching character limit');
       }
 
@@ -85,12 +112,16 @@ export class MastodonAdapter extends BaseContentAdapter {
       }
 
       if (content.body && content.body.includes('![')) {
-        warnings.push('Markdown image syntax will be displayed as text. Use media attachments instead.');
+        warnings.push(
+          'Markdown image syntax will be displayed as text. Use media attachments instead.'
+        );
       }
 
       // Hashtag validation
       if (content.tags && content.tags.length > 10) {
-        warnings.push('Many hashtags may reduce post visibility. Consider using fewer, more targeted hashtags.');
+        warnings.push(
+          'Many hashtags may reduce post visibility. Consider using fewer, more targeted hashtags.'
+        );
       }
 
       return {
@@ -114,12 +145,15 @@ export class MastodonAdapter extends BaseContentAdapter {
    */
   generateContentWarning(content: ContentInput): string | undefined {
     const text = `${content.title} ${content.body}`.toLowerCase();
-    
+
     // Common content warning triggers
     const triggers = [
       { pattern: /politic|election|vote/i, warning: 'Politics' },
       { pattern: /death|dying|suicide/i, warning: 'Death mention' },
-      { pattern: /mental health|depression|anxiety/i, warning: 'Mental health' },
+      {
+        pattern: /mental health|depression|anxiety/i,
+        warning: 'Mental health',
+      },
       { pattern: /covid|pandemic|virus/i, warning: 'COVID/Health' },
       { pattern: /violence|assault|abuse/i, warning: 'Violence' },
       { pattern: /food|eating|diet/i, warning: 'Food' },
@@ -140,22 +174,30 @@ export class MastodonAdapter extends BaseContentAdapter {
    */
   suggestVisibility(content: ContentInput): MastodonVisibility {
     const text = `${content.title} ${content.body}`.toLowerCase();
-    
+
     // Personal/private indicators
-    if (text.includes('personal') || text.includes('private') || text.includes('diary')) {
+    if (
+      text.includes('personal') ||
+      text.includes('private') ||
+      text.includes('diary')
+    ) {
       return 'private';
     }
-    
+
     // Direct message indicators
     if (text.includes('@') && text.split('@').length - 1 <= 2) {
       return 'direct';
     }
-    
+
     // Unlisted indicators (personal but not private)
-    if (text.includes('journal') || text.includes('thoughts') || text.includes('opinion')) {
+    if (
+      text.includes('journal') ||
+      text.includes('thoughts') ||
+      text.includes('opinion')
+    ) {
       return 'unlisted';
     }
-    
+
     // Default to public
     return 'public';
   }
@@ -170,13 +212,13 @@ export class MastodonAdapter extends BaseContentAdapter {
     // Extract existing hashtags
     const hashtagMatches = fullText.match(/#[\w]+/g);
     if (hashtagMatches) {
-      hashtags.push(...hashtagMatches.map(tag => tag.toLowerCase()));
+      hashtags.push(...hashtagMatches.map((tag) => tag.toLowerCase()));
     }
 
     // Convert metadata tags to hashtags
     if (content.metadata?.tags) {
       const tags = content.metadata.tags as string[];
-      tags.forEach(tag => {
+      tags.forEach((tag) => {
         const cleanTag = this.cleanHashtag(tag);
         if (cleanTag && !hashtags.includes(cleanTag)) {
           hashtags.push(cleanTag);
@@ -199,9 +241,11 @@ export class MastodonAdapter extends BaseContentAdapter {
   /**
    * Generate poll suggestion from content
    */
-  suggestPoll(content: ContentInput): { options: string[]; question: string } | undefined {
+  suggestPoll(
+    content: ContentInput
+  ): { options: string[]; question: string } | undefined {
     const text = `${content.title} ${content.body}`;
-    
+
     // Look for question patterns
     const questionPatterns = [
       /what do you think about (.+)\?/i,
@@ -238,27 +282,37 @@ export class MastodonAdapter extends BaseContentAdapter {
    * Optimize status text for Mastodon's character limit
    */
   optimizeForCharacterLimit(content: ContentInput, maxLength: number): string {
-    let text = this.createStatusText(content.title, this.preparePlainTextContent(content.body));
-    
+    const text = this.createStatusText(
+      content.title,
+      this.preparePlainTextContent(content.body)
+    );
+
     if (text.length <= maxLength) {
       return text;
     }
 
     // Try different truncation strategies
-    
+
     // 1. Remove hashtags if present and try again
     const textWithoutHashtags = text.replace(/#[\w]+/g, '').trim();
     if (textWithoutHashtags.length <= maxLength) {
-      return textWithoutHashtags + '\n\n' + this.extractHashtags(content).slice(0, 3).join(' ');
+      return (
+        textWithoutHashtags +
+        '\n\n' +
+        this.extractHashtags(content).slice(0, 3).join(' ')
+      );
     }
 
     // 2. Truncate body but keep title
     if (content.title) {
       const titleWithBreak = `${content.title}\n\n`;
       const remainingLength = maxLength - titleWithBreak.length - 3; // 3 for "..."
-      
+
       if (remainingLength > 50) {
-        const truncatedBody = this.truncateText(this.preparePlainTextContent(content.body), remainingLength);
+        const truncatedBody = this.truncateText(
+          this.preparePlainTextContent(content.body),
+          remainingLength
+        );
         return titleWithBreak + truncatedBody + '...';
       }
     }
@@ -281,7 +335,7 @@ export class MastodonAdapter extends BaseContentAdapter {
     text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1 $2');
 
     // Preserve intentional line breaks
-    text = text.replace(/  \n/g, '\n');
+    text = text.replace(/ {2}\n/g, '\n');
 
     return text.trim();
   }
@@ -289,7 +343,7 @@ export class MastodonAdapter extends BaseContentAdapter {
   private createStatusText(title: string, body: string): string {
     if (!title) return body;
     if (!body) return title;
-    
+
     // Combine title and body with appropriate spacing
     return `${title}\n\n${body}`;
   }
@@ -300,18 +354,23 @@ export class MastodonAdapter extends BaseContentAdapter {
     return this.truncateText(firstLine, 100);
   }
 
-  private async extractAndOptimizeMedia(markdown: string): Promise<MediaAttachment[]> {
+  private async extractAndOptimizeMedia(
+    markdown: string
+  ): Promise<MediaAttachment[]> {
     const images = extractImages(markdown);
-    
+
     // Limit to Mastodon's maximum and add required alt text
-    return images.slice(0, MASTODON_LIMITS.maxMediaAttachments).map(img => ({
+    return images.slice(0, MASTODON_LIMITS.maxMediaAttachments).map((img) => ({
       url: img.url,
       altText: img.alt || 'Image',
       type: 'image' as const,
     }));
   }
 
-  private buildMastodonMetadata(content: ContentInput, options: AdaptationOptions): Record<string, unknown> {
+  private buildMastodonMetadata(
+    content: ContentInput,
+    options: AdaptationOptions
+  ): Record<string, unknown> {
     const metadata: Record<string, unknown> = {};
 
     // Extract hashtags and mentions
@@ -368,7 +427,7 @@ export class MastodonAdapter extends BaseContentAdapter {
       .trim()
       .toLowerCase()
       .replace(/[^a-z0-9]/g, ''); // Remove all non-alphanumeric characters
-    
+
     return cleaned ? `#${cleaned}` : '';
   }
 

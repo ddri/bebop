@@ -1,7 +1,25 @@
 'use client';
 
+import { formatDate, formatTime } from '@/lib/format-date';
+import type {
+  CampaignStatus,
+  ContentType,
+  Schedule,
+  ScheduleStatus,
+} from '@repo/database/types';
 import { Button } from '@repo/design-system/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@repo/design-system/components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@repo/design-system/components/ui/dropdown-menu';
 import {
   Select,
   SelectContent,
@@ -9,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@repo/design-system/components/ui/select';
+import { StatusBadge } from '@repo/design-system/components/ui/status-badge';
 import {
   Table,
   TableBody,
@@ -17,32 +36,18 @@ import {
   TableHeader,
   TableRow,
 } from '@repo/design-system/components/ui/table';
-import { StatusBadge } from '@repo/design-system/components/ui/status-badge';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@repo/design-system/components/ui/dropdown-menu';
-import type { 
-  Schedule, 
-  ScheduleStatus,
-  ContentType,
-  CampaignStatus 
-} from '@repo/database/types';
-import { 
-  Calendar, 
-  Clock, 
-  Filter,
-  MoreHorizontal, 
-  Plus,
+  Calendar,
+  Clock,
+  Edit,
   ExternalLink,
-  Edit
+  Filter,
+  MoreHorizontal,
+  Plus,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { CreateScheduleDialog } from '../../schedule/components/create-schedule-dialog';
-import { formatDate, formatTime } from '@/lib/format-date';
 
 interface ScheduledContentTableProps {
   schedules: (Schedule & {
@@ -72,7 +77,10 @@ interface ScheduledContentTableProps {
   };
 }
 
-const statusMapping: Record<ScheduleStatus, 'pending' | 'publishing' | 'published' | 'failed' | 'cancelled'> = {
+const statusMapping: Record<
+  ScheduleStatus,
+  'pending' | 'publishing' | 'published' | 'failed' | 'cancelled'
+> = {
   PENDING: 'pending',
   PUBLISHING: 'publishing',
   PUBLISHED: 'published',
@@ -80,7 +88,10 @@ const statusMapping: Record<ScheduleStatus, 'pending' | 'publishing' | 'publishe
   CANCELLED: 'cancelled',
 };
 
-const campaignStatusMapping: Record<CampaignStatus, 'draft' | 'active' | 'paused' | 'completed' | 'archived'> = {
+const campaignStatusMapping: Record<
+  CampaignStatus,
+  'draft' | 'active' | 'paused' | 'completed' | 'archived'
+> = {
   DRAFT: 'draft',
   ACTIVE: 'active',
   PAUSED: 'paused',
@@ -99,11 +110,11 @@ const typeLabels: Record<ContentType, string> = {
   CUSTOM: 'Custom',
 };
 
-export const ScheduledContentTable = ({ 
-  schedules, 
-  campaigns, 
-  destinations, 
-  filters 
+export const ScheduledContentTable = ({
+  schedules,
+  campaigns,
+  destinations,
+  filters,
 }: ScheduledContentTableProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -119,15 +130,15 @@ export const ScheduledContentTable = ({
   };
 
   const upcomingSchedules = schedules.filter(
-    s => s.status === 'PENDING' && new Date(s.publishAt) > new Date()
+    (s) => s.status === 'PENDING' && new Date(s.publishAt) > new Date()
   );
 
   const stats = {
     total: schedules.length,
-    pending: schedules.filter(s => s.status === 'PENDING').length,
-    publishing: schedules.filter(s => s.status === 'PUBLISHING').length,
-    published: schedules.filter(s => s.status === 'PUBLISHED').length,
-    failed: schedules.filter(s => s.status === 'FAILED').length,
+    pending: schedules.filter((s) => s.status === 'PENDING').length,
+    publishing: schedules.filter((s) => s.status === 'PUBLISHING').length,
+    published: schedules.filter((s) => s.status === 'PUBLISHED').length,
+    failed: schedules.filter((s) => s.status === 'FAILED').length,
   };
 
   return (
@@ -136,51 +147,53 @@ export const ScheduledContentTable = ({
       <div className="grid gap-4 md:grid-cols-5">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Scheduled</CardTitle>
+            <CardTitle className="font-medium text-sm">
+              Total Scheduled
+            </CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
+            <div className="font-bold text-2xl">{stats.total}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending</CardTitle>
+            <CardTitle className="font-medium text-sm">Pending</CardTitle>
             <Clock className="h-4 w-4 text-warning" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.pending}</div>
+            <div className="font-bold text-2xl">{stats.pending}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Publishing</CardTitle>
+            <CardTitle className="font-medium text-sm">Publishing</CardTitle>
             <Clock className="h-4 w-4 text-info" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.publishing}</div>
+            <div className="font-bold text-2xl">{stats.publishing}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Published</CardTitle>
+            <CardTitle className="font-medium text-sm">Published</CardTitle>
             <Calendar className="h-4 w-4 text-success" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.published}</div>
+            <div className="font-bold text-2xl">{stats.published}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Failed</CardTitle>
+            <CardTitle className="font-medium text-sm">Failed</CardTitle>
             <Calendar className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.failed}</div>
+            <div className="font-bold text-2xl">{stats.failed}</div>
           </CardContent>
         </Card>
       </div>
@@ -190,10 +203,13 @@ export const ScheduledContentTable = ({
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <Filter className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium">Filters:</span>
+            <span className="font-medium text-sm">Filters:</span>
           </div>
-          
-          <Select value={filters.status || 'all'} onValueChange={(value) => updateFilter('status', value)}>
+
+          <Select
+            value={filters.status || 'all'}
+            onValueChange={(value) => updateFilter('status', value)}
+          >
             <SelectTrigger className="w-[140px]">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
@@ -207,7 +223,10 @@ export const ScheduledContentTable = ({
             </SelectContent>
           </Select>
 
-          <Select value={filters.campaign || 'all'} onValueChange={(value) => updateFilter('campaign', value)}>
+          <Select
+            value={filters.campaign || 'all'}
+            onValueChange={(value) => updateFilter('campaign', value)}
+          >
             <SelectTrigger className="w-[160px]">
               <SelectValue placeholder="Campaign" />
             </SelectTrigger>
@@ -221,7 +240,10 @@ export const ScheduledContentTable = ({
             </SelectContent>
           </Select>
 
-          <Select value={filters.destination || 'all'} onValueChange={(value) => updateFilter('destination', value)}>
+          <Select
+            value={filters.destination || 'all'}
+            onValueChange={(value) => updateFilter('destination', value)}
+          >
             <SelectTrigger className="w-[160px]">
               <SelectValue placeholder="Destination" />
             </SelectTrigger>
@@ -238,7 +260,7 @@ export const ScheduledContentTable = ({
 
         <CreateScheduleDialog>
           <Button>
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="mr-2 h-4 w-4" />
             Schedule Content
           </Button>
         </CreateScheduleDialog>
@@ -256,27 +278,33 @@ export const ScheduledContentTable = ({
           <CardContent>
             <div className="space-y-2">
               {upcomingSchedules.slice(0, 3).map((schedule) => (
-                <div key={schedule.id} className="flex items-center justify-between p-2 rounded border">
+                <div
+                  key={schedule.id}
+                  className="flex items-center justify-between rounded border p-2"
+                >
                   <div className="flex items-center gap-3">
                     <div>
-                      <p className="font-medium text-sm">{schedule.content.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {schedule.destination.name} • {typeLabels[schedule.content.type]}
+                      <p className="font-medium text-sm">
+                        {schedule.content.title}
+                      </p>
+                      <p className="text-muted-foreground text-xs">
+                        {schedule.destination.name} •{' '}
+                        {typeLabels[schedule.content.type]}
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-medium">
+                    <p className="font-medium text-sm">
                       {formatDate(schedule.publishAt)}
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-muted-foreground text-xs">
                       {formatTime(schedule.publishAt)}
                     </p>
                   </div>
                 </div>
               ))}
               {upcomingSchedules.length > 3 && (
-                <p className="text-xs text-muted-foreground text-center">
+                <p className="text-center text-muted-foreground text-xs">
                   ...and {upcomingSchedules.length - 3} more
                 </p>
               )}
@@ -309,27 +337,35 @@ export const ScheduledContentTable = ({
                     <TableRow key={schedule.id}>
                       <TableCell>
                         <div>
-                          <div className="font-medium">{schedule.content.title}</div>
-                          <div className="text-sm text-muted-foreground">
+                          <div className="font-medium">
+                            {schedule.content.title}
+                          </div>
+                          <div className="text-muted-foreground text-sm">
                             {typeLabels[schedule.content.type]}
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <Link 
+                          <Link
                             href={`/campaigns/${schedule.campaign.id}`}
-                            className="font-medium hover:text-primary transition-colors"
+                            className="font-medium transition-colors hover:text-primary"
                           >
                             {schedule.campaign.name}
                           </Link>
-                          <StatusBadge status={campaignStatusMapping[schedule.campaign.status]} />
+                          <StatusBadge
+                            status={
+                              campaignStatusMapping[schedule.campaign.status]
+                            }
+                          />
                         </div>
                       </TableCell>
                       <TableCell>
                         <div>
-                          <div className="font-medium">{schedule.destination.name}</div>
-                          <div className="text-sm text-muted-foreground">
+                          <div className="font-medium">
+                            {schedule.destination.name}
+                          </div>
+                          <div className="text-muted-foreground text-sm">
                             {schedule.destination.type}
                           </div>
                         </div>
@@ -339,7 +375,7 @@ export const ScheduledContentTable = ({
                           <div className="font-medium">
                             {formatDate(schedule.publishAt)}
                           </div>
-                          <div className="text-sm text-muted-foreground">
+                          <div className="text-muted-foreground text-sm">
                             {formatTime(schedule.publishAt)}
                           </div>
                         </div>
@@ -358,12 +394,12 @@ export const ScheduledContentTable = ({
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem>
-                              <Edit className="h-4 w-4 mr-2" />
+                              <Edit className="mr-2 h-4 w-4" />
                               Edit Schedule
                             </DropdownMenuItem>
                             {schedule.status === 'PUBLISHED' && (
                               <DropdownMenuItem>
-                                <ExternalLink className="h-4 w-4 mr-2" />
+                                <ExternalLink className="mr-2 h-4 w-4" />
                                 View Published
                               </DropdownMenuItem>
                             )}
@@ -382,15 +418,17 @@ export const ScheduledContentTable = ({
               </Table>
             </div>
           ) : (
-            <div className="text-center py-12">
-              <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No scheduled content</h3>
-              <p className="text-muted-foreground mb-4">
+            <div className="py-12 text-center">
+              <Calendar className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+              <h3 className="mb-2 font-semibold text-lg">
+                No scheduled content
+              </h3>
+              <p className="mb-4 text-muted-foreground">
                 Schedule content from your campaigns to see it here
               </p>
               <CreateScheduleDialog>
                 <Button>
-                  <Plus className="h-4 w-4 mr-2" />
+                  <Plus className="mr-2 h-4 w-4" />
                   Schedule Content
                 </Button>
               </CreateScheduleDialog>

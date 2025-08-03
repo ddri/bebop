@@ -1,42 +1,37 @@
 'use client';
 
+import type { Destination, DestinationType } from '@repo/database/types';
+import {
+  destructiveAction,
+  getPlatformColor,
+  iconColors,
+} from '@repo/design-system';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Button } from '@repo/design-system/components/ui/button';
-import { EmptyState } from '@repo/design-system/components/ui/empty-state';
-import { getPlatformColor, iconColors, destructiveAction } from '@repo/design-system';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@repo/design-system/components/ui/dropdown-menu';
+import { EmptyState } from '@repo/design-system/components/ui/empty-state';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@repo/design-system/components/ui/table';
-import type { Destination, DestinationType } from '@repo/database/types';
-import { 
-  Globe, 
-  Mail, 
-  MessageSquare, 
-  MoreHorizontal, 
-  Plus, 
+  Globe,
+  Mail,
+  MessageSquare,
+  MoreHorizontal,
+  Plus,
   Settings,
   Wifi,
-  WifiOff
+  WifiOff,
 } from 'lucide-react';
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { CreateDestinationDialog } from './create-destination-dialog';
 
 interface DestinationsTableProps {
   destinations: Destination[];
 }
-
 
 const typeIcons: Record<DestinationType, React.ReactNode> = {
   // Phase 1 Platforms
@@ -77,7 +72,8 @@ const typeDescriptions: Record<DestinationType, string> = {
 };
 
 export const DestinationsTable = ({ destinations }: DestinationsTableProps) => {
-  const [editingDestination, setEditingDestination] = useState<Destination | null>(null);
+  const [editingDestination, setEditingDestination] =
+    useState<Destination | null>(null);
   const router = useRouter();
 
   const handleEdit = (destination: Destination) => {
@@ -85,7 +81,11 @@ export const DestinationsTable = ({ destinations }: DestinationsTableProps) => {
   };
 
   const handleDelete = async (destinationId: string) => {
-    if (!confirm('Are you sure you want to delete this destination? This action cannot be undone.')) {
+    if (
+      !confirm(
+        'Are you sure you want to delete this destination? This action cannot be undone.'
+      )
+    ) {
       return;
     }
 
@@ -132,7 +132,7 @@ export const DestinationsTable = ({ destinations }: DestinationsTableProps) => {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Publishing Destinations</h1>
+          <h1 className="font-bold text-2xl">Publishing Destinations</h1>
           <p className="text-muted-foreground">
             Configure where your content gets published
           </p>
@@ -149,7 +149,7 @@ export const DestinationsTable = ({ destinations }: DestinationsTableProps) => {
         {destinations.map((destination) => (
           <div
             key={destination.id}
-            className="rounded-lg border bg-card p-4 hover:bg-accent/50 transition-colors"
+            className="rounded-lg border bg-card p-4 transition-colors hover:bg-accent/50"
           >
             <div className="flex items-start justify-between">
               <div className="flex items-start gap-3">
@@ -157,7 +157,7 @@ export const DestinationsTable = ({ destinations }: DestinationsTableProps) => {
                   {typeIcons[destination.type]}
                   <div>
                     <h3 className="font-semibold">{destination.name}</h3>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                       {typeDescriptions[destination.type]}
                     </p>
                   </div>
@@ -174,10 +174,12 @@ export const DestinationsTable = ({ destinations }: DestinationsTableProps) => {
                     Edit
                   </DropdownMenuItem>
                   <DropdownMenuItem>Test Connection</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleToggleActive(destination)}>
+                  <DropdownMenuItem
+                    onClick={() => handleToggleActive(destination)}
+                  >
                     {destination.isActive ? 'Deactivate' : 'Activate'}
                   </DropdownMenuItem>
-                  <DropdownMenuItem 
+                  <DropdownMenuItem
                     className={destructiveAction.text}
                     onClick={() => handleDelete(destination.id)}
                   >
@@ -192,7 +194,7 @@ export const DestinationsTable = ({ destinations }: DestinationsTableProps) => {
                 <Badge className={getPlatformColor(destination.type)}>
                   {destination.type}
                 </Badge>
-                <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1 text-muted-foreground text-sm">
                   {destination.isActive ? (
                     <>
                       <Wifi className={`h-3 w-3 ${iconColors.success}`} />
@@ -206,7 +208,7 @@ export const DestinationsTable = ({ destinations }: DestinationsTableProps) => {
                   )}
                 </div>
               </div>
-              <div className="text-sm text-muted-foreground">
+              <div className="text-muted-foreground text-sm">
                 {new Date(destination.createdAt).toLocaleDateString()}
               </div>
             </div>
@@ -225,9 +227,11 @@ export const DestinationsTable = ({ destinations }: DestinationsTableProps) => {
             label: 'Add Your First Destination',
             icon: Plus,
             onClick: () => {
-              const createButton = document.querySelector('[data-create-destination-trigger]') as HTMLButtonElement;
+              const createButton = document.querySelector(
+                '[data-create-destination-trigger]'
+              ) as HTMLButtonElement;
               createButton?.click();
-            }
+            },
           }}
         />
       )}
@@ -238,7 +242,8 @@ export const DestinationsTable = ({ destinations }: DestinationsTableProps) => {
           editingDestination={editingDestination}
           onClose={() => setEditingDestination(null)}
         >
-          <div /> {/* This won't be rendered since the dialog is controlled by editingDestination */}
+          <div />{' '}
+          {/* This won't be rendered since the dialog is controlled by editingDestination */}
         </CreateDestinationDialog>
       )}
     </div>

@@ -1,15 +1,16 @@
 'use client';
 
-import { StatusBadge } from '@repo/design-system/components/ui/status-badge';
+import type { Content, ContentStatus, ContentType } from '@repo/database/types';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Button } from '@repo/design-system/components/ui/button';
-import { EmptyState } from '@repo/design-system/components/ui/empty-state';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@repo/design-system/components/ui/dropdown-menu';
+import { EmptyState } from '@repo/design-system/components/ui/empty-state';
+import { StatusBadge } from '@repo/design-system/components/ui/status-badge';
 import {
   Table,
   TableBody,
@@ -18,8 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from '@repo/design-system/components/ui/table';
-import type { Content, ContentStatus, ContentType } from '@repo/database/types';
-import { MoreHorizontal, Plus, FileText } from 'lucide-react';
+import { FileText, MoreHorizontal, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { CreateContentDialog } from './create-content-dialog';
 
@@ -32,7 +32,10 @@ interface ContentTableProps {
   })[];
 }
 
-const statusMapping: Record<ContentStatus, 'draft' | 'ready' | 'published' | 'archived'> = {
+const statusMapping: Record<
+  ContentStatus,
+  'draft' | 'ready' | 'published' | 'archived'
+> = {
   DRAFT: 'draft',
   READY: 'ready',
   PUBLISHED: 'published',
@@ -66,7 +69,7 @@ export const ContentTable = ({ content }: ContentTableProps) => {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Content</h1>
+          <h1 className="font-bold text-2xl">Content</h1>
           <p className="text-muted-foreground">
             Manage your content pieces across all campaigns
           </p>
@@ -103,23 +106,27 @@ export const ContentTable = ({ content }: ContentTableProps) => {
                   label: 'Create Your First Content',
                   icon: Plus,
                   onClick: () => {
-                    const createButton = document.querySelector('[data-create-content-trigger]') as HTMLButtonElement;
+                    const createButton = document.querySelector(
+                      '[data-create-content-trigger]'
+                    ) as HTMLButtonElement;
                     createButton?.click();
-                  }
+                  },
                 }}
               />
             ) : (
               content.map((item) => (
-                <TableRow 
-                  key={item.id} 
+                <TableRow
+                  key={item.id}
                   className="cursor-pointer hover:bg-muted/50"
-                  onClick={() => window.location.href = `/content/${item.id}`}
+                  onClick={() => (window.location.href = `/content/${item.id}`)}
                 >
                   <TableCell className="font-medium">
                     <div>
-                      <div className="font-medium hover:text-primary transition-colors">{item.title}</div>
+                      <div className="font-medium transition-colors hover:text-primary">
+                        {item.title}
+                      </div>
                       {item.excerpt && (
-                        <div className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                        <div className="mt-1 line-clamp-2 text-muted-foreground text-sm">
                           {item.excerpt}
                         </div>
                       )}
@@ -144,8 +151,8 @@ export const ContentTable = ({ content }: ContentTableProps) => {
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button 
-                          variant="ghost" 
+                        <Button
+                          variant="ghost"
                           size="icon"
                           onClick={(e) => e.stopPropagation()}
                         >
@@ -154,19 +161,27 @@ export const ContentTable = ({ content }: ContentTableProps) => {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem asChild>
-                          <Link href={`/content/${item.id}`}>
-                            Edit
-                          </Link>
+                          <Link href={`/content/${item.id}`}>Edit</Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => console.log('Duplicate content:', item.id)}>
+                        <DropdownMenuItem
+                          onClick={() =>
+                            console.log('Duplicate content:', item.id)
+                          }
+                        >
                           Duplicate
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => console.log('Archive content:', item.id)}>
+                        <DropdownMenuItem
+                          onClick={() =>
+                            console.log('Archive content:', item.id)
+                          }
+                        >
                           Archive
                         </DropdownMenuItem>
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                           className="text-red-600"
-                          onClick={() => console.log('Delete content:', item.id)}
+                          onClick={() =>
+                            console.log('Delete content:', item.id)
+                          }
                         >
                           Delete
                         </DropdownMenuItem>

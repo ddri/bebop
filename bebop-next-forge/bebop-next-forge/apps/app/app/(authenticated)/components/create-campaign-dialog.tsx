@@ -1,5 +1,7 @@
 'use client';
 
+import { zodResolver } from '@hookform/resolvers/zod';
+import { CampaignStatus } from '@repo/database/types';
 import { Button } from '@repo/design-system/components/ui/button';
 import {
   Dialog,
@@ -28,8 +30,6 @@ import {
   SelectValue,
 } from '@repo/design-system/components/ui/select';
 import { Textarea } from '@repo/design-system/components/ui/textarea';
-import { CampaignStatus } from '@repo/database/types';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -50,7 +50,9 @@ interface CreateCampaignDialogProps {
   children: React.ReactNode;
 }
 
-export const CreateCampaignDialog = ({ children }: CreateCampaignDialogProps) => {
+export const CreateCampaignDialog = ({
+  children,
+}: CreateCampaignDialogProps) => {
   const [open, setOpen] = useState(false);
   const router = useRouter();
 
@@ -97,7 +99,8 @@ export const CreateCampaignDialog = ({ children }: CreateCampaignDialogProps) =>
         <DialogHeader>
           <DialogTitle>Create New Campaign</DialogTitle>
           <DialogDescription>
-            Set up a new content marketing campaign. You can always edit these details later.
+            Set up a new content marketing campaign. You can always edit these
+            details later.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -169,16 +172,25 @@ export const CreateCampaignDialog = ({ children }: CreateCampaignDialogProps) =>
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Status</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select status" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value={CampaignStatus.DRAFT}>Draft</SelectItem>
-                      <SelectItem value={CampaignStatus.ACTIVE}>Active</SelectItem>
-                      <SelectItem value={CampaignStatus.PAUSED}>Paused</SelectItem>
+                      <SelectItem value={CampaignStatus.DRAFT}>
+                        Draft
+                      </SelectItem>
+                      <SelectItem value={CampaignStatus.ACTIVE}>
+                        Active
+                      </SelectItem>
+                      <SelectItem value={CampaignStatus.PAUSED}>
+                        Paused
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />

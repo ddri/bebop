@@ -1,5 +1,7 @@
 'use client';
 
+import { zodResolver } from '@hookform/resolvers/zod';
+import { ContentStatus, ContentType } from '@repo/database/types';
 import { Button } from '@repo/design-system/components/ui/button';
 import {
   Dialog,
@@ -28,10 +30,8 @@ import {
   SelectValue,
 } from '@repo/design-system/components/ui/select';
 import { Textarea } from '@repo/design-system/components/ui/textarea';
-import { ContentType, ContentStatus } from '@repo/database/types';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -56,7 +56,10 @@ interface Campaign {
   name: string;
 }
 
-export const CreateContentDialog = ({ children, defaultCampaignId }: CreateContentDialogProps) => {
+export const CreateContentDialog = ({
+  children,
+  defaultCampaignId,
+}: CreateContentDialogProps) => {
   const [open, setOpen] = useState(false);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const router = useRouter();
@@ -129,7 +132,8 @@ export const CreateContentDialog = ({ children, defaultCampaignId }: CreateConte
         <DialogHeader>
           <DialogTitle>Create New Content</DialogTitle>
           <DialogDescription>
-            Add a new content piece to your campaign. You can edit and refine it later.
+            Add a new content piece to your campaign. You can edit and refine it
+            later.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -155,18 +159,23 @@ export const CreateContentDialog = ({ children, defaultCampaignId }: CreateConte
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Content Type</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select type" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {Object.entries(contentTypeLabels).map(([value, label]) => (
-                          <SelectItem key={value} value={value}>
-                            {label}
-                          </SelectItem>
-                        ))}
+                        {Object.entries(contentTypeLabels).map(
+                          ([value, label]) => (
+                            <SelectItem key={value} value={value}>
+                              {label}
+                            </SelectItem>
+                          )
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -220,7 +229,10 @@ export const CreateContentDialog = ({ children, defaultCampaignId }: CreateConte
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Campaign</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select campaign" />
@@ -245,15 +257,22 @@ export const CreateContentDialog = ({ children, defaultCampaignId }: CreateConte
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Status</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select status" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value={ContentStatus.DRAFT}>Draft</SelectItem>
-                        <SelectItem value={ContentStatus.READY}>Ready</SelectItem>
+                        <SelectItem value={ContentStatus.DRAFT}>
+                          Draft
+                        </SelectItem>
+                        <SelectItem value={ContentStatus.READY}>
+                          Ready
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />

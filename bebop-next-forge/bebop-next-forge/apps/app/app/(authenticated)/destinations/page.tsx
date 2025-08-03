@@ -2,8 +2,8 @@ import { auth } from '@repo/auth/server';
 import { database } from '@repo/database';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { DestinationsTable } from './components/destinations-table';
 import { Header } from '../components/header';
+import { DestinationsTable } from './components/destinations-table';
 
 const title = 'Destinations';
 const description = 'Manage your publishing destinations';
