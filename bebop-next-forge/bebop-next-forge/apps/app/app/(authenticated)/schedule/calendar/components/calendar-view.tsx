@@ -19,6 +19,7 @@ import { Calendar, Filter, Plus } from 'lucide-react';
 import { CalendarFilters } from './calendar-filters';
 import { ScheduleEventCard } from './schedule-event-card';
 import { CreateScheduleModal } from './create-schedule-modal';
+import { EditScheduleModal } from './edit-schedule-modal';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
@@ -86,6 +87,8 @@ export const CalendarView = ({ schedules, destinations, campaigns }: CalendarVie
   const [showFilters, setShowFilters] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedSchedule, setSelectedSchedule] = useState<CalendarViewProps['schedules'][0] | null>(null);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
@@ -136,8 +139,9 @@ export const CalendarView = ({ schedules, destinations, campaigns }: CalendarVie
   };
 
   const handleEventClick = (eventInfo: EventClickArg) => {
-    // Handle event click - could open edit modal
-    console.log('Event clicked:', eventInfo.event.extendedProps.schedule);
+    const schedule = eventInfo.event.extendedProps.schedule;
+    setSelectedSchedule(schedule);
+    setShowEditModal(true);
   };
 
   const handleEventDrop = useCallback(async (eventInfo: EventDropArg) => {
@@ -359,6 +363,23 @@ export const CalendarView = ({ schedules, destinations, campaigns }: CalendarVie
         />
       )}
 
+      {/* Edit Schedule Modal */}
+      {showEditModal && selectedSchedule && (
+        <EditScheduleModal
+          isOpen={showEditModal}
+          onClose={() => {
+            setShowEditModal(false);
+            setSelectedSchedule(null);
+          }}
+          schedule={selectedSchedule}
+          onUpdate={() => {
+            startTransition(() => {
+              router.refresh();
+            });
+          }}
+        />
+      )}
+
       {/* Custom CSS for platform styling */}
       <style jsx global>{`
         .fc-event {
@@ -366,8 +387,12 @@ export const CalendarView = ({ schedules, destinations, campaigns }: CalendarVie
           border-width: 2px !important;
           font-size: 12px !important;
           padding: 2px 4px !important;
-          cursor: move !important;
+          cursor: pointer !important;
           transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+        }
+        
+        .fc-event[draggable="true"] {
+          cursor: move !important;
         }
         
         .fc-event:hover {
