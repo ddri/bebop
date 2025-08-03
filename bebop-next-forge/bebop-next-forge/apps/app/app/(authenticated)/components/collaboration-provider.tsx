@@ -42,7 +42,7 @@ export const CollaborationProvider = ({
       resolveUsers={resolveUsers}
       resolveMentionSuggestions={resolveMentionSuggestions}
     >
-      {children}
+      {children as any}
     </Room>
   );
 };

@@ -21,6 +21,7 @@ import {
 } from '@repo/design-system/components/ui/table';
 import { FileText, MoreHorizontal, Plus } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { CreateContentDialog } from './create-content-dialog';
 
 interface ContentTableProps {
@@ -65,6 +66,29 @@ const typeLabels: Record<ContentType, string> = {
 };
 
 export const ContentTable = ({ content }: ContentTableProps) => {
+  const router = useRouter();
+
+  const handleRowClick = (contentId: string) => {
+    router.push(`/content/${contentId}`);
+  };
+
+  const handleDuplicate = async (contentId: string) => {
+    // TODO: Implement duplicate functionality
+    console.log('Duplicate content:', contentId);
+  };
+
+  const handleArchive = async (contentId: string) => {
+    // TODO: Implement archive functionality  
+    console.log('Archive content:', contentId);
+  };
+
+  const handleDelete = async (contentId: string) => {
+    if (confirm('Are you sure you want to delete this content?')) {
+      // TODO: Implement delete functionality
+      console.log('Delete content:', contentId);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -105,12 +129,7 @@ export const ContentTable = ({ content }: ContentTableProps) => {
                 action={{
                   label: 'Create Your First Content',
                   icon: Plus,
-                  onClick: () => {
-                    const createButton = document.querySelector(
-                      '[data-create-content-trigger]'
-                    ) as HTMLButtonElement;
-                    createButton?.click();
-                  },
+                  href: '/content/new',
                 }}
               />
             ) : (
@@ -118,7 +137,7 @@ export const ContentTable = ({ content }: ContentTableProps) => {
                 <TableRow
                   key={item.id}
                   className="cursor-pointer hover:bg-muted/50"
-                  onClick={() => (window.location.href = `/content/${item.id}`)}
+                  onClick={() => handleRowClick(item.id)}
                 >
                   <TableCell className="font-medium">
                     <div>
@@ -164,23 +183,26 @@ export const ContentTable = ({ content }: ContentTableProps) => {
                           <Link href={`/content/${item.id}`}>Edit</Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          onClick={() => {
-                            // TODO: Implement duplicate content functionality
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDuplicate(item.id);
                           }}
                         >
                           Duplicate
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          onClick={() => {
-                            // TODO: Implement archive content functionality
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleArchive(item.id);
                           }}
                         >
                           Archive
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           className="text-red-600"
-                          onClick={() => {
-                            // TODO: Implement delete content functionality
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(item.id);
                           }}
                         >
                           Delete

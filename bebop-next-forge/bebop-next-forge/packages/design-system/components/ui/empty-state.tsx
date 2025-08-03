@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 import { cn } from '@repo/design-system/lib/utils';
 import { Button } from '@repo/design-system/components/ui/button';
 import { Card, CardContent } from '@repo/design-system/components/ui/card';
@@ -101,10 +102,10 @@ function EmptyState({
             className="gap-2"
           >
             {action.href ? (
-              <a href={action.href}>
+              <Link href={action.href}>
                 {action.icon && <action.icon className="h-4 w-4" />}
                 {action.label}
-              </a>
+              </Link>
             ) : (
               <>
                 {action.icon && <action.icon className="h-4 w-4" />}

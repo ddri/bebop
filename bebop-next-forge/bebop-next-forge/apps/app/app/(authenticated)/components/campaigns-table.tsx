@@ -20,6 +20,7 @@ import {
 } from '@repo/design-system/components/ui/table';
 import { Briefcase, MoreHorizontal, Plus } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { CreateCampaignDialog } from './create-campaign-dialog';
 
 interface CampaignsTableProps {
@@ -42,6 +43,28 @@ export const CampaignsTable = ({
   campaigns,
   statusFilter,
 }: CampaignsTableProps) => {
+  const router = useRouter();
+
+  const handleRowClick = (campaignId: string) => {
+    router.push(`/campaigns/${campaignId}`);
+  };
+
+  const handleDuplicate = async (campaignId: string) => {
+    // TODO: Implement duplicate functionality
+    console.log('Duplicate campaign:', campaignId);
+  };
+
+  const handleArchive = async (campaignId: string) => {
+    // TODO: Implement archive functionality  
+    console.log('Archive campaign:', campaignId);
+  };
+
+  const handleDelete = async (campaignId: string) => {
+    if (confirm('Are you sure you want to delete this campaign?')) {
+      // TODO: Implement delete functionality
+      console.log('Delete campaign:', campaignId);
+    }
+  };
   const getEmptyStateMessage = () => {
     switch (statusFilter) {
       case 'DRAFT':
@@ -121,13 +144,7 @@ export const CampaignsTable = ({
                     : {
                         label: 'Create Your First Campaign',
                         icon: Plus,
-                        onClick: () => {
-                          // This will be handled by the CreateCampaignDialog trigger
-                          const createButton = document.querySelector(
-                            '[data-create-campaign-trigger]'
-                          ) as HTMLButtonElement;
-                          createButton?.click();
-                        },
+                        href: '/campaigns/new',
                       }
                 }
               />
@@ -136,9 +153,7 @@ export const CampaignsTable = ({
                 <TableRow
                   key={campaign.id}
                   className="cursor-pointer hover:bg-muted/50"
-                  onClick={() =>
-                    (window.location.href = `/campaigns/${campaign.id}`)
-                  }
+                  onClick={() => handleRowClick(campaign.id)}
                 >
                   <TableCell className="font-medium">
                     <div>
@@ -186,23 +201,26 @@ export const CampaignsTable = ({
                           <Link href={`/campaigns/${campaign.id}`}>Edit</Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          onClick={() => {
-                            // TODO: Implement duplicate campaign functionality
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDuplicate(campaign.id);
                           }}
                         >
                           Duplicate
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          onClick={() => {
-                            // TODO: Implement archive campaign functionality
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleArchive(campaign.id);
                           }}
                         >
                           Archive
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           className="text-red-600"
-                          onClick={() => {
-                            // TODO: Implement delete campaign functionality
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(campaign.id);
                           }}
                         >
                           Delete
