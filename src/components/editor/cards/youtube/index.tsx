@@ -22,7 +22,7 @@ export const YouTubeCard: CardDefinition = {
   icon: Video,
   patterns: youtubePatterns,
 
-  async extractMetadata(url: string): Promise<YouTubeMetadata> {
+  async extractMetadata(url: string): Promise<Record<string, unknown>> {
     // Extract video ID from URL
     const videoId = youtubePatterns
       .map(pattern => pattern.exec(url)?.[1])

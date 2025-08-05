@@ -15,7 +15,9 @@ const embedConfigs: EmbedConfig[] = [
     getEmbedData: (url: string) => ({
       videoId: url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/)?.[1] || ''
     }),
-    component: ({ videoId }: { videoId: string }) => (
+    component: (props: Record<string, unknown>) => {
+      const { videoId } = props as { videoId: string };
+      return (
       <div className="relative w-full pt-[56.25%] bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden my-4">
         <iframe
           className="absolute top-0 left-0 w-full h-full"
@@ -24,7 +26,8 @@ const embedConfigs: EmbedConfig[] = [
           allowFullScreen
         />
       </div>
-    )
+      );
+    }
   },
   {
     type: 'twitter',
@@ -32,13 +35,16 @@ const embedConfigs: EmbedConfig[] = [
     getEmbedData: (url: string) => ({
       tweetId: url.match(/twitter\.com\/\w+\/status\/(\d+)/)?.[1] || ''
     }),
-    component: ({ tweetId }: { tweetId: string }) => (
+    component: (props: Record<string, unknown>) => {
+      const { tweetId } = props as { tweetId: string };
+      return (
       <div className="border dark:border-slate-700 rounded-lg p-4 bg-white dark:bg-slate-800 my-4">
         <blockquote className="twitter-tweet" data-conversation="none">
           <a href={`https://twitter.com/i/status/${tweetId}`}>Loading tweet...</a>
         </blockquote>
       </div>
-    )
+      );
+    }
   },
   {
     type: 'spotify',
@@ -50,7 +56,9 @@ const embedConfigs: EmbedConfig[] = [
         id: match?.[2] || ''
       };
     },
-    component: ({ type, id }: { type: string; id: string }) => (
+    component: (props: Record<string, unknown>) => {
+      const { type, id } = props as { type: string; id: string };
+      return (
       <div className="relative w-full pt-[152px] bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden my-4">
         <iframe
           className="absolute top-0 left-0 w-full h-full"
@@ -59,7 +67,8 @@ const embedConfigs: EmbedConfig[] = [
           loading="lazy"
         />
       </div>
-    )
+      );
+    }
   }
 ];
 

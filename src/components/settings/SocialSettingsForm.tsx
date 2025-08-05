@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { CheckCircle, XCircle, Loader2, AlertCircle, ExternalLink } from 'lucide-react';
 import { useSocialSettings } from '@/hooks/useSocialSettings';
 import { PLATFORMS } from '@/lib/social/platforms';
@@ -34,7 +34,7 @@ export function SocialSettingsForm() {
     Object.keys(PLATFORMS).forEach((platformId) => {
       const platformCredentials = credentials[platformId as PlatformId] || {};
       initialStates[platformId as PlatformId] = {
-        credentials: platformCredentials,
+        credentials: platformCredentials as Record<string, string>,
         validationErrors: {},
         connectionStatus: null,
         isTesting: false,
@@ -283,7 +283,7 @@ export function SocialSettingsForm() {
                   )}
                   <AlertDescription className={platformState.connectionStatus.success ? 'text-green-200' : 'text-red-200'}>
                     {platformState.connectionStatus.message}
-                    {platformState.connectionStatus.details && (
+                    {platformState.connectionStatus.details != null && (
                       <div className="mt-1 text-xs opacity-80">
                         {JSON.stringify(platformState.connectionStatus.details)}
                       </div>

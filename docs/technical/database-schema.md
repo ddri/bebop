@@ -147,7 +147,7 @@ model Settings {
 
 ### Campaign
 
-The `Campaign` model represents content campaigns for organizing publishing.
+The `Campaign` model represents content campaigns for organizing publishing and orchestration.
 
 ```prisma
 model Campaign {
@@ -160,6 +160,8 @@ model Campaign {
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
   publishingPlans PublishingPlan[]
+  contentStaging  ContentStaging[]
+  manualTasks     ManualTask[]
 
   @@map("campaigns")
 }
@@ -177,6 +179,8 @@ model Campaign {
 
 **Relationships:**
 - One-to-many relationship with PublishingPlan (direct relation)
+- One-to-many relationship with ContentStaging (direct relation)
+- One-to-many relationship with ManualTask (direct relation)
 
 ### PublishingPlan
 
@@ -220,11 +224,127 @@ model PublishingPlan {
 **Relationships:**
 - Many-to-one relationship with Campaign (direct relation)
 
+### ContentStaging
+
+The `ContentStaging` model manages the content workflow within campaigns, tracking content through different stages before publishing.
+
+```prisma
+model ContentStaging {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  campaignId  String    @db.ObjectId
+  topicId     String    @db.ObjectId
+  
+  // Simple 3-state workflow: DRAFT -> READY -> SCHEDULED
+  status      String    @default("draft") // draft, ready, scheduled
+  
+  // Platforms this content will be published to
+  platforms   String[]  // e.g., ["hashnode", "devto", "medium", "linkedin"]
+  
+  // Scheduling
+  scheduledFor DateTime?
+  
+  // Relationships
+  campaign    Campaign  @relation(fields: [campaignId], references: [id])
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([campaignId, topicId], map: "campaignId_topicId")
+  @@map("contentStaging")
+}
+```
+
+**Fields:**
+- `id`: Unique identifier (MongoDB ObjectId)
+- `campaignId`: ID of the associated campaign
+- `topicId`: ID of the topic being staged
+- `status`: Current workflow status (draft, ready, scheduled)
+- `platforms`: Array of target publishing platforms
+- `scheduledFor`: Date and time scheduled for publishing (optional)
+- `createdAt`: Timestamp when the staging was created
+- `updatedAt`: Timestamp when the staging was last updated
+
+**Relationships:**
+- Many-to-one relationship with Campaign (direct relation)
+- References Topic by ID (no direct relation for flexibility)
+
+**Business Rules:**
+- Each campaign-topic combination can only have one staging record
+- Status follows the workflow: draft → ready → scheduled
+- Platforms array determines where content will be published
+
+### ManualTask
+
+The `ManualTask` model tracks manual publishing tasks and other manual work items within campaigns.
+
+```prisma
+model ManualTask {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  campaignId  String    @db.ObjectId
+  contentStagingId String? @db.ObjectId
+  
+  // Task details
+  title       String
+  description String?
+  platform    String?   // e.g., "medium", "linkedin", "twitter"
+  
+  // Task management
+  status      String    @default("todo") // todo, in_progress, completed
+  dueDate     DateTime?
+  completedAt DateTime?
+  
+  // Instructions and notes
+  instructions String?
+  notes       String?
+  
+  // Relationships
+  campaign    Campaign  @relation(fields: [campaignId], references: [id])
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("manualTasks")
+}
+```
+
+**Fields:**
+- `id`: Unique identifier (MongoDB ObjectId)
+- `campaignId`: ID of the associated campaign
+- `contentStagingId`: ID of associated content staging (optional)
+- `title`: Title of the manual task
+- `description`: Detailed description of the task (optional)
+- `platform`: Target platform for the task (optional)
+- `status`: Current status (todo, in_progress, completed)
+- `dueDate`: Due date for the task (optional)
+- `completedAt`: Timestamp when task was completed (optional)
+- `instructions`: Detailed instructions for completing the task (optional)
+- `notes`: Additional notes or comments (optional)
+- `createdAt`: Timestamp when the task was created
+- `updatedAt`: Timestamp when the task was last updated
+
+**Relationships:**
+- Many-to-one relationship with Campaign (direct relation)
+- References ContentStaging by ID (optional, no direct relation)
+
+**Business Rules:**
+- Tasks can be independent or linked to specific content staging
+- Status progression: todo → in_progress → completed
+- Completion timestamp is automatically set when status changes to completed
+
 ## Database Indexes and Constraints
 
 ### Unique Constraints
 
 - `PublishingPlan`: Unique constraint on [campaignId, topicId, platform] to prevent duplicate publishing plans
+- `ContentStaging`: Unique constraint on [campaignId, topicId] to prevent duplicate staging records
+
+### Validation Rules
+
+The application enforces additional validation through Zod schemas:
+
+- **ContentStaging**: ObjectId validation, enum status values, platform validation, required fields
+- **ManualTask**: ObjectId validation, enum status values, length limits, platform validation
+- **Referential Integrity**: Campaign existence, topic existence, content staging relationships
 
 ## Data Relationships
 
@@ -233,6 +353,10 @@ Bebop uses a mix of direct relations (for MongoDB) and reference arrays:
 1. **Topics to Collections**: One-to-many relationship using reference arrays (`collectionIds` in Topic)
 2. **Collections to Topics**: Many-to-many relationship using reference arrays (`topicIds` in Collections)
 3. **Campaigns to PublishingPlans**: One-to-many relationship using direct relations
+4. **Campaigns to ContentStaging**: One-to-many relationship using direct relations
+5. **Campaigns to ManualTasks**: One-to-many relationship using direct relations
+6. **ContentStaging to Topics**: Many-to-one relationship using reference by ID
+7. **ManualTasks to ContentStaging**: Many-to-one relationship using reference by ID (optional)
 
 ## Schema Evolution
 

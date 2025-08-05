@@ -15,7 +15,9 @@ export async function GET() {
         createdAt: 'desc'
       },
       include: {
-        publishingPlans: true
+        publishingPlans: true,
+        contentStaging: true,
+        manualTasks: true
       }
     });
 
@@ -57,7 +59,9 @@ export async function POST(request: Request) {
         status: status || 'draft'
       },
       include: {
-        publishingPlans: true
+        publishingPlans: true,
+        contentStaging: true,
+        manualTasks: true
       }
     });
 

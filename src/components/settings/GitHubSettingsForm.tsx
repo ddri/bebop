@@ -38,6 +38,48 @@ export function GitHubSettingsForm() {
   const [autoBackup, setAutoBackup] = useState(false);
   const [loadingRepos, setLoadingRepos] = useState(false);
 
+  const checkConnection = useCallback(async (token: string) => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/github', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setConnected(true);
+        setUsername(data.username);
+        setConnectionStatus({
+          success: true,
+          message: `Connected as ${data.username}`,
+          details: data.email || 'No email available'
+        });
+        await fetchRepositories(token);
+      } else {
+        const error = await response.json();
+        setConnected(false);
+        setUsername(null);
+        setConnectionStatus({
+          success: false,
+          message: 'GitHub connection failed',
+          details: error.message || 'Invalid token or insufficient permissions'
+        });
+      }
+    } catch (error) {
+      setConnected(false);
+      setUsername(null);
+      setConnectionStatus({
+        success: false,
+        message: 'Failed to check GitHub connection',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   // Load saved settings on mount
   useEffect(() => {
     const savedToken = localStorage.getItem('githubToken');
@@ -72,44 +114,6 @@ export function GitHubSettingsForm() {
       validateForm(newFormData);
     }, 300);
   };
-
-  const checkConnection = useCallback(async (token: string) => {
-    try {
-      setLoading(true);
-      const response = await fetch('/api/github', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setConnected(true);
-        setUsername(data.username);
-        setConnectionStatus({
-          success: true,
-          message: `Connected as ${data.username}`,
-          details: data
-        });
-        await fetchRepositories(token);
-      } else {
-        setConnected(false);
-        setConnectionStatus({
-          success: false,
-          message: 'Invalid GitHub token'
-        });
-      }
-    } catch (error) {
-      setConnected(false);
-      setConnectionStatus({
-        success: false,
-        message: 'Failed to check GitHub connection',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
   const fetchRepositories = async (token: string) => {
     try {

@@ -22,7 +22,7 @@ export const SpotifyCard: CardDefinition = {
   icon: Music,
   patterns: spotifyPatterns,
 
-  async extractMetadata(url: string): Promise<SpotifyMetadata> {
+  async extractMetadata(url: string): Promise<Record<string, unknown>> {
     for (const pattern of spotifyPatterns) {
       const match = url.match(pattern);
       if (match) {

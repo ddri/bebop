@@ -13,7 +13,7 @@ interface SpotifyEditorProps {
 
 export function SpotifyEditor({ data, onEdit, onRemove }: SpotifyEditorProps) {
   const [showPreview, setShowPreview] = useState(true);
-  const { type, id } = data.metadata;
+  const { type, id } = data.metadata as { type: string; id: string };
   
   return (
     <div className="relative border rounded-md p-4 hover:border-green-500 group">

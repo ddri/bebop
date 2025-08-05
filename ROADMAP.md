@@ -38,45 +38,48 @@ The roadmap is roughly organised by the release cycle, which is based on my pers
     - ✅ MongoDB text indexing for efficient search
     - ✅ Smart result highlighting and relevance scoring
 
-### Planning for version 0.4.0 - Code Quality Polish (**Updated based on analysis**)
+### Planning for version 0.4.0 - Campaign Orchestration Platform (**NEW STRATEGIC DIRECTION**)
 
-**Minor cleanup tasks (quick wins):**
+**Vision**: Transform Bebop from a publishing tool into a comprehensive campaign orchestration platform that provides unified visibility and control over all campaign content, both automated and manual.
+
+Based on research of leading platforms (HubSpot, CoSchedule, Marketo, Buffer, Hootsuite), this version focuses on campaign-centric workflows that excel at visual organization + workflow automation + human oversight.
+
+**Core Features - Campaign Orchestration Hub:**
+
+- **Campaign Management System**
+    - [ ] **Unified Campaign Dashboard** - Central hub grouping all content by campaign (inspired by HubSpot's campaign tagging)
+    - [ ] **Content Staging Area** - Pre-flight zone where all campaign content lives before scheduling
+    - [ ] **Campaign Timeline View** - Gantt-style visualization of entire campaign lifecycle
+    - [ ] **Template-Based Campaign Creation** - Reusable campaign structures for scaling
+
+- **Calendar-First Content Scheduling**
+    - [ ] **Multi-View Calendar** - Month/week/day views with drag-and-drop scheduling (CoSchedule pattern)
+    - [ ] **Content State Visualization** - Clear status: Draft → Staged → Scheduled → Published → Manual Action Required
+    - [ ] **Cross-Platform Campaign Calendar** - Unified view of all automated and manual publishing tasks
+    - [ ] **Color-Coded Visual Organization** - Campaign-based visual differentiation
+
+- **Manual Task Management & Mixed Workflows**
+    - [ ] **Manual Publishing Queue** - "Ready to post manually" section with platform-specific formatting
+    - [ ] **Task Automation Templates** - Reusable workflows for different content types (API docs, tutorials, release notes)
+    - [ ] **Manual Action Tracking** - Checkboxes and completion status for platforms like Medium, LinkedIn
+    - [ ] **Platform-Specific Guidelines** - Auto-generated formatting notes and posting instructions
+
+- **Technical Content Specialization**
+    - [ ] **Developer-Focused Workflows** - Integration points for code review and technical accuracy checks
+    - [ ] **Cross-Platform Content Adaptation** - Auto-generate Medium, LinkedIn versions from master content
+    - [ ] **Cross-Reference Management** - Track related docs, API changes, product updates within campaigns
+
+**Supporting Infrastructure:**
+
+- **Workflow & Collaboration**
+    - [ ] **Approval Stages** - Technical content accuracy validation workflows
+    - [ ] **Real-Time Collaboration** - Comments and task assignments within campaigns
+    - [ ] **Role-Based Dashboards** - Customized views for content creators, managers, and reviewers
+
+**Quick Wins (maintain momentum):**
 - [ ] **TypeScript cleanup**: Fix remaining 3 `any` types in search route, db-utils, and WriteMode
 - [ ] **useEffect dependencies**: Review and fix missing dependencies in Collections.tsx and other components
-- [ ] **Unused imports**: Clean up remaining unused import statements (automated linting)
-- [ ] **Loading states**: Audit and ensure all async operations have proper loading feedback
-
-**New features and UX improvements:**
-
-- Content version control
-    - [ ] Content versioning and history
-
-- Content scheduling 
-    - [ ] Publishing Workflow for Scheduling
-
-- Enhanced media management
-    - [ ] Explore enhanced media management
-
-- Analytics and metrics
-    - [ ] Publishing analytics and metrics
-
-- Templates 
-    - [ ] Content templates and snippets
-
-- Writing improvements
-    - [ ] Advanced markdown features
-    - [ ] Collaborative editing features
-
-- **Improved UX and workflow** (high impact)
-    - [ ] **Topic Card UX** - Fix frustrating interaction patterns
-    - [ ] **Workflow Indicators** - Visual connections between Write → Topics → Collections
-    - [ ] **Bulk Operations** - Multi-select for topics and collections
-    - [ ] **Settings Validation** - Form validation and API key verification
-
-- **Performance optimization**
-    - [ ] **Bundle analysis** - Identify and reduce bundle size
-    - [ ] **Component optimization** - Lazy loading and code splitting
-    - [ ] **Database query optimization** - Review and optimize slow queries
+- [ ] **Settings Validation** - Form validation and API key verification
 
 
 ### Planning for version 0.5.0

@@ -14,7 +14,9 @@ export async function GET(request: Request, props: { params: Promise<{ id: strin
     const campaign = await prisma.campaign.findUnique({
       where: { id: params.id },
       include: {
-        publishingPlans: true
+        publishingPlans: true,
+        contentStaging: true,
+        manualTasks: true
       }
     });
 
@@ -64,7 +66,9 @@ export async function PUT(request: Request, props: { params: Promise<{ id: strin
         ...(status && { status }),
       },
       include: {
-        publishingPlans: true
+        publishingPlans: true,
+        contentStaging: true,
+        manualTasks: true
       }
     });
 
@@ -87,8 +91,16 @@ export async function DELETE(request: Request, props: { params: Promise<{ id: st
 
   const params = await props.params;
   try {
-    // First delete all associated publishing plans
+    // First delete all associated records
     await prisma.publishingPlan.deleteMany({
+      where: { campaignId: params.id }
+    });
+    
+    await prisma.contentStaging.deleteMany({
+      where: { campaignId: params.id }
+    });
+    
+    await prisma.manualTask.deleteMany({
       where: { campaignId: params.id }
     });
 
