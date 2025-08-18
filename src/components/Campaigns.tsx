@@ -12,6 +12,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, Plus, Clock } from 'lucide-react';
 import { useCampaigns } from '@/hooks/useCampaigns';
 import { CreateCampaignInput } from '@/types/campaigns';
+import BufferStyleComposer from './BufferStyleComposer';
 
 export default function Campaigns() {
   const router = useRouter();
@@ -75,6 +76,11 @@ export default function Campaigns() {
           <Plus className="w-4 h-4 mr-2" />
           New Campaign
         </Button>
+      </div>
+
+      {/* Buffer-Style Composer */}
+      <div className="mb-8">
+        <BufferStyleComposer />
       </div>
 
       {/* Campaigns Grid */}
