@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 
 export interface SearchResult {
   id: string;
-  type: 'topic' | 'collection';
+  type: 'topic';
   name: string;
   description: string;
   content?: string;
@@ -27,7 +27,7 @@ interface SearchBarProps {
 export const SearchBar: React.FC<SearchBarProps> = ({
   className,
   onResultSelect,
-  placeholder = 'Search topics and collections... (⌘K)',
+  placeholder = 'Search topics... (⌘K)',
   showQuickResults = true,
   maxQuickResults = 5
 }) => {

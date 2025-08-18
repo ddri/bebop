@@ -1,15 +1,11 @@
 'use client';
 
-import { useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { useCollections } from '@/hooks/useCollections';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Upload, Eye, Globe, ExternalLink } from 'lucide-react';
+import { Upload } from 'lucide-react';
 import Layout from '@/components/Layout';
 import { TemplateManager } from '@/components/templates/TemplateManager';
-import { LoadingButton, LoadingOverlay } from '@/components/ui/loading';
 import { HashnodeSettingsForm } from '@/components/settings/HashnodeSettingsForm';
 import { DevToSettingsForm } from '@/components/settings/DevToSettingsForm';
 import { SocialSettingsForm } from '@/components/settings/SocialSettingsForm';
@@ -17,8 +13,6 @@ import { GitHubSettingsForm } from '@/components/settings/GitHubSettingsForm';
 
 export default function Settings() {
   const pathname = usePathname();
-  const { collections, unpublishCollection } = useCollections();
-  const [isUnpublishing, setIsUnpublishing] = useState<string | null>(null);
 
   return (
     <Layout pathname={pathname}>
@@ -29,56 +23,23 @@ export default function Settings() {
           {/* Template Manager */}
           <TemplateManager />
 
-          {/* GitHub Integration */}
+          {/* GitHub Settings */}
           <GitHubSettingsForm />
 
-          {/* Import Content Section */}
+          {/* File Import */}
           <Card className="bg-[#1c1c1e] border-0">
             <CardHeader>
-              <CardTitle className="text-white text-2xl">Import Content</CardTitle>
+              <CardTitle className="text-white">Import Content</CardTitle>
               <CardDescription className="text-slate-300">
-                Import existing markdown files into Bebop
+                Import existing Markdown files into your Topics library
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2 text-white">
-                    Import Markdown Files
-                  </label>
-                  <input
-                    type="file"
-                    accept=".md"
-                    multiple
-                    className="hidden"
-                    id="markdown-import"
-                    onChange={async (e) => {
-                      if (!e.target.files?.length) return;
-
-                      const existingTopics = JSON.parse(localStorage.getItem('markdown-docs') || '[]');
-                      const newTopics = [];
-
-                      for (const file of Array.from(e.target.files)) {
-                        const content = await file.text();
-                        const name = file.name.replace('.md', '');
-                        
-                        newTopics.push({
-                          id: Date.now() + Math.random(),
-                          name: name,
-                          content: content
-                        });
-                      }
-
-                      const updatedTopics = [...existingTopics, ...newTopics];
-                      localStorage.setItem('markdown-docs', JSON.stringify(updatedTopics));
-
-                      e.target.value = '';
-                      alert(`Successfully imported ${newTopics.length} files`);
-                    }}
-                  />
-                  <div className="p-4 rounded-lg bg-[#2f2f2d] border border-slate-700">
+                <div className="border-2 border-dashed border-slate-600 rounded-lg p-6">
+                  <div className="text-center">
                     <Button
-                      onClick={() => document.getElementById('markdown-import')?.click()}
+                      variant="outline"
                       className="w-full flex items-center justify-center bg-transparent border-2 border-dashed border-slate-600 p-8 hover:border-[#E669E8] hover:text-[#E669E8] transition-colors text-white"
                     >
                       <Upload className="h-6 w-6 mr-2" />
@@ -102,103 +63,17 @@ export default function Settings() {
           {/* Social Settings */}
           <SocialSettingsForm />
 
-          {/* Published Collections Section */}
+          {/* Publishing Status (Coming Soon) */}
           <Card className="bg-[#1c1c1e] border-0">
             <CardHeader>
-              <CardTitle className="text-white">Published Collections</CardTitle>
+              <CardTitle className="text-white">Publishing Status</CardTitle>
               <CardDescription className="text-slate-300">
-                Manage your published content across platforms
+                Campaign-based publishing status will be available soon
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {collections?.filter(c => c.publishedUrl || c.hashnodeUrl || c.devToUrl).map(collection => (
-                  <div 
-                    key={collection.id}
-                    className="flex items-center justify-between p-4 border rounded-lg border-slate-700 bg-[#2f2f2d]"
-                  >
-                    <div>
-                      <h3 className="font-medium text-white">{collection.name}</h3>
-                      <div className="text-sm space-y-1">
-                        {collection.publishedUrl && (
-                          <p className="text-slate-300">
-                            Published URL: <a 
-                              href={collection.publishedUrl} 
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-[#E669E8] hover:text-[#d15dd3] inline-flex items-center gap-1"
-                            >
-                              View <ExternalLink className="h-3 w-3" />
-                            </a>
-                          </p>
-                        )}
-                        {collection.hashnodeUrl && (
-                          <p className="text-slate-300">
-                            Hashnode: <a 
-                              href={collection.hashnodeUrl} 
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-[#E669E8] hover:text-[#d15dd3] inline-flex items-center gap-1"
-                            >
-                              View <ExternalLink className="h-3 w-3" />
-                            </a>
-                          </p>
-                        )}
-                        {collection.devToUrl && (
-                          <p className="text-slate-300">
-                            Dev.to: <a 
-                              href={collection.devToUrl} 
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-[#E669E8] hover:text-[#d15dd3] inline-flex items-center gap-1"
-                            >
-                              View <ExternalLink className="h-3 w-3" />
-                            </a>
-                          </p>
-                        )}
-                        <p className="text-slate-300">
-                          Last updated: {new Date(collection.lastEdited).toLocaleDateString()}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => window.open(collection.publishedUrl, '_blank')}
-                        className="text-white border-slate-600 hover:bg-[#E669E8] hover:text-white"
-                      >
-                        <Eye className="h-4 w-4 mr-2" />
-                        View
-                      </Button>
-                      <LoadingButton
-                        variant="outline"
-                        size="sm"
-                        isLoading={isUnpublishing === collection.id}
-                        loadingText="Unpublishing..."
-                        onClick={async () => {
-                          setIsUnpublishing(collection.id);
-                          try {
-                            if (await unpublishCollection(collection.id)) {
-                              alert('Collection unpublished successfully');
-                            }
-                          } finally {
-                            setIsUnpublishing(null);
-                          }
-                        }}
-                        className="text-white border-slate-600 hover:bg-red-500 hover:text-white"
-                      >
-                        <Globe className="h-4 w-4 mr-2" />
-                        Unpublish
-                      </LoadingButton>
-                    </div>
-                  </div>
-                ))}
-                {collections && !collections.some(c => c.publishedUrl) && (
-                  <div className="text-center text-slate-300 py-8">
-                    No published collections yet
-                  </div>
-                )}
+              <div className="text-center text-slate-300 py-8">
+                Publishing status tracking coming soon with campaign integration
               </div>
             </CardContent>
           </Card>

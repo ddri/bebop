@@ -18,7 +18,7 @@ export const bebopDocsTemplate: Template = {
   collections: [
     {
       name: "Getting Started with Bebop",
-      description: "Everything you need to know to start using Bebop effectively",
+      description: "Everything you need to know to start using Bebop's campaign-centric workflow",
       topics: [
         {
           name: "Welcome to Bebop",

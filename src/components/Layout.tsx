@@ -41,12 +41,6 @@ export default function Layout({ children, pathname }: LayoutProps) {
                 Topics
               </Link>
               <Link 
-                href="/collections" 
-                className={`${pathname === '/collections' ? 'text-[#E669E8] font-semibold' : 'hover:text-[#E669E8]'} transition-colors`}
-              >
-                Collections
-              </Link>
-              <Link 
                 href="/campaigns" 
                 className={`${pathname === '/campaigns' ? 'text-[#E669E8] font-semibold' : 'hover:text-[#E669E8]'} transition-colors`}
               >
