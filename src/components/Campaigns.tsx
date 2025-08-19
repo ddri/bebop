@@ -12,6 +12,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, Plus, Clock } from 'lucide-react';
 import { useCampaigns } from '@/hooks/useCampaigns';
 import { CreateCampaignInput } from '@/types/campaigns';
+import HybridPublisher from './HybridPublisher';
 
 export default function Campaigns() {
   const router = useRouter();
@@ -75,6 +76,11 @@ export default function Campaigns() {
           <Plus className="w-4 h-4 mr-2" />
           New Campaign
         </Button>
+      </div>
+
+      {/* Hybrid Publisher */}
+      <div className="mb-8">
+        <HybridPublisher />
       </div>
 
       {/* Campaigns Grid */}

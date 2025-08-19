@@ -2,11 +2,11 @@
 import { use } from "react";
 
 import { usePathname } from 'next/navigation';
-import CampaignPlanner from '@/components/CampaignPlanner';
+import SimplifiedCampaignDetail from '@/components/SimplifiedCampaignDetail';
 
-export default function CampaignPlannerPage(props: { params: Promise<{ id: string }> }) {
+export default function CampaignDetailPage(props: { params: Promise<{ id: string }> }) {
   const params = use(props.params);
   const pathname = usePathname();
 
-  return <CampaignPlanner campaignId={params.id} pathname={pathname} />;
+  return <SimplifiedCampaignDetail campaignId={params.id} pathname={pathname} />;
 }
