@@ -28,34 +28,15 @@ interface SimplifiedCampaignDetailProps {
   pathname: string;
 }
 
-// Mock publishing queue data - replace with real data
-const mockQueue = [
-  {
-    id: '1',
-    topicName: 'Getting Started with React Hooks',
-    platform: 'hashnode',
-    status: 'scheduled',
-    scheduledFor: new Date(Date.now() + 24 * 60 * 60 * 1000),
-    publishedUrl: null
-  },
-  {
-    id: '2', 
-    topicName: 'TypeScript Best Practices',
-    platform: 'devto',
-    status: 'published',
-    scheduledFor: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-    publishedUrl: 'https://dev.to/example/typescript-best-practices'
-  },
-  {
-    id: '3',
-    topicName: 'Quick tip: Array methods',
-    platform: 'bluesky',
-    status: 'failed',
-    scheduledFor: new Date(Date.now() - 1 * 60 * 60 * 1000),
-    publishedUrl: null,
-    error: 'Authentication failed'
-  }
-];
+interface QueueItem {
+  id: string;
+  topicName: string;
+  platform: string;
+  status: 'scheduled' | 'published' | 'failed' | 'pending';
+  scheduledFor: Date;
+  publishedUrl?: string | null;
+  error?: string;
+}
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -81,7 +62,35 @@ export default function SimplifiedCampaignDetail({ campaignId, pathname }: Simpl
   const router = useRouter();
   const { campaigns } = useCampaigns();
   const { topics } = useTopics();
-  const [refreshKey, setRefreshKey] = useState(0);
+  
+  // Initialize with some mock data - replace with real campaign data
+  const [queueItems, setQueueItems] = useState<QueueItem[]>([
+    {
+      id: '1',
+      topicName: 'Getting Started with React Hooks',
+      platform: 'hashnode',
+      status: 'scheduled',
+      scheduledFor: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      publishedUrl: null
+    },
+    {
+      id: '2', 
+      topicName: 'TypeScript Best Practices',
+      platform: 'devto',
+      status: 'published',
+      scheduledFor: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+      publishedUrl: 'https://dev.to/example/typescript-best-practices'
+    },
+    {
+      id: '3',
+      topicName: 'Quick tip: Array methods',
+      platform: 'bluesky',
+      status: 'failed',
+      scheduledFor: new Date(Date.now() - 1 * 60 * 60 * 1000),
+      publishedUrl: null,
+      error: 'Authentication failed'
+    }
+  ]);
 
   const campaign = campaigns?.find(c => c.id === campaignId);
 
@@ -95,9 +104,20 @@ export default function SimplifiedCampaignDetail({ campaignId, pathname }: Simpl
     );
   }
 
-  const handleContentPublished = () => {
-    // Refresh the queue when new content is published
-    setRefreshKey(prev => prev + 1);
+  const handleContentPublished = (publishData?: { topicName: string; platforms: string[]; scheduleMode: string }) => {
+    if (publishData) {
+      // Add new items to the queue for each platform
+      const newItems: QueueItem[] = publishData.platforms.map(platform => ({
+        id: `${Date.now()}-${platform}`,
+        topicName: publishData.topicName,
+        platform,
+        status: publishData.scheduleMode === 'now' ? 'published' : 'scheduled',
+        scheduledFor: publishData.scheduleMode === 'now' ? new Date() : new Date(Date.now() + 60 * 60 * 1000), // 1 hour from now for scheduled
+        publishedUrl: publishData.scheduleMode === 'now' ? `https://${platform}.example.com/post` : null
+      }));
+      
+      setQueueItems(prev => [...newItems, ...prev]);
+    }
   };
 
   const handleRetry = async (itemId: string) => {
@@ -106,8 +126,7 @@ export default function SimplifiedCampaignDetail({ campaignId, pathname }: Simpl
   };
 
   const handleRemove = async (itemId: string) => {
-    // Mock remove logic  
-    console.log('Removing from queue:', itemId);
+    setQueueItems(prev => prev.filter(item => item.id !== itemId));
   };
 
   return (
@@ -161,12 +180,12 @@ export default function SimplifiedCampaignDetail({ campaignId, pathname }: Simpl
               <CardContent className="space-y-3">
                 <div className="grid grid-cols-2 gap-4 text-center">
                   <div>
-                    <div className="text-2xl font-bold text-white">{mockQueue.length}</div>
+                    <div className="text-2xl font-bold text-white">{queueItems.length}</div>
                     <div className="text-xs text-slate-400">Total Posts</div>
                   </div>
                   <div>
                     <div className="text-2xl font-bold text-green-400">
-                      {mockQueue.filter(q => q.status === 'published').length}
+                      {queueItems.filter(q => q.status === 'published').length}
                     </div>
                     <div className="text-xs text-slate-400">Published</div>
                   </div>
@@ -195,9 +214,9 @@ export default function SimplifiedCampaignDetail({ campaignId, pathname }: Simpl
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {mockQueue.length > 0 ? (
+            {queueItems.length > 0 ? (
               <div className="space-y-3">
-                {mockQueue.map((item) => (
+                {queueItems.map((item) => (
                   <div 
                     key={item.id} 
                     className="flex items-center justify-between p-4 bg-[#2f2f2d] rounded-lg border border-slate-700"

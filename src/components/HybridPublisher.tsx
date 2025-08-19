@@ -78,7 +78,7 @@ interface HybridPublisherProps {
   // Compact mode for campaign detail pages
   compact?: boolean;
   // Callback when content is published
-  onPublished?: () => void;
+  onPublished?: (publishData?: { topicName: string; platforms: string[]; scheduleMode: string }) => void;
 }
 
 export default function HybridPublisher({ 
@@ -161,8 +161,13 @@ export default function HybridPublisher({
       setCustomDate('');
       setCustomTime('');
       
-      // Notify parent component
-      onPublished?.();
+      // Notify parent component with publish data
+      const topicName = contentMode === 'existing' && selectedTopicData ? selectedTopicData.name : title;
+      onPublished?.({
+        topicName,
+        platforms: selectedPlatforms,
+        scheduleMode
+      });
       
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to publish content');
