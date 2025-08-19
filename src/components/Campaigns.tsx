@@ -9,10 +9,9 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, Plus, Clock } from 'lucide-react';
+import { AlertCircle, Plus, Clock, FileText, Globe, MoreHorizontal, Edit3 } from 'lucide-react';
 import { useCampaigns } from '@/hooks/useCampaigns';
 import { CreateCampaignInput } from '@/types/campaigns';
-import HybridPublisher from './HybridPublisher';
 
 export default function Campaigns() {
   const router = useRouter();
@@ -78,43 +77,118 @@ export default function Campaigns() {
         </Button>
       </div>
 
-      {/* Hybrid Publisher */}
-      <div className="mb-8">
-        <HybridPublisher />
-      </div>
 
       {/* Campaigns Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {campaigns && campaigns.length > 0 ? (
-          campaigns.map((campaign) => (
-            <Card 
-              key={campaign.id}
-              className="group relative bg-[#1c1c1e] hover:scale-[1.02] hover:border hover:border-[#E669E8] transition-all duration-200 border-0 cursor-pointer"
-              onClick={() => router.push(`/campaigns/${campaign.id}`)}
-            >
-              <CardHeader className="pb-2">
-                <h3 className="font-semibold text-lg text-white">{campaign.name}</h3>
-              </CardHeader>
+          campaigns.map((campaign) => {
+            // Mock data for campaign metrics - replace with real data
+            const contentCount = Math.floor(Math.random() * 10) + 1;
+            const publishedCount = Math.floor(Math.random() * contentCount);
+            const scheduledCount = contentCount - publishedCount;
+            
+            return (
+              <Card 
+                key={campaign.id}
+                className="group relative bg-[#1c1c1e] hover:border hover:border-[#E669E8] transition-all duration-200 border-0"
+              >
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-lg text-white truncate">{campaign.name}</h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <div className={`px-2 py-1 rounded-full text-xs font-medium ${{
+                          'draft': 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20',
+                          'active': 'bg-green-500/10 text-green-400 border border-green-500/20',
+                          'completed': 'bg-blue-500/10 text-blue-400 border border-blue-500/20',
+                          'archived': 'bg-slate-500/10 text-slate-400 border border-slate-500/20'
+                        }[campaign.status] || 'bg-slate-500/10 text-slate-400 border border-slate-500/20'}`}>
+                          {campaign.status}
+                        </div>
+                        <span className="text-xs text-slate-400">
+                          {new Date(campaign.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-slate-400 hover:text-white p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // Handle campaign menu
+                      }}
+                    >
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardHeader>
 
-              <CardContent>
-                <div className="space-y-4">
-                  <p className="text-sm text-slate-300 line-clamp-2">
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-slate-300 line-clamp-2 min-h-[2.5rem]">
                     {campaign.description || 'No description provided'}
                   </p>
 
-                  <div className="flex items-center justify-between text-sm text-slate-400">
-                    <div className="flex items-center gap-1.5">
-                      <Clock className="h-4 w-4" />
-                      {new Date(campaign.createdAt).toLocaleDateString()}
+                  {/* Campaign Metrics */}
+                  <div className="grid grid-cols-3 gap-3 py-3 border-t border-slate-700">
+                    <div className="text-center">
+                      <div className="text-lg font-semibold text-white">{contentCount}</div>
+                      <div className="text-xs text-slate-400">Content</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-semibold text-green-400">{publishedCount}</div>
+                      <div className="text-xs text-slate-400">Published</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-semibold text-blue-400">{scheduledCount}</div>
+                      <div className="text-xs text-slate-400">Scheduled</div>
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => router.push(`/campaigns/${campaign.id}`)}
+                      className="flex-1 bg-[#E669E8] hover:bg-[#d15dd3] text-white text-sm h-9"
+                    >
+                      <Edit3 className="w-4 h-4 mr-1" />
+                      Manage
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // Quick view or preview functionality
+                      }}
+                      className="border-slate-700 text-slate-400 hover:text-white hover:border-slate-600 text-sm h-9 px-3"
+                    >
+                      <Globe className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })
         ) : (
-          <div className="col-span-full text-center py-8 text-slate-400">
-            No campaigns yet. Click &quot;New Campaign&quot; to create one.
+          <div className="col-span-full text-center py-16 text-slate-400">
+            <div className="max-w-md mx-auto space-y-4">
+              <div className="w-16 h-16 mx-auto bg-[#E669E8]/10 rounded-full flex items-center justify-center">
+                <Plus className="w-8 h-8 text-[#E669E8]" />
+              </div>
+              <div>
+                <h3 className="text-lg font-medium text-white mb-2">Create Your First Campaign</h3>
+                <p className="text-sm text-slate-400 mb-4">
+                  Organize your content around strategic marketing campaigns and publish across multiple platforms.
+                </p>
+                <Button 
+                  onClick={() => setShowNewDialog(true)}
+                  className="bg-[#E669E8] hover:bg-[#d15dd3] text-white"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create Campaign
+                </Button>
+              </div>
+            </div>
           </div>
         )}
       </div>
