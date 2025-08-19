@@ -24,6 +24,7 @@ import {
   Target
 } from 'lucide-react';
 import { useTopics } from '@/hooks/useTopics';
+import ContentSelector from './ContentSelector';
 
 interface Platform {
   id: string;
@@ -202,22 +203,14 @@ export default function HybridPublisher({
         <CardContent className="space-y-4">
           {/* Quick Content + Platform Selection */}
           <div className="flex gap-3">
-            <Select value={selectedTopic} onValueChange={setSelectedTopic}>
-              <SelectTrigger className="bg-[#2f2f2d] border-slate-700 text-white flex-1">
-                <SelectValue placeholder="Select content..." />
-              </SelectTrigger>
-              <SelectContent className="bg-[#2f2f2d] border-slate-700">
-                {topics?.map((topic) => (
-                  <SelectItem 
-                    key={topic.id} 
-                    value={topic.id}
-                    className="text-white hover:bg-[#1c1c1e]"
-                  >
-                    {topic.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex-1">
+              <ContentSelector
+                selectedTopicId={selectedTopic}
+                onSelect={setSelectedTopic}
+                placeholder="Search content..."
+                compact={true}
+              />
+            </div>
             
             <Select 
               value={selectedPlatforms[0] || ''} 
@@ -471,37 +464,12 @@ export default function HybridPublisher({
             </div>
           ) : (
             <div className="space-y-3">
-              <Select value={selectedTopic} onValueChange={setSelectedTopic}>
-                <SelectTrigger className="bg-[#2f2f2d] border-slate-700 text-white">
-                  <SelectValue placeholder="Select content from your topics..." />
-                </SelectTrigger>
-                <SelectContent className="bg-[#2f2f2d] border-slate-700">
-                  {topics?.map((topic) => (
-                    <SelectItem 
-                      key={topic.id} 
-                      value={topic.id}
-                      className="text-white hover:bg-[#1c1c1e]"
-                    >
-                      <div className="flex flex-col">
-                        <span>{topic.name}</span>
-                        <span className="text-xs text-slate-400 truncate max-w-[200px]">
-                          {topic.description || topic.content.slice(0, 50) + '...'}
-                        </span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              
-              {/* Content Preview */}
-              {selectedTopicData && (
-                <div className="bg-[#2f2f2d] p-3 rounded-md border border-slate-700">
-                  <p className="text-xs text-slate-400 mb-2">Preview:</p>
-                  <p className="text-sm text-slate-300 line-clamp-3">
-                    {selectedTopicData.content.slice(0, 200)}...
-                  </p>
-                </div>
-              )}
+              <ContentSelector
+                selectedTopicId={selectedTopic}
+                onSelect={setSelectedTopic}
+                placeholder="Search and select content from your topics..."
+                compact={false}
+              />
             </div>
           )}
         </div>
