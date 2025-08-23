@@ -38,13 +38,22 @@ The roadmap is roughly organised by the release cycle, which is based on my pers
     - ✅ MongoDB text indexing for efficient search
     - ✅ Smart result highlighting and relevance scoring
 
-### Planning for version 0.4.0 - Code Quality Polish (**Updated based on analysis**)
+### ✅ Completed in version 0.4.0 - Code Quality & Publishing Workflow (**Updated based on implementation**)
 
-**Minor cleanup tasks (quick wins):**
-- [ ] **TypeScript cleanup**: Fix remaining 3 `any` types in search route, db-utils, and WriteMode
-- [ ] **useEffect dependencies**: Review and fix missing dependencies in Collections.tsx and other components
-- [ ] **Unused imports**: Clean up remaining unused import statements (automated linting)
-- [ ] **Loading states**: Audit and ensure all async operations have proper loading feedback
+**Code quality improvements:**
+- ✅ **TypeScript cleanup**: Fixed remaining `any` types with proper component interfaces
+- ✅ **Publishing workflow**: Complete scheduling system with three modes (now, queue, custom)
+- ✅ **Performance optimization**: Bundle analysis, lazy loading, and code splitting
+- ✅ **Testing suite**: Comprehensive smoke tests for APIs, components, and workflows
+- ✅ **Background processing**: Automated scheduler with manual trigger capability
+- ✅ **Enhanced UX**: Loading states, skeleton components, and better error handling
+
+**Technical achievements:**
+- ✅ **Scheduling API**: Full CRUD operations for publishing plans with date/time support
+- ✅ **Scheduler Service**: Background processing with configurable intervals
+- ✅ **Component Optimization**: Dynamic imports for heavy components (WriteMode, Media, Settings)
+- ✅ **Bundle Analysis**: Webpack optimization and bundle size monitoring
+- ✅ **Test Coverage**: API, component, and integration smoke tests with Vitest
 
 **New features and UX improvements:**
 

@@ -159,6 +159,91 @@ pnpm lint               # Run linting
 pnpm format             # Format code
 ```
 
+## 🧪 Testing
+
+Bebop includes a comprehensive testing suite with automated smoke tests to ensure the publishing workflow functions correctly.
+
+### Test Types
+
+- **Smoke Tests**: Fast tests covering critical functionality
+- **API Tests**: Publishing plans, scheduler, and trigger endpoints
+- **Component Tests**: HybridPublisher scheduling modes and validation
+- **Integration Tests**: End-to-end workflow validation
+
+### Running Tests
+
+```bash
+# Quick smoke test summary
+pnpm test:quick
+
+# All smoke tests with detailed output
+pnpm test:smoke
+
+# Live API testing (requires dev server)
+pnpm test:workflow
+
+# Interactive test UI
+pnpm test:ui
+
+# Watch mode during development
+pnpm test
+```
+
+### What's Tested
+
+**Publishing Workflow:**
+- ✅ Three scheduling modes: "Publish Now", "Add to Queue", "Custom Schedule"
+- ✅ Date/time validation and timezone handling
+- ✅ Publishing plan creation and status transitions
+- ✅ Background scheduler processing
+
+**API Endpoints:**
+- ✅ `POST /api/publishing-plans` - Create scheduled publications
+- ✅ `POST /api/publishing-plans/process-scheduled` - Process due publications
+- ✅ `POST /api/scheduler/trigger` - Manual scheduler trigger
+
+**Components:**
+- ✅ HybridPublisher form validation and submission
+- ✅ Platform selection and content requirements
+- ✅ Lazy loading states and performance optimizations
+
+### Manual Testing Checklist
+
+1. **Start Development Server**
+   ```bash
+   pnpm dev
+   ```
+
+2. **Test Scheduling Features**
+   - Visit `/campaigns/[id]` (create campaign if needed)
+   - Test "Publish Now" - immediate publishing
+   - Test "Add to Queue" - 1-hour delay scheduling  
+   - Test "Custom Schedule" - user-selected date/time
+   - Use "Process Now" button in campaign planner
+
+3. **Test Performance Optimizations**
+   - Visit `/write`, `/media`, `/settings`
+   - Verify lazy loading with skeleton states
+   - Run `pnpm build:analyze` for bundle analysis
+
+4. **Test API Integration**
+   ```bash
+   # Test scheduler manually
+   curl -X POST http://localhost:3007/api/scheduler/trigger
+   
+   # Check database health
+   curl http://localhost:3007/api/health/database
+   ```
+
+### Test Files
+
+- `src/__tests__/smoke/` - Smoke test suite
+  - `api.smoke.test.ts` - API endpoint tests
+  - `components.smoke.test.tsx` - Component behavior tests  
+  - `scheduler.smoke.test.ts` - Scheduling logic tests
+- `scripts/test-workflow.js` - Manual integration testing
+- `vitest.config.ts` - Test configuration
+
 ## 🚀 Deployment
 
 ### Vercel (Recommended)
