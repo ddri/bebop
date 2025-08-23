@@ -78,7 +78,12 @@ interface HybridPublisherProps {
   // Compact mode for campaign detail pages
   compact?: boolean;
   // Callback when content is published
-  onPublished?: (publishData?: { topicName: string; platforms: string[]; scheduleMode: string }) => void;
+  onPublished?: (publishData?: { 
+    topicName: string; 
+    platforms: string[]; 
+    scheduleMode: string; 
+    scheduledFor?: Date;
+  }) => void;
 }
 
 export default function HybridPublisher({ 
@@ -163,10 +168,23 @@ export default function HybridPublisher({
       
       // Notify parent component with publish data
       const topicName = contentMode === 'existing' && selectedTopicData ? selectedTopicData.name : title;
+      
+      // Calculate the scheduled date based on mode
+      let scheduledFor: Date;
+      if (scheduleMode === 'now') {
+        scheduledFor = new Date();
+      } else if (scheduleMode === 'custom' && customDate && customTime) {
+        scheduledFor = new Date(`${customDate}T${customTime}`);
+      } else {
+        // Default queue behavior - schedule for 1 hour from now
+        scheduledFor = new Date(Date.now() + 60 * 60 * 1000);
+      }
+      
       onPublished?.({
         topicName,
         platforms: selectedPlatforms,
-        scheduleMode
+        scheduleMode,
+        scheduledFor
       });
       
     } catch (err) {

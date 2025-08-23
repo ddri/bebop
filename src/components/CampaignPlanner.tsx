@@ -204,10 +204,26 @@ const CampaignPlanner = ({ campaignId, pathname }: CampaignPlannerProps) => {
           <CardTitle className="text-white">Add New Publication</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="mb-4 p-2 bg-[#2f2f2d] rounded-md border border-yellow-500/20">
-            <div className="flex items-center gap-2 text-yellow-500">
-              <Clock className="h-4 w-4" />
-              <p className="text-sm">Scheduled publishing coming soon! For now, add items to your queue and publish them when ready.</p>
+          <div className="mb-4 p-2 bg-[#2f2f2d] rounded-md border border-blue-500/20">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-blue-400">
+                <Clock className="h-4 w-4" />
+                <p className="text-sm">Scheduled publications are processed automatically.</p>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={async () => {
+                  try {
+                    await fetch('/api/scheduler/trigger', { method: 'POST' });
+                  } catch (err) {
+                    console.error('Failed to trigger scheduler:', err);
+                  }
+                }}
+                className="text-xs"
+              >
+                Process Now
+              </Button>
             </div>
           </div>
 

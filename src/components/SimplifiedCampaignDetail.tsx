@@ -104,7 +104,12 @@ export default function SimplifiedCampaignDetail({ campaignId, pathname }: Simpl
     );
   }
 
-  const handleContentPublished = (publishData?: { topicName: string; platforms: string[]; scheduleMode: string }) => {
+  const handleContentPublished = (publishData?: { 
+    topicName: string; 
+    platforms: string[]; 
+    scheduleMode: string; 
+    scheduledFor?: Date;
+  }) => {
     if (publishData) {
       // Add new items to the queue for each platform
       const newItems: QueueItem[] = publishData.platforms.map(platform => ({
@@ -112,7 +117,7 @@ export default function SimplifiedCampaignDetail({ campaignId, pathname }: Simpl
         topicName: publishData.topicName,
         platform,
         status: publishData.scheduleMode === 'now' ? 'published' : 'scheduled',
-        scheduledFor: publishData.scheduleMode === 'now' ? new Date() : new Date(Date.now() + 60 * 60 * 1000), // 1 hour from now for scheduled
+        scheduledFor: publishData.scheduledFor || new Date(),
         publishedUrl: publishData.scheduleMode === 'now' ? `https://${platform}.example.com/post` : null
       }));
       

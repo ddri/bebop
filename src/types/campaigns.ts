@@ -7,6 +7,7 @@ export interface PublishingPlan {
   topicId: string;
   platform: string;
   status: 'scheduled' | 'published' | 'failed';
+  scheduledFor?: Date;
   publishedAt?: Date;
   publishedUrl?: string;
   createdAt: string;
