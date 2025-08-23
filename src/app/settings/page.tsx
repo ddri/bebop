@@ -1,15 +1,33 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { CardSkeleton } from '@/components/ui/loading';
 import { Upload } from 'lucide-react';
 import Layout from '@/components/Layout';
-import { TemplateManager } from '@/components/templates/TemplateManager';
-import { HashnodeSettingsForm } from '@/components/settings/HashnodeSettingsForm';
-import { DevToSettingsForm } from '@/components/settings/DevToSettingsForm';
-import { SocialSettingsForm } from '@/components/settings/SocialSettingsForm';
-import { GitHubSettingsForm } from '@/components/settings/GitHubSettingsForm';
+
+// Lazy load heavy settings components
+const TemplateManager = dynamic(() => import('@/components/templates/TemplateManager').then(mod => ({ default: mod.TemplateManager })), {
+  loading: () => <CardSkeleton className="h-32" />
+});
+
+const HashnodeSettingsForm = dynamic(() => import('@/components/settings/HashnodeSettingsForm').then(mod => ({ default: mod.HashnodeSettingsForm })), {
+  loading: () => <CardSkeleton className="h-48" />
+});
+
+const DevToSettingsForm = dynamic(() => import('@/components/settings/DevToSettingsForm').then(mod => ({ default: mod.DevToSettingsForm })), {
+  loading: () => <CardSkeleton className="h-48" />
+});
+
+const SocialSettingsForm = dynamic(() => import('@/components/settings/SocialSettingsForm'), {
+  loading: () => <CardSkeleton className="h-64" />
+});
+
+const GitHubSettingsForm = dynamic(() => import('@/components/settings/GitHubSettingsForm').then(mod => ({ default: mod.GitHubSettingsForm })), {
+  loading: () => <CardSkeleton className="h-48" />
+});
 
 export default function Settings() {
   const pathname = usePathname();
