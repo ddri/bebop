@@ -8,6 +8,22 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/__tests__/setup.ts'],
     globals: true,
+    // Fix hanging test runner
+    pool: 'forks',
+    poolOptions: {
+      forks: {
+        singleFork: true
+      }
+    },
+    // Ensure tests exit properly
+    watch: false,
+    run: true,
+    testTimeout: 10000,
+    hookTimeout: 10000,
+    teardownTimeout: 1000,
+    reporters: [
+      ['default', { summary: false }]
+    ]
   },
   resolve: {
     alias: {

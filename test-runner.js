@@ -5,7 +5,7 @@ const { exec } = require('child_process');
 console.log('🧪 Running Bebop Smoke Tests...\n');
 
 // Run smoke tests with timeout
-const testProcess = exec('pnpm test:smoke', { timeout: 30000 });
+const testProcess = exec('pnpm test:smoke', { timeout: 45000 });
 
 testProcess.stdout.on('data', (data) => {
   process.stdout.write(data);
@@ -34,3 +34,10 @@ testProcess.on('error', (error) => {
   console.error(`\n💥 Test runner error: ${error.message}`);
   process.exit(1);
 });
+
+// Force exit after timeout
+setTimeout(() => {
+  console.log('\n⏰ Tests taking too long, force exiting...');
+  testProcess.kill('SIGTERM');
+  process.exit(1);
+}, 50000);

@@ -17,3 +17,9 @@ process.env.NEXTAUTH_URL = 'http://localhost:3007'
 
 // Mock fetch globally
 global.fetch = vi.fn()
+
+// Force test exit
+afterAll(() => {
+  // Cleanup any open handles
+  vi.clearAllMocks()
+})
