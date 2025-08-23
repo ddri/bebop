@@ -152,9 +152,9 @@ export function DevToSettingsForm() {
             )}
             <AlertDescription className={connectionStatus.success ? 'text-green-200' : 'text-red-200'}>
               {connectionStatus.message}
-              {connectionStatus.details && (
+              {connectionStatus.details != null && (
                 <div className="mt-1 text-xs opacity-80">
-                  {connectionStatus.details}
+                  {String(connectionStatus.details)}
                 </div>
               )}
             </AlertDescription>

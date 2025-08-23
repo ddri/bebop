@@ -1,7 +1,7 @@
 // lib/social/BlueskyClient.ts
 import { BskyAgent } from '@atproto/api';
-import { AbstractSocialClient } from './AbstractSocialClient';
-import { SocialShareContent, SocialShareResponse } from '@/types/social';
+import { AbstractSocialClient, ConnectionTestResult } from './AbstractSocialClient';
+import { SocialCredentials, SocialShareContent, SocialShareResponse } from '@/types/social';
 
 export class BlueskyClient extends AbstractSocialClient {
   private agent: BskyAgent;
@@ -58,6 +58,30 @@ export class BlueskyClient extends AbstractSocialClient {
       await this.agent.logout();
     } finally {
       this.authenticated = false;
+    }
+  }
+
+  async testConnection(credentials: SocialCredentials): Promise<ConnectionTestResult> {
+    try {
+      const testAgent = new BskyAgent({ service: 'https://bsky.social' });
+      await testAgent.login({
+        identifier: credentials.identifier!,
+        password: credentials.password!
+      });
+      
+      const profile = testAgent.session?.handle;
+      
+      return {
+        success: true,
+        message: 'Successfully connected to Bluesky',
+        userInfo: { handle: profile }
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Failed to connect to Bluesky',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
     }
   }
 }

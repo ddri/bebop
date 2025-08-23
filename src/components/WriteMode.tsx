@@ -248,7 +248,7 @@ const WriteMode = () => {
   };
 
   const previewMarkdownToHtml = (markdown: string): string => {
-    let html = processRichMediaMarkdown(markdown);
+    const html = processRichMediaMarkdown(markdown);
     
     return html
       .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" class="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">$1</a>')

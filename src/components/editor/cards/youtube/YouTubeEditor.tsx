@@ -11,6 +11,7 @@ interface YouTubeEditorProps {
 
 export function YouTubeEditor({ data, onEdit, onRemove }: YouTubeEditorProps) {
   const [showPreview, setShowPreview] = useState(true);
+  const metadata = data.metadata as { videoId: string; title?: string };
   
   return (
     <div className="relative border rounded-md p-4 hover:border-blue-500 group">
@@ -18,9 +19,9 @@ export function YouTubeEditor({ data, onEdit, onRemove }: YouTubeEditorProps) {
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center space-x-2">
           <span className="font-medium">YouTube</span>
-          {data.metadata.title && (
+          {metadata.title && (
             <span className="text-sm text-slate-500">
-              {data.metadata.title}
+              {metadata.title}
             </span>
           )}
         </div>
@@ -56,7 +57,7 @@ export function YouTubeEditor({ data, onEdit, onRemove }: YouTubeEditorProps) {
         <div className="relative pt-[56.25%] bg-slate-100 dark:bg-slate-800 rounded-md overflow-hidden">
           <iframe
             className="absolute inset-0 w-full h-full"
-            src={`https://www.youtube.com/embed/${data.metadata.videoId}`}
+            src={`https://www.youtube.com/embed/${metadata.videoId}`}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
           />

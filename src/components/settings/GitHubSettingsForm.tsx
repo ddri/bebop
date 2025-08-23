@@ -38,41 +38,6 @@ export function GitHubSettingsForm() {
   const [autoBackup, setAutoBackup] = useState(false);
   const [loadingRepos, setLoadingRepos] = useState(false);
 
-  // Load saved settings on mount
-  useEffect(() => {
-    const savedToken = localStorage.getItem('githubToken');
-    const savedRepo = localStorage.getItem('githubSelectedRepo');
-    const savedAutoBackup = localStorage.getItem('githubAutoBackup') === 'true';
-    
-    if (savedToken) {
-      setFormData({ token: savedToken });
-      checkConnection(savedToken);
-    }
-    
-    setSelectedRepo(savedRepo);
-    setAutoBackup(savedAutoBackup);
-  }, [checkConnection]);
-
-  // Real-time validation
-  const validateForm = (data: FormData): ValidationResult => {
-    const result = validateGitHubSettings(data);
-    setValidationErrors(result.errors);
-    return result;
-  };
-
-  const handleInputChange = (value: string) => {
-    const newFormData = { token: value };
-    setFormData(newFormData);
-    setIsDirty(true);
-    setConnectionStatus(null);
-    setConnected(false);
-    
-    // Debounced validation
-    setTimeout(() => {
-      validateForm(newFormData);
-    }, 300);
-  };
-
   const checkConnection = useCallback(async (token: string) => {
     try {
       setLoading(true);
@@ -110,6 +75,41 @@ export function GitHubSettingsForm() {
       setLoading(false);
     }
   }, []);
+
+  // Load saved settings on mount
+  useEffect(() => {
+    const savedToken = localStorage.getItem('githubToken');
+    const savedRepo = localStorage.getItem('githubSelectedRepo');
+    const savedAutoBackup = localStorage.getItem('githubAutoBackup') === 'true';
+    
+    if (savedToken) {
+      setFormData({ token: savedToken });
+      checkConnection(savedToken);
+    }
+    
+    setSelectedRepo(savedRepo);
+    setAutoBackup(savedAutoBackup);
+  }, [checkConnection]);
+
+  // Real-time validation
+  const validateForm = (data: FormData): ValidationResult => {
+    const result = validateGitHubSettings(data);
+    setValidationErrors(result.errors);
+    return result;
+  };
+
+  const handleInputChange = (value: string) => {
+    const newFormData = { token: value };
+    setFormData(newFormData);
+    setIsDirty(true);
+    setConnectionStatus(null);
+    setConnected(false);
+    
+    // Debounced validation
+    setTimeout(() => {
+      validateForm(newFormData);
+    }, 300);
+  };
 
   const fetchRepositories = async (token: string) => {
     try {

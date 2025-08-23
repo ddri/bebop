@@ -25,10 +25,6 @@ export function GitHubSettings() {
   const [autoBackup, setAutoBackup] = useState(false);
   const [loadingRepos, setLoadingRepos] = useState(false);
 
-  useEffect(() => {
-    checkConnection();
-  }, [checkConnection]);
-
   const checkConnection = useCallback(async () => {
     try {
       setLoading(true);
@@ -45,6 +41,10 @@ export function GitHubSettings() {
       setLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    checkConnection();
+  }, [checkConnection]);
 
   async function fetchRepositories() {
     try {

@@ -6,6 +6,8 @@ import CodeMirror from '@uiw/react-codemirror';
 import { markdown } from '@codemirror/lang-markdown';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { EditorView } from '@codemirror/view';
+import ReactMarkdown, { Components } from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { 
   Eye,
   Bold,
@@ -276,30 +278,40 @@ const MarkdownEditor = ({
     }
   };
 
-  const previewMarkdownToHtml = (markdown: string): string => {
-    // Process cards first
-    console.log('Input markdown:', markdown);
-    let html = processRichMediaMarkdown(markdown);
-    console.log('After card processing:', html);
-    
-    // Then process regular markdown
-    return html
-      .replace(/!\[(.*?)\]\((.*?)\)/g, '<img src="$2" alt="$1" class="max-w-full h-auto rounded-lg my-4" loading="lazy">')  // Images FIRST
-      .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" class="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">$1</a>')  // Then links
-      .replace(/^# (.*$)/gm, '<h1 class="text-3xl font-bold mt-4 mb-2">$1</h1>')
-      .replace(/^## (.*$)/gm, '<h2 class="text-2xl font-bold mt-4 mb-2">$1</h2>')
-      .replace(/^### (.*$)/gm, '<h3 class="text-xl font-bold mt-3 mb-2">$1</h3>')
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/`(.*?)`/g, '<code class="bg-slate-100 dark:bg-slate-800 px-1 rounded">$1</code>')
-      .split(/\n\n/)
-      .map(block => block.trim())
-      .filter(block => block.length > 0)
-      .map(block => {
-        if (block.startsWith('<')) return block; // Don't wrap HTML in paragraphs
-        return `<p class="my-2">${block}</p>`;
-      })
-      .join('\n');
+  // Custom components for ReactMarkdown to maintain styling
+  const markdownComponents: Components = {
+    h1: ({ children }) => <h1 className="text-3xl font-bold mt-4 mb-2">{children}</h1>,
+    h2: ({ children }) => <h2 className="text-2xl font-bold mt-4 mb-2">{children}</h2>,
+    h3: ({ children }) => <h3 className="text-xl font-bold mt-3 mb-2">{children}</h3>,
+    p: ({ children }) => <p className="my-2">{children}</p>,
+    a: ({ href, children }) => (
+      <a 
+        href={href} 
+        className="text-blue-500 hover:underline" 
+        target="_blank" 
+        rel="noopener noreferrer"
+      >
+        {children}
+      </a>
+    ),
+    img: ({ src, alt }) => (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img 
+        src={src} 
+        alt={alt} 
+        className="max-w-full h-auto rounded-lg my-4" 
+        loading="lazy" 
+      />
+    ),
+    code: ({ children }) => (
+      <code className="bg-slate-100 dark:bg-slate-800 px-1 rounded">{children}</code>
+    ),
+  };
+
+  // Process rich media content for preview
+  const processContentForPreview = (content: string) => {
+    // First process rich media cards
+    return processRichMediaMarkdown(content);
   };
 
   return (
@@ -476,7 +488,12 @@ const MarkdownEditor = ({
         />
         {showPreview && (
           <div className="p-4 prose dark:prose-invert max-w-none prose-sm">
-            <div dangerouslySetInnerHTML={{ __html: previewMarkdownToHtml(content) }} />
+            <ReactMarkdown
+              components={markdownComponents}
+              remarkPlugins={[remarkGfm]}
+            >
+              {processContentForPreview(content)}
+            </ReactMarkdown>
           </div>
         )}
       </div>

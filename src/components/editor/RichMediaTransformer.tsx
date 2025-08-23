@@ -15,11 +15,11 @@ const embedConfigs: EmbedConfig[] = [
     getEmbedData: (url: string) => ({
       videoId: url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/)?.[1] || ''
     }),
-    component: ({ videoId }: { videoId: string }) => (
+    component: (props: Record<string, unknown>) => (
       <div className="relative w-full pt-[56.25%] bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden my-4">
         <iframe
           className="absolute top-0 left-0 w-full h-full"
-          src={`https://www.youtube.com/embed/${videoId}`}
+          src={`https://www.youtube.com/embed/${props.videoId}`}
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
         />
@@ -32,10 +32,10 @@ const embedConfigs: EmbedConfig[] = [
     getEmbedData: (url: string) => ({
       tweetId: url.match(/twitter\.com\/\w+\/status\/(\d+)/)?.[1] || ''
     }),
-    component: ({ tweetId }: { tweetId: string }) => (
+    component: (props: Record<string, unknown>) => (
       <div className="border dark:border-slate-700 rounded-lg p-4 bg-white dark:bg-slate-800 my-4">
         <blockquote className="twitter-tweet" data-conversation="none">
-          <a href={`https://twitter.com/i/status/${tweetId}`}>Loading tweet...</a>
+          <a href={`https://twitter.com/i/status/${props.tweetId}`}>Loading tweet...</a>
         </blockquote>
       </div>
     )
@@ -50,11 +50,11 @@ const embedConfigs: EmbedConfig[] = [
         id: match?.[2] || ''
       };
     },
-    component: ({ type, id }: { type: string; id: string }) => (
+    component: (props: Record<string, unknown>) => (
       <div className="relative w-full pt-[152px] bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden my-4">
         <iframe
           className="absolute top-0 left-0 w-full h-full"
-          src={`https://open.spotify.com/embed/${type}/${id}`}
+          src={`https://open.spotify.com/embed/${props.type}/${props.id}`}
           allow="encrypted-media"
           loading="lazy"
         />

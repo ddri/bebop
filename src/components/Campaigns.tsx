@@ -100,6 +100,7 @@ export default function Campaigns() {
                         <div className={`px-2 py-1 rounded-full text-xs font-medium ${{
                           'draft': 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20',
                           'active': 'bg-green-500/10 text-green-400 border border-green-500/20',
+                          'paused': 'bg-orange-500/10 text-orange-400 border border-orange-500/20',
                           'completed': 'bg-blue-500/10 text-blue-400 border border-blue-500/20',
                           'archived': 'bg-slate-500/10 text-slate-400 border border-slate-500/20'
                         }[campaign.status] || 'bg-slate-500/10 text-slate-400 border border-slate-500/20'}`}>
