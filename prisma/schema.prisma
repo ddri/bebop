@@ -82,6 +82,41 @@ model Campaign {
   @@map("campaigns")
 }
 
+model Webhook {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String
+  name      String
+  url       String
+  events    String[]
+  enabled   Boolean   @default(true)
+  secret    String?
+  headers   Json?
+  retryCount Int      @default(3)
+  retryDelay Int      @default(1000)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deliveries WebhookDelivery[]
+
+  @@map("webhooks")
+}
+
+model WebhookDelivery {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  webhookId String    @db.ObjectId
+  webhook   Webhook   @relation(fields: [webhookId], references: [id])
+  event     String
+  url       String
+  payload   Json
+  status    String    // success, failed, pending
+  statusCode Int?
+  response  Json?
+  error     String?
+  attempts  Int       @default(1)
+  createdAt DateTime  @default(now())
+
+  @@map("webhook_deliveries")
+}
+
 model PublishingPlan {
   id          String    @id @default(auto()) @map("_id") @db.ObjectId
   campaignId  String    @db.ObjectId

@@ -24,6 +24,7 @@ import {
   Target
 } from 'lucide-react';
 import { useTopics } from '@/hooks/useTopics';
+import { useWebhooks } from '@/hooks/useWebhooks';
 import ContentSelector from './ContentSelector';
 
 interface Platform {
@@ -93,6 +94,7 @@ export default function HybridPublisher({
   onPublished 
 }: HybridPublisherProps) {
   const { topics } = useTopics();
+  const { triggerWebhook } = useWebhooks();
   
   // Content state
   const [contentMode, setContentMode] = useState<ContentMode>('existing');
@@ -179,6 +181,21 @@ export default function HybridPublisher({
         // Default queue behavior - schedule for 1 hour from now
         scheduledFor = new Date(Date.now() + 60 * 60 * 1000);
       }
+      
+      // Trigger webhooks based on schedule mode
+      const webhookEvent = scheduleMode === 'now' ? 'content.published' : 'content.scheduled';
+      await triggerWebhook(webhookEvent, {
+        title: topicName,
+        content: currentContent,
+        platforms: selectedPlatforms.map(id => ({
+          id,
+          name: PLATFORMS.find(p => p.id === id)?.name
+        })),
+        scheduleMode,
+        scheduledFor: scheduledFor.toISOString(),
+        campaignId,
+        campaignName
+      });
       
       onPublished?.({
         topicName,

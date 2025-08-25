@@ -11,7 +11,8 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:smoke": "vitest run smoke",
-    "test:quick": "vitest run smoke --no-coverage --no-watch",
+    "test:quick": "node scripts/quick-test.js",
+    "test:vitest": "vitest run simple.test.ts --no-coverage --reporter=verbose",
     "test:workflow": "node scripts/test-workflow.js"
   },
   "dependencies": {
