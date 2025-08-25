@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { useTopics } from '@/hooks/useTopics';
 import { useWebhooks } from '@/hooks/useWebhooks';
+import { useAnalytics } from '@/hooks/useAnalytics';
 import ContentSelector from './ContentSelector';
 
 interface Platform {
@@ -95,6 +96,7 @@ export default function HybridPublisher({
 }: HybridPublisherProps) {
   const { topics } = useTopics();
   const { triggerWebhook } = useWebhooks();
+  const { track } = useAnalytics();
   
   // Content state
   const [contentMode, setContentMode] = useState<ContentMode>('existing');
@@ -195,6 +197,15 @@ export default function HybridPublisher({
         scheduledFor: scheduledFor.toISOString(),
         campaignId,
         campaignName
+      });
+      
+      // Track analytics event
+      track(scheduleMode === 'now' ? 'publish.success' : 'content.scheduled', {
+        contentId: selectedTopic,
+        title: topicName,
+        platforms: selectedPlatforms,
+        campaignId,
+        scheduleMode
       });
       
       onPublished?.({

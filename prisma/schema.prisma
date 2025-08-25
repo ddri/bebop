@@ -117,6 +117,31 @@ model WebhookDelivery {
   @@map("webhook_deliveries")
 }
 
+model AnalyticsEvent {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  eventType   String    // page.view, content.view, content.read, etc
+  contentId   String?   @db.ObjectId
+  campaignId  String?   @db.ObjectId
+  platform    String?
+  sessionId   String
+  visitorId   String?   // Privacy-safe, rotates daily
+  
+  // Event metadata
+  metadata    Json?
+  device      Json?     // { type, os, browser }
+  geo         Json?     // { country, region }
+  
+  timestamp   DateTime  @default(now())
+  
+  // Indexes for efficient queries
+  @@index([contentId, timestamp])
+  @@index([campaignId, timestamp])
+  @@index([eventType, timestamp])
+  @@index([visitorId, timestamp])
+  @@index([sessionId])
+  @@map("analytics_events")
+}
+
 model PublishingPlan {
   id          String    @id @default(auto()) @map("_id") @db.ObjectId
   campaignId  String    @db.ObjectId

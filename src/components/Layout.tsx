@@ -59,6 +59,12 @@ export default function Layout({ children, pathname }: LayoutProps) {
                 Search
               </Link>
               <Link 
+                href="/analytics" 
+                className={`${pathname === '/analytics' ? 'text-[#E669E8] font-semibold' : 'hover:text-[#E669E8]'} transition-colors`}
+              >
+                Analytics
+              </Link>
+              <Link 
                 href="/settings" 
                 className={`${pathname === '/settings' ? 'text-[#E669E8] font-semibold' : 'hover:text-[#E669E8]'} transition-colors`}
               >
