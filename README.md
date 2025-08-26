@@ -1,6 +1,8 @@
 # 🎯 Bebop - Campaign-Centric Content Marketing Platform
 
-Bebop is a **campaign-centric content marketing orchestration platform** designed for technical content creators, Developer Relations professionals, and content marketing teams. It combines the power of content planning, creation, scheduling, and multi-platform publishing in a unified workflow.
+## What is Bebop?
+
+Bebop is a **campaign-centric content marketing orchestration platform** designed specifically for technical content creators, Developer Relations professionals, and content marketing teams. It combines the power of content planning, creation, scheduling, and multi-platform publishing in a unified workflow.
 
 ## 🚀 What Makes Bebop Different
 
@@ -13,6 +15,8 @@ Bebop is a **campaign-centric content marketing orchestration platform** designe
 
 **Intelligent Scheduling**: Built-in publishing queue with retry logic, failure monitoring, and real-time status tracking.
 
+**Privacy-First Analytics**: Cookie-free, GDPR-compliant analytics that respect user privacy while providing valuable insights.
+
 ## 🎯 Core Workflow
 
 1. **📋 Plan** → Create content marketing campaigns with strategic goals
@@ -20,6 +24,7 @@ Bebop is a **campaign-centric content marketing orchestration platform** designe
 3. **⏰ Schedule** → Plan publishing timeline across multiple platforms
 4. **📊 Monitor** → Track publishing status with real-time dashboard
 5. **📈 Analyze** → Monitor campaign performance and content analytics
+
 
 ## ✨ Key Features
 
@@ -29,9 +34,16 @@ Bebop is a **campaign-centric content marketing orchestration platform** designe
 - **Publishing Queue**: Reliable scheduling with retry logic and monitoring
 - **Real-Time Dashboard**: Monitor publishing status and campaign progress
 - **Platform Integration**: Easy setup for Hashnode, Dev.to, Bluesky, and Mastodon
-- **Content Analytics**: Track performance across all publishing destinations
+- **Privacy-First Analytics**: Track performance without cookies or invasive tracking
+- **Rich Media Support**: YouTube, Spotify embeds with visual editors
+- **GitHub Integration**: Import content from GitHub repositories
 
-## 📊 Project Status
+
+
+-----------------
+
+
+## 📋 Roadmap
 
 **Current Version**: v0.4.0 (Hybrid Publishing Workflow Release)
 
@@ -59,10 +71,11 @@ Bebop is a **campaign-centric content marketing orchestration platform** designe
 
 ### 🚧 **What's Next (v0.5.0)**
 
-**Analytics & Insights:**
-- [ ] **Publishing analytics** - Success rates, engagement tracking, performance metrics
-- [ ] **Campaign ROI tracking** - Goal setting and achievement measurement
-- [ ] **Content performance** - Views, clicks, and conversion tracking across platforms
+**Analytics & Insights (Complete):**
+- ✅ **Privacy-first analytics** - Cookie-free tracking with daily visitor rotation
+- ✅ **Publishing analytics** - Success rates, engagement tracking, performance metrics
+- ✅ **Campaign ROI tracking** - Goal setting and achievement measurement
+- ✅ **Content performance** - Views, clicks, and conversion tracking across platforms
 
 **Platform Expansion:**
 - [ ] **LinkedIn integration** - Professional content publishing and scheduling
@@ -82,72 +95,133 @@ Bebop is a **campaign-centric content marketing orchestration platform** designe
 - [ ] **Bulk operations** - Multi-select actions for topics and campaigns
 - [ ] **Mobile optimization** - Responsive design improvements for mobile devices
 
-### 🎯 **Ready to Use**
 
-Bebop is **production-ready** for the core publishing workflow. You can:
-- Create and manage content campaigns
-- Schedule content across multiple platforms
-- Monitor publishing status and performance
-- Use the integrated editor for content creation
-- Test functionality with the comprehensive test suite
-
-**Perfect for:** Developer Relations teams, technical content creators, and marketing teams focused on multi-platform content distribution.
-
-## 🏗️ Architecture
-
-Bebop is built with **Next-Forge**, a production-grade Next.js monorepo template, providing:
-- **Next.js 15** with React 19
-- **TypeScript** for type safety
-- **Tailwind CSS** + **shadcn/ui** for modern UI
-- **Prisma** with **MongoDB** for data persistence
-- **Clerk** for authentication
-- **Turborepo** for efficient monorepo management
+---------
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js 18+
-- MongoDB (local or Atlas)
-- Git
 
-### Development Setup
+- Node.js 18.17 or later
+- MongoDB database (local or cloud)
+- Clerk account for authentication
+- AWS S3 bucket for media storage (optional)
+
+### Installation
 
 1. **Clone the repository**
-   ```bash
-   git clone https://github.com/ddri/bebop.git
-   cd bebop/bebop-next-forge/bebop-next-forge
-   ```
+```bash
+git clone https://github.com/ddri/bebop.git
+cd bebop
+```
 
 2. **Install dependencies**
-   ```bash
-   pnpm install
-   ```
+```bash
+npm install
+```
 
-3. **Environment Setup**
-   ```bash
-   # Copy environment template
-   cp .env.example .env.local
-   
-   # Configure your environment variables:
-   # - MongoDB connection string
-   # - Clerk authentication keys
-   # - Platform API keys (optional)
-   ```
+3. **Set up environment variables**
 
-4. **Database Setup**
-   ```bash
-   # Initialize database
-   pnpm migrate
-   ```
+Copy the example environment file and configure it:
 
-5. **Start development server**
-   ```bash
-   pnpm dev
-   ```
+```bash
+cp .env.example .env.local
+```
 
-6. **Access the application**
-   - App: http://localhost:3007
-   - Storybook: http://localhost:6006
+Edit `.env.local` and add your configuration:
+
+```env
+# Required: Database (MongoDB)
+DATABASE_URL="mongodb://localhost:27017/bebop"
+
+# Required: Clerk Authentication (get from https://dashboard.clerk.com)
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_..."
+CLERK_SECRET_KEY="sk_..."
+NEXT_PUBLIC_CLERK_SIGN_IN_URL="/sign-in"
+NEXT_PUBLIC_CLERK_SIGN_UP_URL="/sign-up"
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL="/"
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL="/"
+
+# Required: Application URL
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+
+# Optional: See .env.example for AWS S3, platform APIs, etc.
+```
+
+4. **Set up the database**
+```bash
+# Generate Prisma client
+npx prisma generate
+
+# Push schema to MongoDB
+npx prisma db push
+```
+
+5. **Start Bebop**
+```bash
+# Development mode (with hot reload)
+npm run dev
+
+# Or production mode
+npm run build
+npm run start
+```
+
+Open [http://localhost:3000](http://localhost:3000) and sign up for an account!
+
+### First-Time Setup Checklist
+
+- [ ] MongoDB is running (local or cloud)
+- [ ] Created Clerk account and added keys
+- [ ] Configured `.env.local` with required variables
+- [ ] Database schema pushed with `npx prisma db push`
+- [ ] Server started with `npm run dev`
+- [ ] Created your first account at http://localhost:3000
+
+## 🏗️ Architecture
+
+### Tech Stack
+
+- **Framework**: Next.js 15 with React 19
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS + shadcn/ui components
+- **Database**: MongoDB with Prisma ORM
+- **Authentication**: Clerk
+- **Storage**: AWS S3 (optional) or local filesystem
+- **Analytics**: Privacy-first custom analytics
+
+### Project Structure
+
+```
+bebop/
+├── src/
+│   ├── app/              # Next.js app router pages
+│   │   ├── api/          # API routes
+│   │   ├── campaigns/    # Campaign pages
+│   │   ├── analytics/    # Analytics dashboard
+│   │   ├── media/        # Media library
+│   │   ├── settings/     # Settings pages
+│   │   └── write/        # Content editor
+│   ├── components/       # React components
+│   │   ├── editor/       # Markdown editor components
+│   │   ├── social/       # Social platform components
+│   │   ├── analytics/    # Analytics components
+│   │   └── ui/           # shadcn/ui components
+│   ├── lib/              # Utility libraries
+│   │   ├── analytics/    # Analytics service
+│   │   ├── social/       # Social platform clients
+│   │   └── webhooks/     # Webhook handling
+│   ├── hooks/            # Custom React hooks
+│   └── types/            # TypeScript type definitions
+├── prisma/
+│   └── schema.prisma     # Database schema
+├── public/               # Static assets
+├── blog/                 # Blog content (markdown)
+└── docs/                 # Documentation
+```
+
+------
+
 
 ## 📚 Platform Integrations
 
@@ -155,12 +229,13 @@ Bebop is built with **Next-Forge**, a production-grade Next.js monorepo template
 
 | Platform | Status | Content Types | Setup Guide |
 |----------|---------|---------------|-------------|
-| **Hashnode** | ✅ Ready | Blog posts, articles | [Setup Guide](docs/hashnode-setup.md) |
-| **Dev.to** | ✅ Ready | Technical articles | [Setup Guide](docs/devto-setup.md) |
-| **Bluesky** | ✅ Ready | Social posts, threads | [Setup Guide](docs/bluesky-setup.md) |
-| **Mastodon** | ✅ Ready | Social posts, updates | [Setup Guide](docs/mastodon-setup.md) |
+| **Hashnode** | ✅ Ready | Blog posts, articles | [Setup Guide](DEVELOPERGUIDE.md#hashnode-setup) |
+| **Dev.to** | ✅ Ready | Technical articles | [Setup Guide](DEVELOPERGUIDE.md#devto-setup) |
+| **Bluesky** | ✅ Ready | Social posts, threads | [Setup Guide](DEVELOPERGUIDE.md#bluesky-setup) |
+| **Mastodon** | ✅ Ready | Social posts, updates | [Setup Guide](DEVELOPERGUIDE.md#mastodon-setup) |
 | **LinkedIn** | 🚧 Coming Soon | Professional posts | - |
 | **Twitter/X** | 🚧 Coming Soon | Tweets, threads | - |
+| **Threads** | 🚧 Coming Soon | Threets, threads | - |
 | **WordPress** | 🚧 Coming Soon | Blog posts | - |
 | **Ghost** | 🚧 Coming Soon | Blog posts | - |
 
@@ -187,38 +262,50 @@ Bebop is built with **Next-Forge**, a production-grade Next.js monorepo template
 
 ## 🛠️ Development
 
-### Project Structure
-```
-bebop-next-forge/
-├── apps/
-│   ├── app/           # Main Bebop application
-│   ├── api/           # API server
-│   ├── web/           # Marketing website
-│   └── docs/          # Documentation
-├── packages/
-│   ├── design-system/ # UI components
-│   ├── database/      # Prisma schema
-│   ├── auth/          # Authentication
-│   └── shared/        # Shared utilities
-```
+For complete technical documentation, API reference, and platform setup guides, see the **[Developer Guide](DEVELOPERGUIDE.md)**.
 
-### Key Commands
+### Available Scripts
+
 ```bash
 # Development
-pnpm dev                 # Start all apps
-pnpm dev --filter=app    # Start main app only
+npm run dev              # Start development server (port 3000)
+npm run build            # Build for production
+npm run start            # Start production server
+npm run build:analyze    # Build with bundle analyzer
 
-# Building
-pnpm build              # Build all packages
-pnpm test               # Run test suite
-
-# Database
-pnpm migrate            # Run database migrations
-pnpm db:studio          # Open Prisma Studio
+# Testing
+npm test                 # Run tests in watch mode
+npm run test:ui          # Open Vitest UI
+npm run test:smoke       # Run smoke tests
+npm run test:quick       # Quick test summary
+npm run test:workflow    # Test publishing workflow
 
 # Code Quality
-pnpm lint               # Run linting
-pnpm format             # Format code
+npm run lint             # Run ESLint
+
+# Database
+npx prisma studio        # Open Prisma Studio
+npx prisma generate      # Generate Prisma client
+npx prisma db push       # Push schema changes to database
+```
+
+### Development Workflow
+
+1. **Start the development server**
+```bash
+npm run dev
+```
+
+2. **Make your changes** - Hot reload will update the browser automatically
+
+3. **Run tests** to ensure everything works
+```bash
+npm run test:smoke
+```
+
+4. **Build for production** to verify the build
+```bash
+npm run build
 ```
 
 ## 🧪 Testing
@@ -236,19 +323,19 @@ Bebop includes a comprehensive testing suite with automated smoke tests to ensur
 
 ```bash
 # Quick smoke test summary
-pnpm test:quick
+npm run test:quick
 
 # All smoke tests with detailed output
-pnpm test:smoke
+npm run test:smoke
 
 # Live API testing (requires dev server)
-pnpm test:workflow
+npm run test:workflow
 
 # Interactive test UI
-pnpm test:ui
+npm run test:ui
 
 # Watch mode during development
-pnpm test
+npm test
 ```
 
 ### What's Tested
@@ -273,7 +360,7 @@ pnpm test
 
 1. **Start Development Server**
    ```bash
-   pnpm dev
+   npm run dev
    ```
 
 2. **Test Scheduling Features**
@@ -286,15 +373,15 @@ pnpm test
 3. **Test Performance Optimizations**
    - Visit `/write`, `/media`, `/settings`
    - Verify lazy loading with skeleton states
-   - Run `pnpm build:analyze` for bundle analysis
+   - Run `npm run build:analyze` for bundle analysis
 
 4. **Test API Integration**
    ```bash
    # Test scheduler manually
-   curl -X POST http://localhost:3007/api/scheduler/trigger
+   curl -X POST http://localhost:3000/api/scheduler/trigger
    
    # Check database health
-   curl http://localhost:3007/api/health/database
+   curl http://localhost:3000/api/health/database
    ```
 
 ### Test Files
@@ -309,14 +396,47 @@ pnpm test
 ## 🚀 Deployment
 
 ### Vercel (Recommended)
-1. Connect your GitHub repository to Vercel
-2. Configure environment variables in Vercel dashboard
-3. Deploy with automatic CI/CD
+
+1. **Fork and connect repository**
+   - Fork this repository to your GitHub account
+   - Sign in to [Vercel](https://vercel.com) and import your fork
+   
+2. **Configure environment variables**
+   Add all variables from `.env.local` to your Vercel project settings
+
+3. **Deploy**
+   - Vercel will automatically build and deploy your application
+   - Enable automatic deployments for continuous deployment
 
 ### Self-Hosting
-1. Build the application: `pnpm build`
-2. Set up MongoDB and environment variables
-3. Deploy using Docker or your preferred hosting platform
+
+1. **Build the application**
+```bash
+npm run build
+```
+
+2. **Set up production environment**
+   - Configure MongoDB (MongoDB Atlas recommended for production)
+   - Set all environment variables
+   - Use a process manager like PM2 for Node.js
+
+3. **Start the production server**
+```bash
+npm run start
+```
+
+### Docker Deployment
+
+```dockerfile
+# Dockerfile example
+FROM node:18-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+COPY . .
+RUN npm run build
+CMD ["npm", "start"]
+```
 
 ## 🤝 Contributing
 
@@ -328,38 +448,15 @@ Bebop is a personal project developed on nights and weekends. Contributions are 
 3. Make your changes and test thoroughly
 4. Submit a pull request with a clear description
 
-## 📋 Roadmap
-
-See our [ROADMAP.md](ROADMAP.md) for detailed development roadmap and completed milestones.
-
-### ✅ Completed (v0.4.0 - Hybrid Publishing Workflow Release)
-- ✅ **Campaign-centric workflow** - Complete content campaign management system
-- ✅ **Hybrid scheduling system** - Three publishing modes with custom date/time support  
-- ✅ **Multi-platform publishing** - Hashnode, Dev.to, Bluesky, Mastodon integration
-- ✅ **Background processing** - Automated scheduler with manual trigger capability
-- ✅ **Performance optimization** - Lazy loading, code splitting, bundle analysis
-- ✅ **Testing infrastructure** - Comprehensive test suite with automated smoke tests
-- ✅ **TypeScript improvements** - Type-safe implementation throughout codebase
-
-### 🎯 Next Release (v0.5.0 - Analytics & Platform Expansion)
-- [ ] **Publishing analytics** - Performance metrics and engagement tracking
-- [ ] **LinkedIn integration** - Professional content publishing platform
-- [ ] **Twitter/X integration** - Social media content distribution  
-- [ ] **Content versioning** - Track changes and maintain content history
-- [ ] **Team collaboration** - Multi-user workflows and permissions
-- [ ] **Advanced scheduling** - Optimal timing and bulk operations
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the AGPL-3.0 license - see the [LICENSE](LICENSE) file for details.
 
 ## 🙋‍♂️ About the Author
 
-Bebop is created and maintained by **David Ryan**, a product manager and developer in the quantum computing space. This project combines experience from building content management systems at Red Hat and commercial SaaS platforms.
+Bebop is created and maintained by **David Ryan**, a product leader and developer now working in the quantum computing industry. This project combines experience from building content management systems at Red Hat and is a spiritual successor to the Corilla CMS.
 
-- **Day Job**: Product Manager for quantum computing
-- **Background**: Developer Relations, Technical Writing, Content Strategy
-- **Previous Work**: Red Hat PressGang CCMS, Corilla SaaS platform
 
 ## 📞 Support
 
@@ -368,5 +465,3 @@ Bebop is created and maintained by **David Ryan**, a product manager and develop
 - **Email**: [Contact via GitHub](https://github.com/ddri)
 
 ---
-
-**Built with ❤️ for content creators and Developer Relations professionals**
