@@ -24,7 +24,7 @@ export function DevToPublisher({
   itemId,
   name,
   description,
-  content,
+  content: _content,
   rawMarkdown,
   onSuccess,
   onClose

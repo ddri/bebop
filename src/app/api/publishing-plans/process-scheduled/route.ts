@@ -43,7 +43,7 @@ export async function POST() {
 
         // For now, we'll mark as published immediately
         // In a real implementation, this would make API calls to the actual platforms
-        const updatedPlan = await prisma.publishingPlan.update({
+        const _updatedPlan = await prisma.publishingPlan.update({
           where: { id: plan.id },
           data: {
             status: 'published',

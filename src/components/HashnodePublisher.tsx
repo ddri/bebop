@@ -26,7 +26,7 @@ export function HashnodePublisher({
   type,
   itemId,
   name,
-  description,
+  description: _description,
   content,
   onSuccess,
   onClose

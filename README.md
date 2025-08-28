@@ -10,6 +10,7 @@ Bebop is a **campaign-centric content marketing orchestration platform** designe
 
 **Multi-Platform Publishing**: Write once, publish everywhere. Bebop automatically adapts and publishes your content to:
 - **Technical Blogs**: Hashnode, Dev.to
+- **Newsletters**: Beehiiv
 - **Social Networks**: Bluesky, Mastodon  
 - **Coming Soon**: LinkedIn, Twitter, WordPress, Ghost
 
@@ -76,6 +77,11 @@ Bebop is a **campaign-centric content marketing orchestration platform** designe
 - ✅ **Publishing analytics** - Success rates, engagement tracking, performance metrics
 - ✅ **Campaign ROI tracking** - Goal setting and achievement measurement
 - ✅ **Content performance** - Views, clicks, and conversion tracking across platforms
+
+**Platform Improvements:**
+- [ ] **Enhanced Beehiiv integration** - Improve UI/UX design, better visual identity, clearer enterprise plan guidance
+- [ ] **Platform grouping** - Organize platforms by type (newsletters, blogs, social) for better discovery
+- [ ] **Settings wizard** - Guided setup flow for new platform integrations
 
 **Platform Expansion:**
 - [ ] **LinkedIn integration** - Professional content publishing and scheduling
@@ -225,19 +231,31 @@ bebop/
 
 ## 📚 Platform Integrations
 
-### Supported Platforms
+### Newsletter Platforms
+| Platform | Status | Content Types | Requirements | Setup Guide |
+|----------|---------|---------------|--------------|-------------|
+| **Beehiiv** | ✅ Ready | Newsletter posts | Enterprise Plan | [Setup Guide](DEVELOPERGUIDE.md#beehiiv-setup) |
 
+### Technical Blogs
 | Platform | Status | Content Types | Setup Guide |
 |----------|---------|---------------|-------------|
 | **Hashnode** | ✅ Ready | Blog posts, articles | [Setup Guide](DEVELOPERGUIDE.md#hashnode-setup) |
 | **Dev.to** | ✅ Ready | Technical articles | [Setup Guide](DEVELOPERGUIDE.md#devto-setup) |
+
+### Social Networks
+| Platform | Status | Content Types | Setup Guide |
+|----------|---------|---------------|-------------|
 | **Bluesky** | ✅ Ready | Social posts, threads | [Setup Guide](DEVELOPERGUIDE.md#bluesky-setup) |
 | **Mastodon** | ✅ Ready | Social posts, updates | [Setup Guide](DEVELOPERGUIDE.md#mastodon-setup) |
-| **LinkedIn** | 🚧 Coming Soon | Professional posts | - |
-| **Twitter/X** | 🚧 Coming Soon | Tweets, threads | - |
-| **Threads** | 🚧 Coming Soon | Threets, threads | - |
-| **WordPress** | 🚧 Coming Soon | Blog posts | - |
-| **Ghost** | 🚧 Coming Soon | Blog posts | - |
+
+### Coming Soon
+| Platform | Status | Content Types |
+|----------|---------|---------------|
+| **LinkedIn** | 🚧 Development | Professional posts |
+| **Twitter/X** | 🚧 Development | Tweets, threads |
+| **Threads** | 🚧 Development | Posts, threads |
+| **WordPress** | 🚧 Development | Blog posts |
+| **Ghost** | 🚧 Development | Blog posts |
 
 ### Setting Up Platform Integrations
 

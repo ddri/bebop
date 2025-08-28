@@ -2,10 +2,10 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
-import { WebhookService } from '@/lib/webhooks/webhook-service';
+// import { WebhookService } from '@/lib/webhooks/webhook-service';
 import crypto from 'crypto';
 
-const webhookService = new WebhookService();
+// const webhookService = new WebhookService(); // TODO: Remove if not used
 
 // GET /api/webhooks - List all webhooks for the user
 export async function GET() {

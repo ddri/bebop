@@ -37,7 +37,7 @@ class CardRegistryImpl implements CardRegistry {
     let match;
     
     while ((match = cardRegex.exec(markdown)) !== null) {
-      const [_, type, data] = match;
+      const [_match, type, _data] = match;
       const card = this.getCardByType(type);
       
       if (card) {

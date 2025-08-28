@@ -14,7 +14,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { templateId, type } = await request.json();
+    const { templateId: _templateId, type } = await request.json();
 
     // For now, we only handle official docs
     if (type !== 'official-docs') {

@@ -31,7 +31,7 @@ export const useSocialSettings = create<SocialSettingsStore>()(
         })),
       clearCredentials: (platform) =>
         set((state) => {
-          const { [platform]: _, ...rest } = state.credentials;
+          const { [platform]: _removed, ...rest } = state.credentials;
           return { credentials: rest };
         }),
       updatePreferences: (platform, preferences) =>

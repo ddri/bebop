@@ -21,7 +21,11 @@ const DevToSettingsForm = dynamic(() => import('@/components/settings/DevToSetti
   loading: () => <CardSkeleton className="h-48" />
 });
 
-const SocialSettingsForm = dynamic(() => import('@/components/settings/SocialSettingsForm'), {
+const BeehiivSettingsForm = dynamic(() => import('@/components/settings/BeehiivSettingsForm').then(mod => ({ default: mod.BeehiivSettingsForm })), {
+  loading: () => <CardSkeleton className="h-48" />
+});
+
+const SocialSettingsForm = dynamic(() => import('@/components/settings/SocialSettingsForm').then(mod => ({ default: mod.SocialSettingsForm })), {
   loading: () => <CardSkeleton className="h-64" />
 });
 
@@ -101,6 +105,9 @@ export default function Settings() {
 
           {/* Dev.to Integration */}
           <DevToSettingsForm />
+
+          {/* Beehiiv Integration */}
+          <BeehiivSettingsForm />
 
           {/* General Settings */}
           <Card className="bg-[#1c1c1e] border-0">

@@ -28,7 +28,7 @@ export function CampaignSocialPublisher({
   platformId,
   publishingPlan,
   content,
-  campaignId,
+  campaignId: _campaignId,
   onSuccess,
   onClose
 }: CampaignSocialPublisherProps) {

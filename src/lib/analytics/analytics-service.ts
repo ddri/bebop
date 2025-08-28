@@ -113,7 +113,7 @@ export class AnalyticsService {
   /**
    * Get campaign metrics
    */
-  async getCampaignMetrics(campaignId: string): Promise<CampaignMetrics | null> {
+  async getCampaignMetrics(_campaignId: string): Promise<CampaignMetrics | null> {
     // This will aggregate from MongoDB
     return null;
   }

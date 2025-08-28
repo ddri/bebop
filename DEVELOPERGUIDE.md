@@ -11,6 +11,7 @@ This guide contains all technical documentation for developers working with Bebo
 - [Platform Integrations Setup](#platform-integrations-setup)
   - [Hashnode](#hashnode-setup)
   - [Dev.to](#devto-setup)
+  - [Beehiiv](#beehiiv-setup)
   - [Bluesky](#bluesky-setup)
   - [Mastodon](#mastodon-setup)
 - [Testing](#testing)
@@ -288,6 +289,40 @@ model PublishingPlan {
    - **Series**: Can be linked to Dev.to series
    - **Tags**: Up to 4 tags, auto-formatted
    - **Canonical URL**: Set to maintain SEO
+
+### Beehiiv Setup
+
+1. **Get Your API Key**
+   - Log in to [Beehiiv](https://app.beehiiv.com)
+   - Go to Settings → API
+   - Click "Create API Key"
+   - Name it "Bebop Integration"
+   - Copy the API key
+
+2. **Get Your Publication ID**
+   - In Beehiiv dashboard, go to your publication settings
+   - The Publication ID starts with `pub_` and can be found in:
+     - Publication settings URL
+     - API documentation for your publication
+     - Browser developer tools when viewing your publication
+
+3. **Configure in Bebop**
+   - Go to Settings → Beehiiv Integration
+   - Enter your API Key
+   - Enter your Publication ID (format: `pub_xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`)
+   - Click "Test Connection"
+   - Save configuration
+
+4. **Publishing Features**
+   - **Newsletter Posts**: Creates newsletter posts directly
+   - **Draft/Published**: Control publication status
+   - **Rich Content**: Full HTML content support
+   - **Subtitles**: Optional post descriptions
+
+5. **Requirements**
+   - **Enterprise Plan**: Post creation API requires Beehiiv Enterprise
+   - **Beta API**: Feature is in beta and subject to change
+   - **Rate Limits**: Respect Beehiiv's API rate limits
 
 ### Bluesky Setup
 

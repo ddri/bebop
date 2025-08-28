@@ -5,17 +5,12 @@ import { useRouter } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
   ArrowLeft,
-  Calendar,
   Clock,
   Globe,
-  Target,
   Play,
-  Pause,
   Trash2,
-  Edit3,
   MoreHorizontal
 } from 'lucide-react';
 import Layout from '@/components/Layout';
@@ -61,7 +56,7 @@ const getPlatformIcon = (platform: string) => {
 export default function SimplifiedCampaignDetail({ campaignId, pathname }: SimplifiedCampaignDetailProps) {
   const router = useRouter();
   const { campaigns } = useCampaigns();
-  const { topics } = useTopics();
+  const { topics: _ } = useTopics();
   
   // Initialize with some mock data - replace with real campaign data
   const [queueItems, setQueueItems] = useState<QueueItem[]>([

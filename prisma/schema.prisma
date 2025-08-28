@@ -142,6 +142,49 @@ model AnalyticsEvent {
   @@map("analytics_events")
 }
 
+model AnalyticsAggregate {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  
+  // Aggregation dimensions
+  contentId   String?   @db.ObjectId
+  campaignId  String?   @db.ObjectId
+  platform    String?
+  date        DateTime  // Date for daily aggregates
+  hour        Int?      // Hour for hourly aggregates (0-23)
+  
+  // Aggregated metrics
+  views       Int       @default(0)
+  reads       Int       @default(0)
+  completions Int       @default(0)
+  shares      Int       @default(0)
+  uniqueVisitors Int    @default(0)
+  
+  // Time-based metrics
+  totalReadTime    Int @default(0) // Total seconds
+  avgReadTime      Int @default(0) // Average seconds
+  totalScrollDepth Int @default(0) // Sum of scroll depths
+  avgScrollDepth   Int @default(0) // Average scroll depth
+  
+  // Engagement metrics
+  engagementRate   Float @default(0)
+  clickThroughRate Float @default(0)
+  completionRate   Float @default(0)
+  
+  // Geographic data
+  topCountries    Json? // Array of {country, visitors, percentage}
+  
+  // Metadata
+  aggregatedAt DateTime @default(now())
+  
+  // Indexes for efficient queries
+  @@index([contentId, date])
+  @@index([campaignId, date]) 
+  @@index([platform, date])
+  @@index([date, hour])
+  @@unique([contentId, campaignId, platform, date, hour])
+  @@map("analytics_aggregates")
+}
+
 model PublishingPlan {
   id          String    @id @default(auto()) @map("_id") @db.ObjectId
   campaignId  String    @db.ObjectId
@@ -153,6 +196,7 @@ model PublishingPlan {
   publishedUrl String?
   hashnodeUrl String?  // Add this
   devToUrl    String?  // Add this
+  beehiivUrl  String?  // Add this
   campaign    Campaign  @relation(fields: [campaignId], references: [id])
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt

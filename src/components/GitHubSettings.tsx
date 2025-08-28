@@ -35,7 +35,7 @@ export function GitHubSettings() {
         setUsername(data.username);
         await fetchRepositories();
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to check GitHub connection');
     } finally {
       setLoading(false);
@@ -59,7 +59,7 @@ export function GitHubSettings() {
           setSelectedRepo(savedRepo);
         }
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to fetch repositories');
     } finally {
       setLoadingRepos(false);

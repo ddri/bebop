@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import Layout from '@/components/Layout';
-import { SearchBar } from '@/components/SearchBar';
+// SearchBar import removed - unused
 import { cn } from '@/lib/utils';
 
 interface SearchResult {
@@ -192,8 +192,8 @@ function SearchPageContent() {
         {query && !loading && totalCount > 0 && (
           <div className="mb-6">
             <p className="text-slate-300">
-              Found <span className="font-semibold text-white">{totalCount}</span> results for "
-              <span className="font-semibold text-white">{query}</span>"
+              Found <span className="font-semibold text-white">{totalCount}</span> results for &quot;
+              <span className="font-semibold text-white">{query}</span>&quot;
             </p>
           </div>
         )}

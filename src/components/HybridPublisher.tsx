@@ -16,10 +16,8 @@ import {
   Globe, 
   Clock, 
   Send, 
-  Plus,
   X,
   Calendar,
-  Eye,
   Zap,
   Target
 } from 'lucide-react';
@@ -51,6 +49,13 @@ const PLATFORMS: Platform[] = [
     icon: <FileText className="w-4 h-4" />, 
     color: 'text-green-400',
     bgColor: 'bg-green-500/10 border-green-500/20',
+  },
+  { 
+    id: 'beehiiv', 
+    name: 'Beehiiv', 
+    icon: <MessageSquare className="w-4 h-4" />, 
+    color: 'text-orange-400',
+    bgColor: 'bg-orange-500/10 border-orange-500/20',
   },
   { 
     id: 'bluesky', 
@@ -222,7 +227,7 @@ export default function HybridPublisher({
     }
   };
 
-  const getPlatformPreview = (platform: Platform) => {
+  const _getPlatformPreview = (platform: Platform) => {
     let content = currentContent;
     if (platform.maxLength && content.length > platform.maxLength) {
       content = content.slice(0, platform.maxLength - 3) + '...';

@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { CardData } from '../types';
 import { Button } from '@/components/ui/button';
-import { Settings2, X, Link, Eye, EyeOff } from 'lucide-react';
+import { X, Link, Eye, EyeOff } from 'lucide-react';
 
 interface SpotifyEditorProps {
   data: CardData;
@@ -11,7 +11,7 @@ interface SpotifyEditorProps {
   onRemove: () => void;
 }
 
-export function SpotifyEditor({ data, onEdit, onRemove }: SpotifyEditorProps) {
+export function SpotifyEditor({ data, onEdit: _onEdit, onRemove }: SpotifyEditorProps) {
   const [showPreview, setShowPreview] = useState(true);
   const { type, id } = data.metadata as { type: string; id: string };
   

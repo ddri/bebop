@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Search, X, FileText, Calendar, Tag, Clock } from 'lucide-react';
+import { Search, X, FileText, Calendar, Clock } from 'lucide-react';
 import { useTopics } from '@/hooks/useTopics';
 
 interface ContentSelectorProps {
@@ -256,7 +256,7 @@ export default function ContentSelector({
         ) : searchQuery ? (
           <div className="text-center py-8 text-slate-400">
             <Search className="h-8 w-8 mx-auto mb-2 opacity-50" />
-            <p className="text-sm">No content found for "{searchQuery}"</p>
+            <p className="text-sm">No content found for &quot;{searchQuery}&quot;</p>
             <p className="text-xs mt-1">Try a different search term</p>
           </div>
         ) : (

@@ -5,7 +5,7 @@ import { CardDefinition, CardData } from '../types';
 import { SpotifyEditor } from './SpotifyEditor';
 import { SpotifyPreview } from './SpotifyPreview';
 
-interface SpotifyMetadata {
+interface _SpotifyMetadata {
   type: 'track' | 'album' | 'playlist';
   id: string;
   title?: string;
@@ -44,7 +44,7 @@ export const SpotifyCard: CardDefinition = {
     const match = /{% spotify\s+(\w+)\s+([a-zA-Z0-9]+)\s*%}/.exec(markdown);
     if (!match) return null;
 
-    const [_, type, id] = match;
+    const [_match, type, id] = match;
     
     return {
       type: 'spotify',

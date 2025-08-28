@@ -9,7 +9,7 @@ interface YouTubeEditorProps {
   onRemove: () => void;
 }
 
-export function YouTubeEditor({ data, onEdit, onRemove }: YouTubeEditorProps) {
+export function YouTubeEditor({ data, onEdit: _onEdit, onRemove }: YouTubeEditorProps) {
   const [showPreview, setShowPreview] = useState(true);
   const metadata = data.metadata as { videoId: string; title?: string };
   

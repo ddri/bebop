@@ -17,7 +17,7 @@ export class MastodonClient extends AbstractSocialClient {
       // Remove any trailing paths like /start
       const parsedUrl = new URL(url);
       return `${parsedUrl.protocol}//${parsedUrl.host}`;
-    } catch (error) {
+    } catch (_error) {
       throw new Error('Invalid instance URL format');
     }
   }

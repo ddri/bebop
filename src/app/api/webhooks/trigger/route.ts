@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
 import { WebhookService } from '@/lib/webhooks/webhook-service';
+import { WebhookEvent } from '@/lib/webhooks/types';
 
 const webhookService = new WebhookService();
 
@@ -32,8 +33,23 @@ export async function POST(req: Request) {
       },
     });
 
+    // Convert Prisma webhooks to WebhookConfig format
+    const webhookConfigs = webhooks.map(webhook => ({
+      id: webhook.id,
+      name: webhook.name,
+      url: webhook.url,
+      enabled: webhook.enabled,
+      events: webhook.events as WebhookEvent[],
+      headers: webhook.headers ? JSON.parse(JSON.stringify(webhook.headers)) : undefined,
+      secret: webhook.secret || undefined,
+      retryCount: webhook.retryCount,
+      retryDelay: webhook.retryDelay,
+      createdAt: webhook.createdAt,
+      updatedAt: webhook.updatedAt,
+    }));
+
     // Trigger webhooks
-    const results = await webhookService.trigger(event, data, webhooks);
+    const results = await webhookService.trigger(event, data, webhookConfigs);
 
     // Log deliveries
     for (const result of results) {
@@ -41,15 +57,15 @@ export async function POST(req: Request) {
         const delivery = result.value;
         await prisma.webhookDelivery.create({
           data: {
-            webhookId: delivery.value.webhookId,
-            event: delivery.value.event,
-            url: delivery.value.url,
-            payload: delivery.value.payload as object,
-            status: delivery.value.status,
-            statusCode: delivery.value.statusCode,
-            response: delivery.value.response ? JSON.parse(delivery.value.response as string) : undefined,
-            error: delivery.value.error,
-            attempts: delivery.value.attempts,
+            webhookId: delivery.webhookId,
+            event: delivery.event,
+            url: delivery.url,
+            payload: delivery.payload as object,
+            status: delivery.status,
+            statusCode: delivery.statusCode,
+            response: delivery.response,
+            error: delivery.error,
+            attempts: delivery.attempts,
           },
         });
       }

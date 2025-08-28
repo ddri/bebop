@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, Plus, Clock, FileText, Globe, MoreHorizontal, Edit3 } from 'lucide-react';
+import { AlertCircle, Plus, Globe, MoreHorizontal, Edit3 } from 'lucide-react';
 import { useCampaigns } from '@/hooks/useCampaigns';
 import { CreateCampaignInput } from '@/types/campaigns';
 

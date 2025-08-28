@@ -19,7 +19,6 @@ import {
   Copy,
   ExternalLink,
   Zap,
-  Settings
 } from 'lucide-react';
 
 interface WebhookConfig {
@@ -99,8 +98,8 @@ export function WebhookSettings() {
         const data = await response.json();
         setWebhooks(data);
       }
-    } catch (error) {
-      console.error('Failed to load webhooks:', error);
+    } catch (_error) {
+      console.error('Failed to load webhooks:', _error);
     }
   };
 
@@ -125,7 +124,7 @@ export function WebhookSettings() {
       setNewWebhook({ name: '', url: '', events: [], enabled: true });
       setIsCreating(false);
       setSuccess('Webhook created successfully!');
-    } catch (error) {
+    } catch (_error) {
       setError('Failed to create webhook');
     } finally {
       setIsLoading(false);
@@ -150,7 +149,7 @@ export function WebhookSettings() {
       if (!result.success) {
         setError(result.message || 'Webhook test failed');
       }
-    } catch (error) {
+    } catch (_error) {
       setTestResults({ ...testResults, [webhook.id]: false });
       setError('Failed to test webhook');
     }
@@ -166,7 +165,7 @@ export function WebhookSettings() {
         setWebhooks(webhooks.filter(w => w.id !== id));
         setSuccess('Webhook deleted');
       }
-    } catch (error) {
+    } catch (_error) {
       setError('Failed to delete webhook');
     }
   };
@@ -186,7 +185,7 @@ export function WebhookSettings() {
         const updated = await response.json();
         setWebhooks(webhooks.map(w => w.id === updated.id ? updated : w));
       }
-    } catch (error) {
+    } catch (_error) {
       setError('Failed to update webhook');
     }
   };

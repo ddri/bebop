@@ -111,15 +111,15 @@ export class WebhookService {
       event,
       timestamp: new Date().toISOString(),
       data: {
-        id: data.id || crypto.randomUUID(),
+        id: (typeof data.id === 'string' ? data.id : null) || crypto.randomUUID(),
         type: this.determineType(data),
         ...data,
       },
       metadata: {
-        userId: data.userId,
-        campaignId: data.campaignId,
-        platform: data.platform,
-        scheduledFor: data.scheduledFor,
+        userId: typeof data.userId === 'string' ? data.userId : undefined,
+        campaignId: typeof data.campaignId === 'string' ? data.campaignId : undefined,
+        platform: typeof data.platform === 'string' ? data.platform : undefined,
+        scheduledFor: typeof data.scheduledFor === 'string' ? data.scheduledFor : undefined,
       },
     };
 
@@ -152,10 +152,10 @@ export class WebhookService {
     Object.entries(payload.data).forEach(([key, value]) => {
       if (typeof value === 'object' && value !== null) {
         Object.entries(value).forEach(([nestedKey, nestedValue]) => {
-          flattened.flat_data[`${key}_${nestedKey}`] = nestedValue;
+          flattened.flat_data![`${key}_${nestedKey}`] = nestedValue;
         });
       } else {
-        flattened.flat_data[key] = value;
+        flattened.flat_data![key] = value;
       }
     });
 

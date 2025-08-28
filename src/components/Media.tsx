@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Plus, Image as ImageIcon, AlertCircle, Clock, MoreVertical, Trash2, Link as LinkIcon } from 'lucide-react';
@@ -22,7 +23,7 @@ import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useMedia } from '@/hooks/useMedia';
 
-export default function Media({ pathname }: { pathname: string }) {
+export default function Media({ pathname: _pathname }: { pathname: string }) {
   const { mediaItems, loading, error, refreshMedia } = useMedia();
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -132,11 +133,13 @@ const handleDelete = async (id: string) => {
           mediaItems.map((item) => (
             <Card key={item.id} className="bg-[#1c1c1e] border-0 hover:shadow-md transition-shadow">
               <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-                <div className="w-full aspect-video bg-[#2f2f2d] rounded-md overflow-hidden">
-                  <img
+                <div className="w-full aspect-video bg-[#2f2f2d] rounded-md overflow-hidden relative">
+                  <Image
                     src={item.url}
                     alt={item.filename}
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   />
                 </div>
                 <DropdownMenu>

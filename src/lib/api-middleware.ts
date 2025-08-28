@@ -49,7 +49,7 @@ export function withValidation<T>(
       }
       
       return handler(request, body, context);
-    } catch (error) {
+    } catch (_error) {
       return NextResponse.json(
         { error: 'Invalid JSON in request body' },
         { status: 400 }

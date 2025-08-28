@@ -88,7 +88,7 @@ export async function POST(request: Request) {
           if (!Array.isArray(existingFile)) {
             sha = existingFile.sha;
           }
-        } catch (error) {
+        } catch (_error) {
           // File doesn't exist yet, that's okay
         }
 

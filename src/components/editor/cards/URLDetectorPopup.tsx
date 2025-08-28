@@ -11,7 +11,7 @@ interface URLDetectorPopupProps {
 
 export function URLDetectorPopup({ 
   cardType, 
-  url, 
+  url: _url, 
   onTransform,
   position 
 }: URLDetectorPopupProps) {

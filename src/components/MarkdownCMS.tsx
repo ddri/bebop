@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useTopics } from '@/hooks/useTopics';
 import { ApiErrorBoundary } from '@/components/ErrorBoundary';
-import { LoadingButton, GridLoading, PageLoading } from '@/components/ui/loading';
+import { LoadingButton, PageLoading } from '@/components/ui/loading';
 import { 
   Plus, 
   Trash2, 
@@ -27,7 +27,7 @@ const MarkdownEditor = dynamic(
   { ssr: false }
 );
 
-interface Topic {
+interface _Topic {
   id: string;
   name: string;
   content: string;
@@ -39,12 +39,12 @@ interface Topic {
 
 type SortOption = 'newest' | 'oldest' | 'az' | 'za';
 
-export function MarkdownCMS({ pathname }: { pathname: string }) {
+export function MarkdownCMS({ pathname: _pathname }: { pathname: string }) {
   const { theme } = useTheme();
   const { topics, loading, error, createTopic, updateTopic, deleteTopic } = useTopics();
 
   const [mounted, setMounted] = useState(false);
-  const [selectedDocs, setSelectedDocs] = useState<string[]>([]);
+  const [_selectedDocs, setSelectedDocs] = useState<string[]>([]);
   const [newDocName, setNewDocName] = useState('');
   const [newDocContent, setNewDocContent] = useState('');
   const [newDocDescription, setNewDocDescription] = useState('');
@@ -346,7 +346,7 @@ export function MarkdownCMS({ pathname }: { pathname: string }) {
         </ApiErrorBoundary>
         {!sortedTopics.length && (
           <div className="text-center py-8 text-slate-300">
-            No topics yet. Click "New Topic" to create one.
+            No topics yet. Click &quot;New Topic&quot; to create one.
           </div>
         )}
       </div>

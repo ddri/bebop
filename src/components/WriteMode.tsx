@@ -30,7 +30,6 @@ import {
   Save,
   Maximize,
   Minimize,
-  Image as ImageIcon,
   Video,
   Eye,
   EyeOff,
@@ -232,7 +231,7 @@ const WriteMode = () => {
       setTopicName('');
       setTopicDescription('');
       setShowSaveDialog(false);
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to save topic. Please try again.');
     } finally {
       setSaving(false);

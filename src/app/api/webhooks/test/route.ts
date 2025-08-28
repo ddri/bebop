@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
 import { WebhookService } from '@/lib/webhooks/webhook-service';
+import { WebhookEvent } from '@/lib/webhooks/types';
 
 const webhookService = new WebhookService();
 
@@ -35,8 +36,23 @@ export async function POST(req: Request) {
       );
     }
 
+    // Convert Prisma webhook to WebhookConfig format
+    const webhookConfig = {
+      id: webhook.id,
+      name: webhook.name,
+      url: webhook.url,
+      enabled: webhook.enabled,
+      events: webhook.events as WebhookEvent[],
+      headers: webhook.headers ? JSON.parse(JSON.stringify(webhook.headers)) : undefined,
+      secret: webhook.secret || undefined,
+      retryCount: webhook.retryCount,
+      retryDelay: webhook.retryDelay,
+      createdAt: webhook.createdAt,
+      updatedAt: webhook.updatedAt,
+    };
+
     // Test the webhook
-    const success = await webhookService.testWebhook(webhook);
+    const success = await webhookService.testWebhook(webhookConfig);
 
     // Log the test
     await prisma.webhookDelivery.create({

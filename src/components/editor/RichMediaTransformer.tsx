@@ -144,7 +144,7 @@ export function processRichMediaMarkdown(markdown: string): string {
           default:
             return match;
         }
-      } catch (e) {
+      } catch (_e) {
         return match;
       }
     }

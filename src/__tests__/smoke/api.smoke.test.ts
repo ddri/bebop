@@ -91,7 +91,7 @@ describe('API Smoke Tests', () => {
 
       const { POST } = await import('@/app/api/publishing-plans/process-scheduled/route')
       
-      const request = new Request('http://localhost/api/publishing-plans/process-scheduled', {
+      const _request = new Request('http://localhost/api/publishing-plans/process-scheduled', {
         method: 'POST'
       })
 
@@ -125,7 +125,7 @@ describe('API Smoke Tests', () => {
 
       const { POST } = await import('@/app/api/scheduler/trigger/route')
       
-      const request = new Request('http://localhost/api/scheduler/trigger', {
+      const _request = new Request('http://localhost/api/scheduler/trigger', {
         method: 'POST'
       })
 

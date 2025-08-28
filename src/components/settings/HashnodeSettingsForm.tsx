@@ -18,7 +18,7 @@ export function HashnodeSettingsForm() {
   const { getSettings, saveSettings } = useHashnodeSettings();
   const [formData, setFormData] = useState<FormData>({ token: '', publicationId: '' });
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
-  const [isValidating, setIsValidating] = useState(false);
+  const [, ] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<ConnectionTestResult | null>(null);

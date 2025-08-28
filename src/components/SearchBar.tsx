@@ -321,7 +321,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
             </>
           ) : query && !isLoading ? (
             <div className="p-4 text-center text-slate-400">
-              <p className="text-sm">No results found for "{query}"</p>
+              <p className="text-sm">No results found for &quot;{query}&quot;</p>
             </div>
           ) : null}
         </div>

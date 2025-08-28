@@ -19,6 +19,15 @@ export const devToSettingsSchema = z.object({
     .regex(/^[a-zA-Z0-9_-]+$/, 'API key contains invalid characters')
 });
 
+export const beehiivSettingsSchema = z.object({
+  token: z.string()
+    .min(1, 'API Key is required')
+    .min(20, 'API key appears to be too short'),
+  publicationId: z.string()
+    .min(1, 'Publication ID is required')
+    .regex(/^pub_[0-9a-fA-F\-]+$/, 'Publication ID should start with "pub_" and contain valid characters')
+});
+
 // Base social credentials schema
 export const socialCredentialsSchema = z.object({
   username: z.string()
@@ -113,6 +122,24 @@ export function validateHashnodeSettings(data: unknown): ValidationResult {
 export function validateDevToSettings(data: unknown): ValidationResult {
   try {
     devToSettingsSchema.parse(data);
+    return { isValid: true, errors: {} };
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      const errors: Record<string, string> = {};
+      error.errors.forEach((err) => {
+        if (err.path.length > 0) {
+          errors[err.path[0] as string] = err.message;
+        }
+      });
+      return { isValid: false, errors };
+    }
+    return { isValid: false, errors: { general: 'Validation failed' } };
+  }
+}
+
+export function validateBeehiivSettings(data: unknown): ValidationResult {
+  try {
+    beehiivSettingsSchema.parse(data);
     return { isValid: true, errors: {} };
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -268,6 +295,58 @@ export async function testDevToConnection(token: string): Promise<ConnectionTest
       success: true,
       message: `Connected as ${userData.name} (@${userData.username})`,
       details: userData
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: 'Connection failed',
+      details: error instanceof Error ? error.message : 'Network error'
+    };
+  }
+}
+
+export async function testBeehiivConnection(token: string, publicationId: string): Promise<ConnectionTestResult> {
+  try {
+    const response = await fetch(`https://api.beehiiv.com/v2/publications/${publicationId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        return {
+          success: false,
+          message: 'Invalid API key'
+        };
+      }
+      if (response.status === 404) {
+        return {
+          success: false,
+          message: 'Publication not found with the provided ID'
+        };
+      }
+      return {
+        success: false,
+        message: `Connection failed (${response.status})`
+      };
+    }
+
+    const publicationData = await response.json();
+    const publication = publicationData.data;
+    
+    if (publication) {
+      return {
+        success: true,
+        message: `Connected to "${publication.name}"`,
+        details: publication
+      };
+    }
+
+    return {
+      success: false,
+      message: 'Invalid response from Beehiiv API'
     };
   } catch (error) {
     return {

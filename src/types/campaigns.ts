@@ -43,5 +43,6 @@ export interface Platform {
 export const PLATFORMS: Platform[] = [
   { id: 'devto', name: 'Dev.to' },
   { id: 'hashnode', name: 'Hashnode' },
+  { id: 'beehiiv', name: 'Beehiiv' },
   { id: 'medium', name: 'Medium' }
 ];

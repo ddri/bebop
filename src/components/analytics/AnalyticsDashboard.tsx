@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { 
   TrendingUp, 
-  TrendingDown, 
   Users, 
   Eye, 
   Clock, 
@@ -75,11 +74,7 @@ export function AnalyticsDashboard() {
   const [period, setPeriod] = useState('7');
   const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    loadMetrics();
-  }, [period]);
-
-  const loadMetrics = async () => {
+  const loadMetrics = useCallback(async () => {
     setLoading(true);
     try {
       const response = await fetch(`/api/analytics/metrics?type=dashboard&days=${period}`);
@@ -93,7 +88,11 @@ export function AnalyticsDashboard() {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [period]);
+
+  useEffect(() => {
+    loadMetrics();
+  }, [loadMetrics]);
 
   const handleRefresh = () => {
     setRefreshing(true);

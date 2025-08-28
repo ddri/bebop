@@ -17,7 +17,6 @@ export default defineConfig({
     },
     // Ensure tests exit properly
     watch: false,
-    run: true,
     testTimeout: 10000,
     hookTimeout: 10000,
     teardownTimeout: 1000,

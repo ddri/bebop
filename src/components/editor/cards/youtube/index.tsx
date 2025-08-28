@@ -5,7 +5,7 @@ import { CardDefinition, CardData } from '../types';
 import { YouTubeEditor } from './YouTubeEditor';
 import { YouTubePreview } from './YouTubePreview';
 
-interface YouTubeMetadata {
+interface _YouTubeMetadata {
   videoId: string;
   title?: string;
   thumbnail?: string;
