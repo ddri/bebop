@@ -35,6 +35,7 @@ export interface UpdateContentStagingInput {
 
 export const useContentStaging = (campaignId?: string) => {
   const [stagingItems, setStagingItems] = useState<ContentStaging[]>([]);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -150,6 +151,104 @@ export const useContentStaging = (campaignId?: string) => {
     });
   }, [updateContentStaging]);
 
+  // Bulk operations
+  const bulkUpdateStatus = useCallback(async (ids: string[], status: 'draft' | 'ready' | 'scheduled', scheduledFor?: string) => {
+    const errors: Error[] = [];
+    const successes: ContentStaging[] = [];
+    
+    for (const id of ids) {
+      try {
+        const updated = await updateContentStaging(id, { 
+          status,
+          ...(status === 'scheduled' && scheduledFor ? { scheduledFor } : {}),
+          ...(status === 'draft' ? { scheduledFor: null } : {})
+        });
+        successes.push(updated);
+      } catch (err) {
+        errors.push(err instanceof Error ? err : new Error(`Failed to update ${id}`));
+      }
+    }
+    
+    if (errors.length > 0) {
+      setError(new Error(`Failed to update ${errors.length} of ${ids.length} items`));
+    }
+    
+    // Clear selection after bulk operation
+    setSelectedIds(new Set());
+    
+    return { successes, errors };
+  }, [updateContentStaging]);
+
+  const bulkDelete = useCallback(async (ids: string[]) => {
+    const errors: Error[] = [];
+    
+    for (const id of ids) {
+      try {
+        await deleteContentStaging(id);
+      } catch (err) {
+        errors.push(err instanceof Error ? err : new Error(`Failed to delete ${id}`));
+      }
+    }
+    
+    if (errors.length > 0) {
+      setError(new Error(`Failed to delete ${errors.length} of ${ids.length} items`));
+    }
+    
+    // Clear selection after bulk operation
+    setSelectedIds(new Set());
+    
+    return errors.length === 0;
+  }, [deleteContentStaging]);
+
+  const bulkUpdatePlatforms = useCallback(async (ids: string[], platforms: string[]) => {
+    const errors: Error[] = [];
+    const successes: ContentStaging[] = [];
+    
+    for (const id of ids) {
+      try {
+        const updated = await updateContentStaging(id, { platforms });
+        successes.push(updated);
+      } catch (err) {
+        errors.push(err instanceof Error ? err : new Error(`Failed to update ${id}`));
+      }
+    }
+    
+    if (errors.length > 0) {
+      setError(new Error(`Failed to update ${errors.length} of ${ids.length} items`));
+    }
+    
+    // Clear selection after bulk operation
+    setSelectedIds(new Set());
+    
+    return { successes, errors };
+  }, [updateContentStaging]);
+
+  // Selection management
+  const toggleSelection = useCallback((id: string) => {
+    setSelectedIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  }, []);
+
+  const selectAll = useCallback(() => {
+    setSelectedIds(new Set(stagingItems.map(item => item.id)));
+  }, [stagingItems]);
+
+  const selectNone = useCallback(() => {
+    setSelectedIds(new Set());
+  }, []);
+
+  const selectByStatus = useCallback((status: 'draft' | 'ready' | 'scheduled') => {
+    const itemsWithStatus = stagingItems.filter(item => item.status === status);
+    setSelectedIds(new Set(itemsWithStatus.map(item => item.id)));
+  }, [stagingItems]);
+
   // Get staging items by status
   const draftItems = stagingItems.filter(item => item.status === 'draft');
   const readyItems = stagingItems.filter(item => item.status === 'ready');
@@ -160,6 +259,7 @@ export const useContentStaging = (campaignId?: string) => {
     draftItems,
     readyItems,
     scheduledItems,
+    selectedIds,
     loading,
     error,
     createContentStaging,
@@ -168,6 +268,15 @@ export const useContentStaging = (campaignId?: string) => {
     moveToReady,
     moveToScheduled,
     moveToDraft,
+    // Bulk operations
+    bulkUpdateStatus,
+    bulkDelete,
+    bulkUpdatePlatforms,
+    // Selection management
+    toggleSelection,
+    selectAll,
+    selectNone,
+    selectByStatus,
     refetch: fetchContentStaging,
   };
 };

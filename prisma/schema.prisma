@@ -84,6 +84,30 @@ model Campaign {
   @@map("campaigns")
 }
 
+model CampaignTemplate {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String?
+  category    String?   // e.g., "product_launch", "content_series", "event_promotion"
+  isPublic    Boolean   @default(false) // false = user template, true = shared/system template
+  userId      String?   // Owner of the template (null for system templates)
+  
+  // Template structure
+  structure   Json      // Stores the campaign structure with content slots
+  
+  // Usage tracking
+  usageCount  Int       @default(0)
+  lastUsedAt  DateTime?
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([category])
+  @@index([isPublic])
+  @@map("campaign_templates")
+}
+
 model Webhook {
   id        String    @id @default(auto()) @map("_id") @db.ObjectId
   userId    String

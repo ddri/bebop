@@ -14,7 +14,8 @@ import {
   BarChart3,
   Calendar,
   FileText,
-  Users
+  Users,
+  Save
 } from 'lucide-react';
 import Layout from '@/components/Layout';
 import { useContentStaging } from '@/hooks/useContentStaging';
@@ -22,9 +23,12 @@ import { useManualTasks } from '@/hooks/useManualTasks';
 import { useTopics } from '@/hooks/useTopics';
 import { useCampaigns } from '@/hooks/useCampaigns';
 import ContentStagingPipeline from './ContentStagingPipeline';
+import ContentStagingPipelineWithBulk from './ContentStagingPipelineWithBulk';
 import ManualTaskQueue from './ManualTaskQueue';
+import CampaignTimeline from './CampaignTimeline';
 import CampaignDetails from '@/components/CampaignDetails';
 import CampaignMetrics from '@/components/CampaignMetrics';
+import { CreateTemplateFromCampaign } from './CreateTemplateFromCampaign';
 
 interface CampaignOrchestrationDashboardProps {
   campaignId: string;
@@ -39,18 +43,29 @@ export const CampaignOrchestrationDashboard: React.FC<CampaignOrchestrationDashb
   const { campaigns } = useCampaigns();
   const { topics } = useTopics();
   const [error, setError] = useState<string | null>(null);
+  const [showSaveAsTemplate, setShowSaveAsTemplate] = useState(false);
 
   // New orchestration hooks
   const {
     draftItems,
     readyItems,
     scheduledItems,
+    selectedIds,
     loading: stagingLoading,
     error: stagingError,
     moveToReady,
     moveToScheduled,
     moveToDraft,
-    createContentStaging
+    createContentStaging,
+    // Bulk operations
+    bulkUpdateStatus,
+    bulkDelete,
+    bulkUpdatePlatforms,
+    // Selection management
+    toggleSelection,
+    selectAll,
+    selectNone,
+    selectByStatus
   } = useContentStaging(campaignId);
 
   const {
@@ -133,12 +148,22 @@ export const CampaignOrchestrationDashboard: React.FC<CampaignOrchestrationDashb
             Campaign Orchestration
           </Badge>
         </div>
-        <Button 
-          className="bg-[#E669E8] hover:bg-[#d15dd3] text-white"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Add Content
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline"
+            onClick={() => setShowSaveAsTemplate(true)}
+            className="text-white border-slate-600 hover:bg-slate-800"
+          >
+            <Save className="w-4 h-4 mr-2" />
+            Save as Template
+          </Button>
+          <Button 
+            className="bg-[#E669E8] hover:bg-[#d15dd3] text-white"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add Content
+          </Button>
+        </div>
       </div>
 
       {/* Campaign Details */}
@@ -175,17 +200,25 @@ export const CampaignOrchestrationDashboard: React.FC<CampaignOrchestrationDashb
           </TabsTrigger>
         </TabsList>
 
-        {/* Content Staging Pipeline */}
+        {/* Content Staging Pipeline with Bulk Operations */}
         <TabsContent value="staging">
-          <ContentStagingPipeline
+          <ContentStagingPipelineWithBulk
             draftItems={draftItems}
             readyItems={readyItems}
             scheduledItems={scheduledItems}
+            selectedIds={selectedIds}
             topics={topics}
             onMoveToReady={moveToReady}
             onMoveToScheduled={moveToScheduled}
             onMoveToDraft={moveToDraft}
             onCreateManualTask={handleCreateManualTask}
+            onToggleSelection={toggleSelection}
+            onSelectAll={selectAll}
+            onSelectNone={selectNone}
+            onSelectByStatus={selectByStatus}
+            onBulkUpdateStatus={bulkUpdateStatus}
+            onBulkDelete={bulkDelete}
+            onBulkUpdatePlatforms={bulkUpdatePlatforms}
             loading={stagingLoading}
           />
         </TabsContent>
@@ -202,18 +235,20 @@ export const CampaignOrchestrationDashboard: React.FC<CampaignOrchestrationDashb
           />
         </TabsContent>
 
-        {/* Campaign Timeline - Placeholder */}
+        {/* Campaign Timeline */}
         <TabsContent value="calendar">
-          <Card className="bg-[#1c1c1e] border-slate-700">
-            <CardHeader>
-              <CardTitle className="text-white">Campaign Timeline</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-12 text-slate-400">
-                Campaign timeline visualization coming soon...
-              </div>
-            </CardContent>
-          </Card>
+          <CampaignTimeline
+            campaignId={campaignId}
+            stagingItems={[...draftItems, ...readyItems, ...scheduledItems]}
+            tasks={tasks}
+            publishingPlans={campaign.publishingPlans || []}
+            topics={topics}
+            onEventClick={(event) => {
+              console.log('Timeline event clicked:', event);
+              // TODO: Open detail modal or navigate to item
+            }}
+            loading={stagingLoading || tasksLoading}
+          />
         </TabsContent>
 
         {/* Analytics - Use existing component */}
@@ -221,6 +256,18 @@ export const CampaignOrchestrationDashboard: React.FC<CampaignOrchestrationDashb
           <CampaignMetrics campaign={campaign} />
         </TabsContent>
       </Tabs>
+
+      {/* Save as Template Modal */}
+      <CreateTemplateFromCampaign
+        campaignId={campaignId}
+        campaignName={campaign.name}
+        isOpen={showSaveAsTemplate}
+        onClose={() => setShowSaveAsTemplate(false)}
+        onSuccess={() => {
+          setShowSaveAsTemplate(false);
+          router.push('/campaigns/templates');
+        }}
+      />
     </Layout>
   );
 };

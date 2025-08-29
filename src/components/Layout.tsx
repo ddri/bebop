@@ -42,9 +42,15 @@ export default function Layout({ children, pathname }: LayoutProps) {
               </Link>
               <Link 
                 href="/campaigns" 
-                className={`${pathname === '/campaigns' ? 'text-[#E669E8] font-semibold' : 'hover:text-[#E669E8]'} transition-colors`}
+                className={`${pathname?.startsWith('/campaigns') ? 'text-[#E669E8] font-semibold' : 'hover:text-[#E669E8]'} transition-colors`}
               >
                 Campaigns
+              </Link>
+              <Link 
+                href="/campaigns/templates" 
+                className={`${pathname === '/campaigns/templates' ? 'text-[#E669E8] font-semibold' : 'hover:text-[#E669E8]'} transition-colors`}
+              >
+                Templates
               </Link>
               <Link 
                 href="/media" 
