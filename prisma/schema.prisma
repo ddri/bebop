@@ -78,6 +78,8 @@ model Campaign {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   publishingPlans PublishingPlan[]
+  contentStaging ContentStaging[]
+  manualTasks ManualTask[]
 
   @@map("campaigns")
 }
@@ -203,4 +205,56 @@ model PublishingPlan {
 
   @@unique([campaignId, topicId, platform])
   @@map("publishingPlans")
+}
+
+model ContentStaging {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  campaignId  String    @db.ObjectId
+  topicId     String    @db.ObjectId
+  
+  // Simple 3-state workflow: DRAFT -> READY -> SCHEDULED
+  status      String    @default("draft") // draft, ready, scheduled
+  
+  // Platforms this content will be published to
+  platforms   String[]  // e.g., ["hashnode", "devto", "medium", "linkedin"]
+  
+  // Scheduling
+  scheduledFor DateTime?
+  
+  // Relationships
+  campaign    Campaign  @relation(fields: [campaignId], references: [id])
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([campaignId, topicId], map: "campaignId_topicId")
+  @@map("contentStaging")
+}
+
+model ManualTask {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  campaignId  String    @db.ObjectId
+  contentStagingId String? @db.ObjectId
+  
+  // Task details
+  title       String
+  description String?
+  platform    String?   // e.g., "medium", "linkedin", "twitter"
+  
+  // Task management
+  status      String    @default("todo") // todo, in_progress, completed
+  dueDate     DateTime?
+  completedAt DateTime?
+  
+  // Instructions and notes
+  instructions String?
+  notes       String?
+  
+  // Relationships
+  campaign    Campaign  @relation(fields: [campaignId], references: [id])
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("manualTasks")
 }

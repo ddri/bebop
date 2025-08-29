@@ -19,9 +19,52 @@ export interface Campaign {
   name: string;
   description?: string;
   status: CampaignStatus;
+  startDate?: string;
+  endDate?: string;
   createdAt: string;
   updatedAt: string;
   publishingPlans: PublishingPlan[];
+  contentStaging: ContentStaging[];
+  manualTasks: ManualTask[];
+}
+
+export interface ContentStaging {
+  id: string;
+  campaignId: string;
+  topicId: string;
+  status: 'draft' | 'ready' | 'scheduled';
+  platforms: string[];
+  scheduledFor?: string;
+  campaign: {
+    id: string;
+    name: string;
+  };
+  topic?: {
+    id: string;
+    name: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ManualTask {
+  id: string;
+  campaignId: string;
+  contentStagingId?: string;
+  title: string;
+  description?: string;
+  platform?: string;
+  status: 'todo' | 'in_progress' | 'completed';
+  dueDate?: string;
+  completedAt?: string;
+  instructions?: string;
+  notes?: string;
+  campaign: {
+    id: string;
+    name: string;
+  };
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface CreateCampaignInput {
