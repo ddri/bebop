@@ -4,7 +4,7 @@ import { authenticateRequest } from '@/lib/auth';
 import { validateContentStaging } from '@/lib/validation/campaign-validation';
 import { validateContentStagingReferences } from '@/lib/validation/referential-integrity';
 
-export async function GET() {
+export async function GET(request: Request) {
   // Check authentication
   const authResult = await authenticateRequest();
   if (authResult.error) {
@@ -12,7 +12,13 @@ export async function GET() {
   }
 
   try {
+    const { searchParams } = new URL(request.url);
+    const campaignId = searchParams.get('campaignId');
+    
+    const whereClause = campaignId ? { campaignId } : {};
+    
     const contentStaging = await prisma.contentStaging.findMany({
+      where: whereClause,
       orderBy: {
         createdAt: 'desc'
       },
@@ -52,7 +58,7 @@ export async function POST(request: Request) {
 
     // Validate input data with Zod
     const validation = validateContentStaging(body);
-    if (!validation.success) {
+    if (!validation.success || !validation.data) {
       return NextResponse.json(
         { 
           error: 'Validation failed',

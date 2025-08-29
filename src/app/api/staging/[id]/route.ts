@@ -72,7 +72,7 @@ export async function PUT(
 
     // Validate input data
     const validation = validateContentStagingUpdate(body);
-    if (!validation.success) {
+    if (!validation.success || !validation.data) {
       return NextResponse.json(
         { 
           error: 'Validation failed',
@@ -83,7 +83,11 @@ export async function PUT(
     }
 
     // Build update data
-    const updateData: any = {};
+    const updateData: {
+      status?: 'draft' | 'ready' | 'scheduled';
+      platforms?: string[];
+      scheduledFor?: Date | null;
+    } = {};
     if (validation.data.status) updateData.status = validation.data.status;
     if (validation.data.platforms) updateData.platforms = validation.data.platforms;
     if (validation.data.scheduledFor !== undefined) {

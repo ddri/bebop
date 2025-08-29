@@ -49,7 +49,7 @@ export async function POST(request: Request) {
 
     // Validate input data with Zod
     const validation = validateManualTask(body);
-    if (!validation.success) {
+    if (!validation.success || !validation.data) {
       return NextResponse.json(
         { 
           error: 'Validation failed',

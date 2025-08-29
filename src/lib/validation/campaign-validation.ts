@@ -65,14 +65,14 @@ export const contentStagingUpdateSchema = contentStagingSchema.partial().omit({ 
 export const manualTaskUpdateSchema = manualTaskSchema.partial().omit({ campaignId: true });
 
 // Validation result types
-export interface ValidationResult {
+export interface ValidationResult<T = unknown> {
   success: boolean;
   errors: Record<string, string>;
-  data?: any;
+  data?: T;
 }
 
 // Validation helper functions
-export function validateContentStaging(data: unknown): ValidationResult {
+export function validateContentStaging(data: unknown): ValidationResult<z.infer<typeof contentStagingSchema>> {
   try {
     const result = contentStagingSchema.parse(data);
     return {
@@ -99,7 +99,7 @@ export function validateContentStaging(data: unknown): ValidationResult {
   }
 }
 
-export function validateContentStagingUpdate(data: unknown): ValidationResult {
+export function validateContentStagingUpdate(data: unknown): ValidationResult<z.infer<typeof contentStagingUpdateSchema>> {
   try {
     const result = contentStagingUpdateSchema.parse(data);
     return {
@@ -126,7 +126,7 @@ export function validateContentStagingUpdate(data: unknown): ValidationResult {
   }
 }
 
-export function validateManualTask(data: unknown): ValidationResult {
+export function validateManualTask(data: unknown): ValidationResult<z.infer<typeof manualTaskSchema>> {
   try {
     const result = manualTaskSchema.parse(data);
     return {
@@ -153,7 +153,7 @@ export function validateManualTask(data: unknown): ValidationResult {
   }
 }
 
-export function validateManualTaskUpdate(data: unknown): ValidationResult {
+export function validateManualTaskUpdate(data: unknown): ValidationResult<z.infer<typeof manualTaskUpdateSchema>> {
   try {
     const result = manualTaskUpdateSchema.parse(data);
     return {
