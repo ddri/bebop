@@ -138,12 +138,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     if (onResultSelect) {
       onResultSelect(result);
     } else {
-      // Default navigation behavior
-      if (result.type === 'topic') {
-        router.push(`/topics?highlight=${result.id}`);
-      } else {
-        router.push(`/collections?highlight=${result.id}`);
-      }
+      // Default navigation behavior - all results are topics
+      router.push(`/topics?highlight=${result.id}`);
     }
     setShowResults(false);
     setQuery('');
@@ -192,11 +188,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
   // Get result icon
   const getResultIcon = (type: 'topic' | 'collection') => {
-    return type === 'topic' ? (
-      <FileText className="h-4 w-4 text-slate-400" />
-    ) : (
-      <FolderOpen className="h-4 w-4 text-slate-400" />
-    );
+    // All results are topics now
+    return <FileText className="h-4 w-4 text-slate-400" />;
   };
 
   // Highlight matching text

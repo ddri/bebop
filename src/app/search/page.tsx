@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Search, FileText, FolderOpen, Clock, ArrowRight, X } from 'lucide-react';
+import { Search, FileText, Clock, ArrowRight, X } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 
 interface SearchResult {
   id: string;
-  type: 'topic' | 'collection';
+  type: 'topic';
   name: string;
   description: string;
   content?: string;
@@ -93,19 +93,13 @@ function SearchPageContent() {
   };
 
   const handleResultClick = (result: SearchResult) => {
-    if (result.type === 'topic') {
-      router.push(`/topics?highlight=${result.id}`);
-    } else {
-      router.push(`/collections?highlight=${result.id}`);
-    }
+    // All results are topics
+    router.push(`/topics?highlight=${result.id}`);
   };
 
-  const getResultIcon = (type: 'topic' | 'collection') => {
-    return type === 'topic' ? (
-      <FileText className="h-5 w-5 text-blue-400" />
-    ) : (
-      <FolderOpen className="h-5 w-5 text-green-400" />
-    );
+  const getResultIcon = (type: 'topic') => {
+    // All results are topics
+    return <FileText className="h-5 w-5 text-blue-400" />;
   };
 
   const highlightMatch = (text: string, query: string) => {
@@ -143,7 +137,7 @@ function SearchPageContent() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch(query)}
-              placeholder="Search topics and collections..."
+              placeholder="Search topics..."
               className={cn(
                 'pl-12 pr-12 py-3 text-base',
                 'bg-slate-800 border-slate-700 text-white',

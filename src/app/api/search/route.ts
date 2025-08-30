@@ -5,10 +5,10 @@ import { executeWithRetryAndErrorHandling } from '@/lib/db-utils';
 
 export interface SearchResult {
   id: string;
-  type: 'topic' | 'collection';
+  type: 'topic';
   name: string;
   description: string;
-  content?: string; // Only for topics
+  content?: string;
   createdAt: string;
   updatedAt: string;
   matches: string[]; // Which fields matched the search
@@ -43,48 +43,26 @@ export async function GET(request: Request) {
   const searchTerm = query.trim();
 
   try {
-    // Search topics and collections in parallel
-    const [topicsResult, collectionsResult] = await Promise.all([
-      // Search topics
-      executeWithRetryAndErrorHandling(
-        () => prisma.topic.findMany({
-          where: {
-            OR: [
-              { name: { contains: searchTerm, mode: 'insensitive' } },
-              { content: { contains: searchTerm, mode: 'insensitive' } },
-              { description: { contains: searchTerm, mode: 'insensitive' } }
-            ]
-          },
-          orderBy: { updatedAt: 'desc' },
-          take: limit,
-          skip: offset
-        }),
-        'search topics'
-      ),
+    // Search topics only
+    const topicsResult = await executeWithRetryAndErrorHandling(
+      () => prisma.topic.findMany({
+        where: {
+          OR: [
+            { name: { contains: searchTerm, mode: 'insensitive' } },
+            { content: { contains: searchTerm, mode: 'insensitive' } },
+            { description: { contains: searchTerm, mode: 'insensitive' } }
+          ]
+        },
+        orderBy: { updatedAt: 'desc' },
+        take: limit,
+        skip: offset
+      }),
+      'search topics'
+    );
 
-      // Search collections
-      executeWithRetryAndErrorHandling(
-        () => prisma.collections.findMany({
-          where: {
-            OR: [
-              { name: { contains: searchTerm, mode: 'insensitive' } },
-              { description: { contains: searchTerm, mode: 'insensitive' } }
-            ]
-          },
-          orderBy: { lastEdited: 'desc' },
-          take: limit,
-          skip: offset
-        }),
-        'search collections'
-      )
-    ]);
-
-    // Handle errors from either search
+    // Handle errors from search
     if (!topicsResult.success) {
       return topicsResult.response;
-    }
-    if (!collectionsResult.success) {
-      return collectionsResult.response;
     }
 
     // Helper function to determine which fields matched
@@ -121,19 +99,8 @@ export async function GET(request: Request) {
       matches: getMatches(topic, ['name', 'description', 'content'])
     }));
 
-    const collectionResults: SearchResult[] = collectionsResult.data.map(collection => ({
-      id: collection.id,
-      type: 'collection' as const,
-      name: collection.name,
-      description: collection.description || '',
-      createdAt: collection.createdAt.toISOString(),
-      updatedAt: collection.lastEdited.toISOString(),
-      matches: getMatches(collection, ['name', 'description'])
-    }));
-
-    // Combine and sort results by relevance (name matches first, then by date)
-    const allResults = [...topicResults, ...collectionResults];
-    const sortedResults = allResults.sort((a, b) => {
+    // Sort results by relevance (name matches first, then by date)
+    const sortedResults = topicResults.sort((a, b) => {
       // Prioritize name matches
       const aNameMatch = a.matches.includes('name');
       const bNameMatch = b.matches.includes('name');
