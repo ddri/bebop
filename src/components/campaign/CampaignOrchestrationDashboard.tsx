@@ -26,6 +26,7 @@ import ContentStagingPipeline from './ContentStagingPipeline';
 import ContentStagingPipelineWithBulk from './ContentStagingPipelineWithBulk';
 import ManualTaskQueue from './ManualTaskQueue';
 import CampaignTimeline from './CampaignTimeline';
+import CampaignAnalyticsDashboard from './CampaignAnalyticsDashboard';
 import CampaignDetails from '@/components/CampaignDetails';
 import CampaignMetrics from '@/components/CampaignMetrics';
 import { CreateTemplateFromCampaign } from './CreateTemplateFromCampaign';
@@ -251,9 +252,12 @@ export const CampaignOrchestrationDashboard: React.FC<CampaignOrchestrationDashb
           />
         </TabsContent>
 
-        {/* Analytics - Use existing component */}
+        {/* Analytics - New comprehensive dashboard */}
         <TabsContent value="analytics">
-          <CampaignMetrics campaign={campaign} />
+          <CampaignAnalyticsDashboard 
+            campaignId={campaignId} 
+            campaignName={campaign.name} 
+          />
         </TabsContent>
       </Tabs>
 
