@@ -171,7 +171,7 @@ async function getContentMetrics(contentId: string, startDate: Date, endDate: Da
   const result = {
     contentId,
     title: content.name,
-    type: 'topic',
+    type: 'topic' as const,
     views,
     uniqueVisitors,
     reads,
