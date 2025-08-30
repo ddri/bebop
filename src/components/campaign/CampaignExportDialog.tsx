@@ -86,7 +86,7 @@ export const CampaignExportDialog: React.FC<CampaignExportDialogProps> = ({
         <DialogHeader>
           <DialogTitle>Export Campaign</DialogTitle>
           <DialogDescription>
-            Export "{campaignName}" for backup or sharing
+            Export &quot;{campaignName}&quot; for backup or sharing
           </DialogDescription>
         </DialogHeader>
 

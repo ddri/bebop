@@ -53,27 +53,6 @@ export class BlueskyClient extends AbstractSocialClient {
     }
   }
 
-  async testConnection(credentials: { identifier: string; password: string }): Promise<{ success: boolean; message?: string; userInfo?: unknown; error?: string }> {
-    try {
-      const testAgent = new BskyAgent({ service: 'https://bsky.social' });
-      const result = await testAgent.login(credentials);
-      
-      return {
-        success: true,
-        message: 'Successfully connected to Bluesky',
-        userInfo: {
-          handle: testAgent.session?.handle,
-          did: testAgent.session?.did
-        }
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to connect to Bluesky'
-      };
-    }
-  }
-
   async logout(): Promise<void> {
     try {
       await this.agent.logout();

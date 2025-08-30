@@ -195,7 +195,7 @@ export function validateExportData(data: unknown): data is CampaignExportData {
   if (!data || typeof data !== 'object') return false;
   const d = data as Record<string, unknown>;
   
-  return (
+  return Boolean(
     d.version === CAMPAIGN_EXPORT_VERSION &&
     d.exportedAt &&
     d.campaign &&

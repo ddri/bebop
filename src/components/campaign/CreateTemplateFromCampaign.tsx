@@ -75,7 +75,7 @@ export const CreateTemplateFromCampaign: React.FC<CreateTemplateFromCampaignProp
         <DialogHeader>
           <DialogTitle>Create Template from Campaign</DialogTitle>
           <DialogDescription>
-            Save "{campaignName}" as a reusable template for future campaigns
+            Save &quot;{campaignName}&quot; as a reusable template for future campaigns
           </DialogDescription>
         </DialogHeader>
 

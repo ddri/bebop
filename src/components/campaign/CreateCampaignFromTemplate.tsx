@@ -73,7 +73,7 @@ export const CreateCampaignFromTemplate: React.FC<CreateCampaignFromTemplateProp
         <DialogHeader>
           <DialogTitle>Create Campaign from Template</DialogTitle>
           <DialogDescription>
-            Create a new campaign based on "{template.name}"
+            Create a new campaign based on &quot;{template.name}&quot;
           </DialogDescription>
         </DialogHeader>
 

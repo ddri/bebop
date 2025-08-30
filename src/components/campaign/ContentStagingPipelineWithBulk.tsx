@@ -34,9 +34,9 @@ interface ContentStagingPipelineWithBulkProps {
   onSelectAll: () => void;
   onSelectNone: () => void;
   onSelectByStatus: (status: 'draft' | 'ready' | 'scheduled') => void;
-  onBulkUpdateStatus: (ids: string[], status: 'draft' | 'ready' | 'scheduled', scheduledFor?: string) => Promise<any>;
+  onBulkUpdateStatus: (ids: string[], status: 'draft' | 'ready' | 'scheduled', scheduledFor?: string) => Promise<void>;
   onBulkDelete: (ids: string[]) => Promise<boolean>;
-  onBulkUpdatePlatforms: (ids: string[], platforms: string[]) => Promise<any>;
+  onBulkUpdatePlatforms: (ids: string[], platforms: string[]) => Promise<void>;
   loading?: boolean;
 }
 

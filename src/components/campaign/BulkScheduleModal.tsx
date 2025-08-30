@@ -61,7 +61,7 @@ export const BulkScheduleModal: React.FC<BulkScheduleModalProps> = ({
         </DialogHeader>
 
         <div className="space-y-4 py-4">
-          <RadioGroup value={scheduleType} onValueChange={(value: any) => setScheduleType(value)}>
+          <RadioGroup value={scheduleType} onValueChange={(value) => setScheduleType(value as 'immediate' | 'specific' | 'staggered')}>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="immediate" id="immediate" />
               <Label htmlFor="immediate" className="flex-1 cursor-pointer">

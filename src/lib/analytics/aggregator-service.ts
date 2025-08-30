@@ -167,11 +167,14 @@ export class AnalyticsAggregatorService {
   private groupEventsByDimensions(events: unknown[]): Map<string, unknown[]> {
     const groups = new Map<string, unknown[]>();
     
-    events.forEach((event: any) => {
-      const key = this.createGroupKey(event.contentId, event.campaignId, event.platform);
-      const existing = groups.get(key) || [];
-      existing.push(event);
-      groups.set(key, existing);
+    events.forEach((event) => {
+      if (typeof event === 'object' && event !== null) {
+        const eventObj = event as { contentId?: string | null; campaignId?: string | null; platform?: string | null };
+        const key = this.createGroupKey(eventObj.contentId || null, eventObj.campaignId || null, eventObj.platform || null);
+        const existing = groups.get(key) || [];
+        existing.push(event);
+        groups.set(key, existing);
+      }
     });
     
     return groups;
