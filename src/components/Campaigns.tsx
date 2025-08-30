@@ -9,14 +9,18 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, Plus, Globe, MoreHorizontal, Edit3 } from 'lucide-react';
+import { AlertCircle, Plus, Globe, MoreHorizontal, Edit3, Download, Upload } from 'lucide-react';
 import { useCampaigns } from '@/hooks/useCampaigns';
 import { CreateCampaignInput } from '@/types/campaigns';
+import { CampaignExportDialog } from './campaign/CampaignExportDialog';
+import { CampaignImportDialog } from './campaign/CampaignImportDialog';
 
 export default function Campaigns() {
   const router = useRouter();
   const { campaigns, loading, error, createCampaign } = useCampaigns();
   const [showNewDialog, setShowNewDialog] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [exportCampaign, setExportCampaign] = useState<{ id: string; name: string } | null>(null);
   const [newCampaignData, setNewCampaignData] = useState<CreateCampaignInput>({
     name: '',
     description: '',
@@ -68,13 +72,23 @@ export default function Campaigns() {
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-semibold text-white">Campaigns</h1>
-        <Button 
-          onClick={() => setShowNewDialog(true)}
-          className="bg-[#E669E8] hover:bg-[#d15dd3] text-white"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          New Campaign
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            onClick={() => setShowImportDialog(true)}
+            variant="outline"
+            className="text-white border-slate-600 hover:bg-slate-800"
+          >
+            <Upload className="w-4 h-4 mr-2" />
+            Import
+          </Button>
+          <Button 
+            onClick={() => setShowNewDialog(true)}
+            className="bg-[#E669E8] hover:bg-[#d15dd3] text-white"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            New Campaign
+          </Button>
+        </div>
       </div>
 
 
@@ -159,11 +173,12 @@ export default function Campaigns() {
                       variant="outline"
                       onClick={(e) => {
                         e.stopPropagation();
-                        // Quick view or preview functionality
+                        setExportCampaign({ id: campaign.id, name: campaign.name });
                       }}
                       className="border-slate-700 text-slate-400 hover:text-white hover:border-slate-600 text-sm h-9 px-3"
+                      title="Export Campaign"
                     >
-                      <Globe className="w-4 h-4" />
+                      <Download className="w-4 h-4" />
                     </Button>
                   </div>
                 </CardContent>
@@ -249,6 +264,25 @@ export default function Campaigns() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Export Dialog */}
+      {exportCampaign && (
+        <CampaignExportDialog
+          isOpen={!!exportCampaign}
+          onClose={() => setExportCampaign(null)}
+          campaignId={exportCampaign.id}
+          campaignName={exportCampaign.name}
+        />
+      )}
+
+      {/* Import Dialog */}
+      <CampaignImportDialog
+        isOpen={showImportDialog}
+        onClose={() => setShowImportDialog(false)}
+        onSuccess={(campaignId) => {
+          router.push(`/campaigns/${campaignId}`);
+        }}
+      />
     </div>
   );
 }
