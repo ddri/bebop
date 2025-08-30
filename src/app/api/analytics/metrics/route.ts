@@ -279,7 +279,10 @@ async function getCampaignMetrics(campaignId: string, startDate: Date, endDate: 
           uniqueVisitors: new Set(contentEvents.map(e => e.visitorId)).size,
           reads,
           completions: contentEvents.filter(e => e.eventType === 'content.complete').length,
-          avgReadTime: Math.round(contentEvents.filter(e => e.eventType === 'content.read' && typeof e.metadata === 'object' && e.metadata && 'readTime' in e.metadata).reduce((sum, e) => sum + (Number(e.metadata?.readTime) || 0), 0) / Math.max(1, reads)),
+          avgReadTime: Math.round(contentEvents.filter(e => e.eventType === 'content.read' && typeof e.metadata === 'object' && e.metadata && 'readTime' in e.metadata).reduce((sum, e) => {
+            const metadata = e.metadata as Record<string, unknown>;
+            return sum + (Number(metadata?.readTime) || 0);
+          }, 0) / Math.max(1, reads)),
           avgScrollDepth: 0,
           shares,
           engagementRate: views > 0 ? ((reads + shares) / views) * 100 : 0,
@@ -554,7 +557,10 @@ async function getDashboardMetrics(userId: string, startDate: Date, endDate: Dat
             uniqueVisitors: 0, // Would need separate calculation
             reads: metrics.reads,
             completions: contentEvents.filter(e => e.eventType === 'content.complete').length,
-            avgReadTime: Math.round(contentEvents.filter(e => e.eventType === 'content.read' && typeof e.metadata === 'object' && e.metadata && 'readTime' in e.metadata).reduce((sum, e) => sum + (Number(e.metadata?.readTime) || 0), 0) / Math.max(1, metrics.reads)),
+            avgReadTime: Math.round(contentEvents.filter(e => e.eventType === 'content.read' && typeof e.metadata === 'object' && e.metadata && 'readTime' in e.metadata).reduce((sum, e) => {
+              const metadata = e.metadata as Record<string, unknown>;
+              return sum + (Number(metadata?.readTime) || 0);
+            }, 0) / Math.max(1, metrics.reads)),
             avgScrollDepth: 0, // Would need separate calculation
             shares: metrics.shares,
             engagementRate,
@@ -604,7 +610,10 @@ async function getDashboardMetrics(userId: string, startDate: Date, endDate: Dat
       uniqueVisitors: new Set(contentEvents.map(e => e.visitorId)).size,
       reads,
       completions: contentEvents.filter(e => e.eventType === 'content.complete').length,
-      avgReadTime: Math.round(contentEvents.filter(e => e.eventType === 'content.read' && typeof e.metadata === 'object' && e.metadata && 'readTime' in e.metadata).reduce((sum, e) => sum + (Number(e.metadata?.readTime) || 0), 0) / Math.max(1, reads)),
+      avgReadTime: Math.round(contentEvents.filter(e => e.eventType === 'content.read' && typeof e.metadata === 'object' && e.metadata && 'readTime' in e.metadata).reduce((sum, e) => {
+        const metadata = e.metadata as Record<string, unknown>;
+        return sum + (Number(metadata?.readTime) || 0);
+      }, 0) / Math.max(1, reads)),
       avgScrollDepth: 0,
       shares,
       engagementRate: analyticsService.calculateEngagementRate(views, reads, shares),
