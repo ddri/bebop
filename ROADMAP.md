@@ -38,66 +38,77 @@ The roadmap is roughly organised by the release cycle, which is based on my pers
     - ✅ MongoDB text indexing for efficient search
     - ✅ Smart result highlighting and relevance scoring
 
-### Planning for version 0.4.0 - Campaign Orchestration Platform (**NEW STRATEGIC DIRECTION**)
+### ✅ Completed in version 0.4.0 - Campaign Orchestration Platform
 
 **Vision**: Transform Bebop from a publishing tool into a comprehensive campaign orchestration platform that provides unified visibility and control over all campaign content, both automated and manual.
 
-Based on research of leading platforms (HubSpot, CoSchedule, Marketo, Buffer, Hootsuite), this version focuses on campaign-centric workflows that excel at visual organization + workflow automation + human oversight.
-
-**Core Features - Campaign Orchestration Hub:**
+**Completed Features:**
 
 - **Campaign Management System**
-    - [ ] **Unified Campaign Dashboard** - Central hub grouping all content by campaign (inspired by HubSpot's campaign tagging)
-    - [ ] **Content Staging Area** - Pre-flight zone where all campaign content lives before scheduling
-    - [ ] **Campaign Timeline View** - Gantt-style visualization of entire campaign lifecycle
-    - [ ] **Template-Based Campaign Creation** - Reusable campaign structures for scaling
+    - ✅ **Unified Campaign Dashboard** - Central hub with tabbed interface for content pipeline, tasks, timeline, and analytics
+    - ✅ **Content Staging Area** - Three-stage pipeline: Draft → Ready → Scheduled with drag-and-drop workflow
+    - ✅ **Campaign Timeline View** - Week-based Gantt visualization with hourly grid and event types
+    - ✅ **Template-Based Campaign Creation** - Full template system with 4 pre-built industry templates
 
-- **Calendar-First Content Scheduling**
-    - [ ] **Multi-View Calendar** - Month/week/day views with drag-and-drop scheduling (CoSchedule pattern)
-    - [ ] **Content State Visualization** - Clear status: Draft → Staged → Scheduled → Published → Manual Action Required
-    - [ ] **Cross-Platform Campaign Calendar** - Unified view of all automated and manual publishing tasks
-    - [ ] **Color-Coded Visual Organization** - Campaign-based visual differentiation
+- **Bulk Operations & Import/Export**
+    - ✅ **Bulk Content Operations** - Multi-select with checkboxes for batch status updates, scheduling, and platform assignment
+    - ✅ **Campaign Export/Import** - Complete JSON/CSV export with privacy options and conflict resolution on import
+    - ✅ **Bulk Scheduling Modal** - Immediate, specific, and staggered scheduling options
+    - ✅ **Bulk Platform Assignment** - Visual platform selector with replace/add/remove modes
 
-- **Manual Task Management & Mixed Workflows**
-    - [ ] **Manual Publishing Queue** - "Ready to post manually" section with platform-specific formatting
-    - [ ] **Task Automation Templates** - Reusable workflows for different content types (API docs, tutorials, release notes)
-    - [ ] **Manual Action Tracking** - Checkboxes and completion status for platforms like Medium, LinkedIn
-    - [ ] **Platform-Specific Guidelines** - Auto-generated formatting notes and posting instructions
+- **Analytics & Insights**
+    - ✅ **Campaign Analytics Dashboard** - Comprehensive metrics with time range filtering
+    - ✅ **Performance Charts** - Bar charts for views, engagement, and shares over time
+    - ✅ **Platform Breakdown** - Donut chart and detailed platform-specific metrics
+    - ✅ **Goals Progress Tracking** - Visual progress bars with status indicators
+    - ✅ **Engagement Heatmap** - 24-hour activity pattern visualization
 
-- **Technical Content Specialization**
-    - [ ] **Developer-Focused Workflows** - Integration points for code review and technical accuracy checks
-    - [ ] **Cross-Platform Content Adaptation** - Auto-generate Medium, LinkedIn versions from master content
-    - [ ] **Cross-Reference Management** - Track related docs, API changes, product updates within campaigns
-
-**Supporting Infrastructure:**
-
-- **Workflow & Collaboration**
-    - [ ] **Approval Stages** - Technical content accuracy validation workflows
-    - [ ] **Real-Time Collaboration** - Comments and task assignments within campaigns
-    - [ ] **Role-Based Dashboards** - Customized views for content creators, managers, and reviewers
-
-**Quick Wins (maintain momentum):**
-- [ ] **TypeScript cleanup**: Fix remaining 3 `any` types in search route, db-utils, and WriteMode
-- [ ] **useEffect dependencies**: Review and fix missing dependencies in Collections.tsx and other components
-- [ ] **Settings Validation** - Form validation and API key verification
+**Implementation Details:**
+- Created 25+ new components for campaign orchestration
+- Added comprehensive TypeScript types for all new features
+- Implemented hooks for data management (useContentStaging, useManualTasks, useCampaignTimeline, useCampaignAnalytics)
+- Built complete API endpoints for templates, export/import, and analytics
 
 
-### Planning for version 0.5.0
+### Planning for version 0.5.0 - AI & Automation
 
-- **User experience enhancements**
-    - [ ] **User Onboarding** - Welcome tour and empty state guidance
-    - [ ] **Content Organization** - Tags, categories, and advanced filtering
-    - [ ] **Advanced search** - Filters, saved searches, and search history
+- **Campaign Duplication (Priority Feature)**
+    - [ ] **One-Click Duplication** - Quick duplicate with smart defaults (name: "Copy of...", dates adjusted to today, statuses reset)
+    - [ ] **Duplicate Configuration Dialog** - Advanced options for selective copying and date strategies
+    - [ ] **Bulk Duplication for Recurring Campaigns** - Create multiple copies with staggered dates for weekly/monthly campaigns
+    - [ ] **Smart Date Adjustment** - Maintain relative spacing between all campaign items when duplicating
+    - [ ] **Duplicate History Tracking** - Track which campaigns were duplicated from others
+    
+    **Technical Implementation Plan:**
+    - Phase 1: Core API endpoint `/api/campaigns/[id]/duplicate` with basic duplication
+    - Phase 2: Configuration dialog with date adjustment options and selective copying
+    - Phase 3: Bulk duplication wizard for recurring campaign automation
+    - Reuse existing import/export logic for efficiency
 
-- **Platform expansion**
-    - [ ] **LinkedIn integration** - Professional content publishing
-    - [ ] **Twitter/X integration** - Social media content distribution
-    - [ ] **WordPress integration** - Blog platform connectivity
+- **Automated Publishing Rules**
+    - [ ] **Time-Based Rules** - Auto-publish at optimal times based on analytics
+    - [ ] **Engagement Thresholds** - Trigger publishing when engagement reaches targets
+    - [ ] **Cross-Platform Chains** - Publish to Platform B when Platform A succeeds
+    - [ ] **Failure Retry Logic** - Automatic retry with exponential backoff
+    - [ ] **Rule Templates** - Pre-built rules for common scenarios
 
-- **Analytics and insights**
-    - [ ] **Content performance tracking** - Views, engagement, conversions
-    - [ ] **Publishing analytics** - Success rates, optimal timing
-    - [ ] **Campaign effectiveness** - ROI and goal tracking
+- **AI Content Generation**
+    - [ ] **Content Suggestions** - AI-powered topic and headline suggestions
+    - [ ] **Social Media Variations** - Auto-generate platform-specific versions
+    - [ ] **Smart Content Optimization** - SEO and engagement optimization
+    - [ ] **Writing Assistant** - Grammar, tone, and style improvements
+
+- **Advanced Analytics**
+    - [ ] **Predictive Performance** - Forecast campaign success based on historical data
+    - [ ] **A/B Testing Framework** - Built-in split testing for content variations
+    - [ ] **ROI Tracking** - Connect campaigns to business outcomes
+    - [ ] **Competitor Analysis** - Track and compare with competitor campaigns
+
+- **Team Collaboration**
+    - [ ] **Multi-User Support** - Team workspaces with user management
+    - [ ] **Role-Based Permissions** - Editor, publisher, viewer roles
+    - [ ] **Comments & Approvals** - In-line comments and approval workflows
+    - [ ] **Activity Feed** - Real-time updates on team actions
 
 
 ----------
