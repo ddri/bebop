@@ -40,17 +40,20 @@ export class AnalyticsAggregatorService {
       for (const [key, groupEvents] of aggregationGroups.entries()) {
         const { contentId, campaignId, platform } = this.parseGroupKey(key);
         
-        const metrics = await calculator.calculateAggregateMetrics(groupEvents);
+        const metrics = await calculator.calculateAggregateMetrics(groupEvents as Array<{ eventType: string; visitorId?: string; metadata?: unknown }>);
         
-        aggregates.push({
-          contentId,
-          campaignId, 
-          platform,
-          date: startOfDay,
-          hour: null, // Daily aggregate
-          ...metrics,
-          aggregatedAt: new Date()
-        });
+        // Only create aggregates for events with contentId
+        if (contentId) {
+          aggregates.push({
+            contentId,
+            campaignId: campaignId || '',
+            platform: platform || '',
+            date: startOfDay,
+            hour: 0, // Daily aggregate (use 0 for daily)
+            ...metrics,
+            aggregatedAt: new Date()
+          });
+        }
       }
 
       // Upsert aggregates (update if exists, create if new)
@@ -106,17 +109,20 @@ export class AnalyticsAggregatorService {
 
       for (const [key, groupEvents] of aggregationGroups.entries()) {
         const { contentId, campaignId, platform } = this.parseGroupKey(key);
-        const metrics = await calculator.calculateAggregateMetrics(groupEvents);
+        const metrics = await calculator.calculateAggregateMetrics(groupEvents as Array<{ eventType: string; visitorId?: string; metadata?: unknown }>);
         
-        aggregates.push({
-          contentId,
-          campaignId,
-          platform,
-          date: startOfHour,
-          hour,
-          ...metrics,
-          aggregatedAt: new Date()
-        });
+        // Only create aggregates for events with contentId
+        if (contentId) {
+          aggregates.push({
+            contentId,
+            campaignId: campaignId || '',
+            platform: platform || '',
+            date: startOfHour,
+            hour,
+            ...metrics,
+            aggregatedAt: new Date()
+          });
+        }
       }
 
       await prisma.$transaction(
@@ -224,7 +230,19 @@ export class AnalyticsAggregatorService {
       }
     });
 
-    return calculator.computeDashboardFromAggregates(aggregates, userId, startDate, endDate, days);
+    // Map aggregates to match expected type (convert null to undefined)
+    const mappedAggregates = aggregates.map(agg => ({
+      views: agg.views,
+      uniqueVisitors: agg.uniqueVisitors,
+      shares: agg.shares,
+      totalReadTime: agg.totalReadTime,
+      reads: agg.reads,
+      completions: agg.completions,
+      platform: agg.platform || undefined,
+      hour: agg.hour
+    }));
+    
+    return calculator.computeDashboardFromAggregates(mappedAggregates, userId, startDate, endDate, days);
   }
 
   /**
@@ -250,7 +268,15 @@ export class AnalyticsAggregatorService {
       orderBy: { timestamp: 'desc' }
     });
     
-    return calculator.computeDashboardFromEvents(events, userId, startDate, endDate, days);
+    // Map events to match expected type (convert null to undefined)
+    const mappedEvents = events.map(e => ({
+      eventType: e.eventType,
+      visitorId: e.visitorId || undefined,
+      metadata: e.metadata,
+      timestamp: e.timestamp
+    }));
+    
+    return calculator.computeDashboardFromEvents(mappedEvents, userId, startDate, endDate, days);
   }
 
   /**

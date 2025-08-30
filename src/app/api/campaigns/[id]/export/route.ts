@@ -138,12 +138,12 @@ async function exportAsJSON(
     campaign: {
       id: campaign.id,
       name: campaign.name,
-      description: campaign.description,
+      description: campaign.description || undefined,
       status: campaign.status,
       startDate: campaign.startDate?.toISOString(),
       endDate: campaign.endDate?.toISOString(),
-      settings: options.excludeSecrets ? undefined : campaign.settings,
-      metadata: campaign.metadata
+      settings: options.excludeSecrets ? undefined : (campaign.settings as Record<string, unknown> | undefined),
+      metadata: campaign.metadata as Record<string, unknown> | undefined
     },
     
     contentStaging: [],
@@ -167,7 +167,7 @@ async function exportAsJSON(
           name: topic.name,
           description: topic.description || undefined,
           content: topic.content || undefined,
-          metadata: topic.metadata
+          metadata: topic.metadata as Record<string, unknown> | undefined
         } : undefined
       };
     });
@@ -196,8 +196,8 @@ async function exportAsJSON(
       scheduledAt: plan.scheduledAt?.toISOString(),
       publishedAt: plan.publishedAt?.toISOString(),
       status: plan.status,
-      platformPostId: options.excludeSecrets ? undefined : plan.platformPostId,
-      metrics: plan.metrics
+      platformPostId: options.excludeSecrets ? undefined : (plan.platformPostId || undefined),
+      metrics: plan.metrics as Record<string, unknown> | undefined
     }));
   }
 

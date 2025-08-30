@@ -1,4 +1,5 @@
 import prisma from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 import { CampaignTemplateStructure } from '@/types/campaign-templates';
 
 const templates: Array<{
@@ -416,6 +417,7 @@ export async function seedTemplates() {
         await prisma.campaignTemplate.create({
           data: {
             ...template,
+            structure: template.structure as unknown as Prisma.InputJsonValue,
             userId: '000000000000000000000000' // System user ID for public templates
           }
         });

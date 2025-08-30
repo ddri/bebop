@@ -54,7 +54,7 @@ export const TemplateGallery: React.FC<TemplateGalleryProps> = ({
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   // Get unique categories
-  const categories = ['all', ...Array.from(new Set(templates.map(t => t.category)))];
+  const categories = ['all', ...Array.from(new Set(templates.map(t => t.category).filter(Boolean)))] as string[];
 
   // Filter templates
   const filteredTemplates = templates.filter(template => {
@@ -72,7 +72,7 @@ export const TemplateGallery: React.FC<TemplateGalleryProps> = ({
   const privateTemplates = filteredTemplates.filter(t => !t.isPublic);
 
   const renderTemplateCard = (template: CampaignTemplate) => {
-    const Icon = categoryIcons[template.category] || Star;
+    const Icon = categoryIcons[template.category || 'custom'] || Star;
     const structure = template.structure;
     
     return (

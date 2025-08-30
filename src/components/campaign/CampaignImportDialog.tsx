@@ -124,8 +124,10 @@ export const CampaignImportDialog: React.FC<CampaignImportDialogProps> = ({
       
       if (importResult.success && importResult.campaignId) {
         setTimeout(() => {
-          onSuccess?.(importResult.campaignId);
-          router.push(`/campaigns/${importResult.campaignId}`);
+          if (importResult.campaignId) {
+            onSuccess?.(importResult.campaignId);
+            router.push(`/campaigns/${importResult.campaignId}`);
+          }
         }, 2000);
       }
     } catch (err) {

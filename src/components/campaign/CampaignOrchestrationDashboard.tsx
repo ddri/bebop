@@ -217,9 +217,13 @@ export const CampaignOrchestrationDashboard: React.FC<CampaignOrchestrationDashb
             onSelectAll={selectAll}
             onSelectNone={selectNone}
             onSelectByStatus={selectByStatus}
-            onBulkUpdateStatus={bulkUpdateStatus}
+            onBulkUpdateStatus={async (ids, status, scheduledFor) => {
+              await bulkUpdateStatus(ids, status, scheduledFor);
+            }}
             onBulkDelete={bulkDelete}
-            onBulkUpdatePlatforms={bulkUpdatePlatforms}
+            onBulkUpdatePlatforms={async (ids, platforms) => {
+              await bulkUpdatePlatforms(ids, platforms);
+            }}
             loading={stagingLoading}
           />
         </TabsContent>

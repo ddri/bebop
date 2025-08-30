@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 import { authenticateRequest } from '@/lib/auth';
 import { CampaignTemplateStructure, ContentSlot, TaskTemplate } from '@/types/campaign-templates';
 
@@ -118,7 +119,7 @@ export async function POST(request: Request) {
         name,
         description: description || `Template based on campaign: ${campaign.name}`,
         category: category || 'custom',
-        structure,
+        structure: structure as unknown as Prisma.InputJsonValue,
         isPublic: isPublic || false,
         userId: authResult.userId
       }

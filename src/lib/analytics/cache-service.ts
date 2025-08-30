@@ -108,7 +108,7 @@ export class AnalyticsCacheService {
   ): Promise<DashboardMetrics | null> {
     try {
       const key = this.getDashboardKey(userId, startDate, endDate, days);
-      return this.cache.get(key);
+      return this.cache.get(key) as DashboardMetrics | null;
     } catch (error) {
       // Log error but don't throw - cache misses shouldn't break the app
       console.warn('Failed to get cached dashboard metrics:', error);
@@ -144,7 +144,7 @@ export class AnalyticsCacheService {
   ): Promise<ContentMetrics | null> {
     try {
       const key = this.getContentKey(contentId, startDate, endDate);
-      return this.cache.get(key);
+      return this.cache.get(key) as ContentMetrics | null;
     } catch (error) {
       console.warn('Failed to get cached content metrics:', error);
       return null;
@@ -179,7 +179,7 @@ export class AnalyticsCacheService {
   ): Promise<CampaignMetrics | null> {
     try {
       const key = this.getCampaignKey(campaignId, startDate, endDate);
-      return this.cache.get(key);
+      return this.cache.get(key) as CampaignMetrics | null;
     } catch (error) {
       console.warn('Failed to get cached campaign metrics:', error);
       return null;

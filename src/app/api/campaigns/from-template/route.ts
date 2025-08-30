@@ -42,7 +42,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const structure = template.structure as CampaignTemplateStructure;
+    const structure = template.structure as unknown as CampaignTemplateStructure;
     const campaignStartDate = startDate ? new Date(startDate) : new Date();
     
     // Calculate end date based on template duration

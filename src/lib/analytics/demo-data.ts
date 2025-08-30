@@ -1,5 +1,5 @@
 // Demo analytics data seeder for testing the analytics system
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -96,7 +96,12 @@ export async function seedAnalyticsData() {
     for (let i = 0; i < events.length; i += batchSize) {
       const batch = events.slice(i, i + batchSize);
       await prisma.analyticsEvent.createMany({
-        data: batch
+        data: batch.map(e => ({
+          ...e,
+          metadata: e.metadata as Prisma.InputJsonValue,
+          device: e.device as Prisma.InputJsonValue,
+          geo: e.geo as Prisma.InputJsonValue
+        }))
       });
       inserted += batch.length;
       console.log(`Inserted ${inserted}/${events.length} analytics events...`);

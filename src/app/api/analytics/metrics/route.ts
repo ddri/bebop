@@ -6,6 +6,7 @@ import { AnalyticsService } from '@/lib/analytics/analytics-service';
 import { AnalyticsAggregatorService } from '@/lib/analytics/aggregator-service';
 import { analyticsCacheService, determineCacheTTL } from '@/lib/analytics/cache-service';
 import { handleAnalyticsError, validateDateRange, validateContentId, validateCampaignId } from '@/lib/analytics/errors';
+import { CampaignMetrics } from '@/lib/analytics/types';
 
 const analyticsService = new AnalyticsService();
 const aggregatorService = new AnalyticsAggregatorService();
@@ -182,7 +183,7 @@ async function getContentMetrics(contentId: string, startDate: Date, endDate: Da
     engagementRate: analyticsService.calculateEngagementRate(views, reads, shares),
     platforms,
     publishedAt: content.createdAt,
-    lastViewedAt: events[events.length - 1]?.timestamp || null
+    lastViewedAt: events[events.length - 1]?.timestamp || undefined
   };
   
   // Cache the result
@@ -285,7 +286,7 @@ async function getCampaignMetrics(campaignId: string, startDate: Date, endDate: 
           engagementRate: views > 0 ? ((reads + shares) / views) * 100 : 0,
           platforms: [],
           publishedAt: content.createdAt,
-          lastViewedAt: contentEvents[contentEvents.length - 1]?.timestamp || null
+          lastViewedAt: contentEvents[contentEvents.length - 1]?.timestamp || undefined
         };
       } catch {
         return null;
@@ -297,7 +298,7 @@ async function getCampaignMetrics(campaignId: string, startDate: Date, endDate: 
     .filter((content): content is NonNullable<typeof content> => content !== null)
     .sort((a, b) => b.views - a.views);
   
-  const result = {
+  const result: CampaignMetrics = {
     campaignId,
     name: campaign.name,
     totalViews,
@@ -312,7 +313,7 @@ async function getCampaignMetrics(campaignId: string, startDate: Date, endDate: 
     goalsCompleted: 0,
     overallProgress: 0,
     startDate: campaign.startDate || campaign.createdAt,
-    endDate: campaign.endDate,
+    endDate: campaign.endDate || undefined,
     lastActivity: events[events.length - 1]?.timestamp || campaign.updatedAt
   };
   
@@ -504,7 +505,7 @@ async function getDashboardMetrics(userId: string, startDate: Date, endDate: Dat
     engagementRate: number;
     title: string;
     publishedAt: Date;
-    lastViewedAt: Date | null;
+    lastViewedAt: Date | undefined;
   }>();
 
   // Aggregate metrics by content
@@ -518,7 +519,7 @@ async function getDashboardMetrics(userId: string, startDate: Date, endDate: Dat
         engagementRate: 0,
         title: 'Unknown Content',
         publishedAt: new Date(),
-        lastViewedAt: null
+        lastViewedAt: undefined
       };
 
       if (e.eventType === 'content.view') existing.views++;
@@ -554,13 +555,16 @@ async function getDashboardMetrics(userId: string, startDate: Date, endDate: Dat
             uniqueVisitors: 0, // Would need separate calculation
             reads: metrics.reads,
             completions: contentEvents.filter(e => e.eventType === 'content.complete').length,
-            avgReadTime: Math.round(contentEvents.filter(e => e.eventType === 'content.read' && typeof e.metadata === 'object' && e.metadata && 'readTime' in e.metadata).reduce((sum, e) => sum + (Number(e.metadata.readTime) || 0), 0) / Math.max(1, metrics.reads)),
+            avgReadTime: Math.round(contentEvents.filter(e => e.eventType === 'content.read' && typeof e.metadata === 'object' && e.metadata && 'readTime' in e.metadata).reduce((sum, e) => {
+              const metadata = e.metadata as Record<string, unknown>;
+              return sum + (Number(metadata?.readTime) || 0);
+            }, 0) / Math.max(1, metrics.reads)),
             avgScrollDepth: 0, // Would need separate calculation
             shares: metrics.shares,
             engagementRate,
             platforms: [], // Would need separate calculation
             publishedAt: content.createdAt,
-            lastViewedAt: metrics.lastViewedAt
+            lastViewedAt: metrics.lastViewedAt || undefined
           };
           }
         } catch (error) {
@@ -610,7 +614,7 @@ async function getDashboardMetrics(userId: string, startDate: Date, endDate: Dat
       engagementRate: analyticsService.calculateEngagementRate(views, reads, shares),
       platforms: [],
       publishedAt: content.createdAt,
-      lastViewedAt: contentEvents[contentEvents.length - 1]?.timestamp || null
+      lastViewedAt: contentEvents[contentEvents.length - 1]?.timestamp || undefined
     };
   });
 

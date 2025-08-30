@@ -103,9 +103,7 @@ export async function POST(request: NextRequest) {
           : undefined,
         endDate: exportData.campaign.endDate
           ? new Date(new Date(exportData.campaign.endDate).getTime() + dateOffset)
-          : undefined,
-        settings: exportData.campaign.settings,
-        metadata: exportData.campaign.metadata
+          : undefined
       }
     });
 
@@ -124,9 +122,7 @@ export async function POST(request: NextRequest) {
               data: {
                 name: staging.topic.name,
                 description: staging.topic.description,
-                content: staging.topic.content || '',
-                status: 'draft',
-                metadata: staging.topic.metadata
+                content: staging.topic.content || ''
               }
             });
             topicId = newTopic.id;
@@ -189,13 +185,11 @@ export async function POST(request: NextRequest) {
               campaignId: campaign.id,
               topicId: plan.topicId,
               platform: plan.platform,
-              scheduledAt: plan.scheduledAt && options.adjustDates
+              scheduledFor: plan.scheduledAt && options.adjustDates
                 ? new Date(new Date(plan.scheduledAt).getTime() + dateOffset)
                 : plan.scheduledAt ? new Date(plan.scheduledAt) : undefined,
               publishedAt: plan.publishedAt ? new Date(plan.publishedAt) : undefined,
-              status: plan.status,
-              platformPostId: plan.platformPostId,
-              metrics: plan.metrics
+              status: plan.status
             }
           });
           result.imported.publishingPlans++;
@@ -208,24 +202,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Import goals
-    if (options.includeGoals && exportData.goals && exportData.goals.length > 0) {
-      // Goals would be stored in campaign metadata or a separate table
-      // For now, storing in campaign metadata
-      await prisma.campaign.update({
-        where: { id: campaign.id },
-        data: {
-          metadata: {
-            ...campaign.metadata,
-            goals: exportData.goals.map(goal => ({
-              ...goal,
-              current: options.resetStatus ? 0 : goal.current,
-              completedAt: options.resetStatus ? undefined : goal.completedAt
-            }))
-          }
-        }
-      });
-      result.imported.goals = exportData.goals.length;
-    }
+    // TODO: Goals are not yet implemented in the schema
+    // if (options.includeGoals && exportData.goals && exportData.goals.length > 0) {
+    //   // Goals would be stored in campaign metadata or a separate table
+    //   result.imported.goals = exportData.goals.length;
+    // }
 
     result.success = true;
 

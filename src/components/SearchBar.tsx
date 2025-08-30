@@ -187,7 +187,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   };
 
   // Get result icon
-  const getResultIcon = (type: 'topic' | 'collection') => {
+  const getResultIcon = (type: 'topic') => {
     // All results are topics now
     return <FileText className="h-4 w-4 text-slate-400" />;
   };
