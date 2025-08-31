@@ -11,9 +11,8 @@ export const contentStagingSchema = z.object({
   topicId: z.string()
     .min(1, 'Topic ID is required') 
     .regex(objectIdPattern, 'Topic ID must be a valid MongoDB ObjectId'),
-  status: z.enum(['draft', 'ready', 'scheduled'], {
-    errorMap: () => ({ message: 'Status must be one of: draft, ready, scheduled' })
-  }),
+  status: z.enum(['draft', 'ready', 'scheduled'])
+    .describe('Status must be one of: draft, ready, scheduled'),
   platforms: z.array(z.string())
     .min(1, 'At least one platform must be specified')
     .refine(
@@ -46,9 +45,8 @@ export const manualTaskSchema = z.object({
     )
     .optional()
     .or(z.literal('')).transform(val => val === '' ? undefined : val),
-  status: z.enum(['todo', 'in_progress', 'completed'], {
-    errorMap: () => ({ message: 'Status must be one of: todo, in_progress, completed' })
-  }),
+  status: z.enum(['todo', 'in_progress', 'completed'])
+    .describe('Status must be one of: todo, in_progress, completed'),
   dueDate: z.string().datetime().optional().or(z.literal('')).transform(val => val === '' ? undefined : val),
   instructions: z.string()
     .max(2000, 'Instructions must be less than 2000 characters')
