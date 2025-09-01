@@ -1,14 +1,14 @@
+'use client';
+
+import Layout from '@/components/Layout';
 import { AnalyticsDashboard } from '@/components/analytics/AnalyticsDashboard';
 
 export default function AnalyticsPage() {
   return (
-    <div className="container mx-auto p-6">
-      <AnalyticsDashboard />
-    </div>
+    <Layout pathname="/analytics">
+      <div className="container mx-auto p-6">
+        <AnalyticsDashboard />
+      </div>
+    </Layout>
   );
 }
-
-export const metadata = {
-  title: 'Analytics - Bebop',
-  description: 'Track your content performance and audience engagement',
-};
