@@ -29,7 +29,9 @@ Bebop is a **campaign-centric content marketing orchestration platform** designe
 
 ## ✨ Key Features
 
-- **Campaign Management**: Organize content around marketing objectives
+- **Campaign Management**: Organize content around marketing objectives with templates
+- **Campaign Templates**: Pre-built templates for Product Launch, Content Series, Holiday campaigns, and more
+- **Content Staging Pipeline**: Move content through review stages from draft to published
 - **Content Library**: Centralized content creation and management
 - **Multi-Platform Publishing**: Automated cross-posting with platform-specific formatting
 - **Publishing Queue**: Reliable scheduling with retry logic and monitoring
@@ -38,6 +40,7 @@ Bebop is a **campaign-centric content marketing orchestration platform** designe
 - **Privacy-First Analytics**: Track performance without cookies or invasive tracking
 - **Rich Media Support**: YouTube, Spotify embeds with visual editors
 - **GitHub Integration**: Import content from GitHub repositories
+- **Export/Import**: Share and reuse successful campaign structures
 
 
 
@@ -46,9 +49,17 @@ Bebop is a **campaign-centric content marketing orchestration platform** designe
 
 ## 📋 Roadmap
 
-**Current Version**: v0.4.0 (Hybrid Publishing Workflow Release)
+**Current Version**: v0.4.0 (Campaign Orchestration & Templates Release)
 
 ### ✅ **What's Complete**
+
+**Campaign Orchestration (NEW in v0.4.0):**
+- ✅ **Campaign templates** - Pre-built templates for common marketing campaigns
+- ✅ **Template gallery** - Browse and select from Product Launch, Content Series, Holiday, and Brand Awareness templates
+- ✅ **Campaign export/import** - Share and reuse successful campaign structures
+- ✅ **Content staging pipeline** - Move content through Draft → Review → Approved → Scheduled → Published stages
+- ✅ **Manual task management** - Track non-automated tasks within campaigns
+- ✅ **Bulk operations** - Manage multiple content items and tasks efficiently
 
 **Core Publishing System:**
 - ✅ **Campaign-centric workflow** - Create and manage content campaigns
@@ -161,6 +172,9 @@ npx prisma generate
 
 # Push schema to MongoDB
 npx prisma db push
+
+# Seed campaign templates (optional but recommended)
+npx prisma db seed
 ```
 
 5. **Start Bebop**
